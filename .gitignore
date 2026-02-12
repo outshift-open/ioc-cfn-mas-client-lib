@@ -131,4 +131,43 @@ dmypy.json
 # Mac files
 .DS_Store
 
-.runme.branch
+# Environment variables
+.env
+
+# sqlite database files
+*.db
+*.db-shm
+*.db-wal
+
+# PNG files
+*.png
+
+demo/
+
+.ruff_cache
+
+.vscode/
+
+output/
+
+.terraform.lock.hcl
+.terraform/
+foo.sh
+tfplan
+tfplan.txt
+tfplan.json
+terraform_output.json
+
+
+# IntelliJ / PyCharm
+.idea
+
+
+*.txt
+
+.dockerconfigjson
+
+# OpenAPI Generator artifacts (Python)
+src/.openapi-generator-ignore
+src/.openapi-generator/
+src/generated_README.md
