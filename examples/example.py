@@ -8,9 +8,17 @@ This script demonstrates how to:
 """
 
 import os
+from pathlib import Path
 from typing import Any, Dict, List
 
+from dotenv import load_dotenv
+
 from ioc_cfn_mas_client.client import Client
+
+# Load environment variables from .env file in examples directory
+# Works whether you run from project root or examples directory
+examples_dir = Path(__file__).parent
+load_dotenv(examples_dir / ".env")
 
 
 def main() -> None:

@@ -34,7 +34,10 @@ openapi/openapi.json                # API spec (source of truth)
 ### Common Commands
 ```bash
 # Setup
-uv venv && source .venv/bin/activate && uv pip install -e ".[dev]"
+uv venv && source .venv/bin/activate && uv pip install -e ".[dev,examples]"
+
+# Configure examples (optional, see examples/README.md)
+cd examples && cp .env.example .env && cd ..  # Edit examples/.env with your config
 
 # Test
 ./scripts/unit-test.sh

@@ -5,8 +5,16 @@ Shows how to use the simple list_workspaces and list_mas functions.
 """
 
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 from ioc_cfn_mas_client import Client, list_mas, list_workspaces
+
+# Load environment variables from .env file in examples directory
+# Works whether you run from project root or examples directory
+examples_dir = Path(__file__).parent
+load_dotenv(examples_dir / ".env")
 
 
 def main() -> None:

@@ -14,6 +14,21 @@ This SDK provides:
 pip install ioc-cfn-mas-client-lib
 ```
 
+## Configuration
+
+The library accepts configuration through parameters - no environment variables required. You pass settings directly to the client:
+
+```python
+from ioc_cfn_mas_client import Client
+
+client = Client(
+    base_url="http://localhost:9010",
+    api_key="your-api-key"  # Optional
+)
+```
+
+**For examples and convenience**, you can optionally use `.env` files with `python-dotenv`. See [`examples/README.md`](examples/README.md) for details.
+
 ## Quick Start
 
 ### CFN Service (Shared Memories)
@@ -140,23 +155,21 @@ List multi-agentic systems in a workspace.
 
 **Returns:** Dict with `'systems'` list and `'total'` count
 
-## Environment Variables
-
-```bash
-# CFN Service
-export CFN_BASE_URL="http://localhost:9010"
-export CFN_API_KEY="your-cfn-api-key"  # Optional
-
-# Management Plane
-export MANAGEMENT_PLANE_BASE_URL="http://localhost:8080"
-export API_KEY="your-mgmt-api-key"
-```
 
 ## Examples
 
-See the [`examples/`](examples/) directory:
+See the [`examples/`](examples/) directory for complete examples with setup instructions:
 - [`example.py`](examples/example.py) - CFN service usage
 - [`simple_mgmt_example.py`](examples/simple_mgmt_example.py) - Management Plane functions
+
+**Running examples:**
+```bash
+# See examples/README.md for setup
+cd examples
+cp .env.example .env  # Configure your settings
+cd ..
+python examples/example.py
+```
 
 ## Development
 
@@ -169,7 +182,11 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Create virtual environment and install dependencies
 uv venv
 source .venv/bin/activate
-uv pip install -e ".[dev]"
+uv pip install -e ".[dev,examples]"  # Include 'examples' for python-dotenv
+
+# Configure examples (see examples/README.md for details)
+cd examples && cp .env.example .env && cd ..
+# Edit examples/.env with your configuration
 
 # Run examples
 python examples/example.py
