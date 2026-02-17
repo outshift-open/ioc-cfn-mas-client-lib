@@ -18,20 +18,27 @@
 .
 ├── src/
 │   ├── ioc_cfn_mas_client/        # User-facing SDK wrapper
-│   │   └── client.py              # Main Client class (EDIT THIS)
+│   │   ├── __init__.py            # Package exports
+│   │   ├── client.py              # Main CFN Client class (EDIT THIS)
+│   │   └── management_plane_client.py  # Management Plane functions (EDIT THIS)
 │   └── generated/                 # OpenAPI-generated code (DO NOT EDIT)
-│       ├── api/
-│       │   └── shared_memories_api.py
-│       ├── models/
-│       ├── api_client.py
-│       └── configuration.py
+│       ├── cfn/                   # CFN service client
+│       │   ├── api/
+│       │   │   └── shared_memories_api.py
+│       │   ├── models/
+│       │   ├── api_client.py
+│       │   └── configuration.py
+│       └── management_plane/      # Management Plane client (auto-generated)
 ├── examples/
-│   └── example.py                 # Usage examples for shared memories API
+│   ├── example.py                 # CFN service usage examples
+│   └── simple_mgmt_example.py     # Management Plane functions examples
 ├── tests/                         # Pytest test files
 ├── scripts/
-│   └── unit-test.sh               # Run pytest with coverage
+│   ├── unit-test.sh               # Run pytest with coverage
+│   └── lint.sh                    # Run ruff and mypy
 ├── openapi/
-│   └── openapi.json               # OpenAPI specification (source of truth)
+│   ├── cfn.json                   # CFN API specification
+│   └── management-plane.json      # Management Plane API specification
 ├── .github/workflows/
 │   └── ci.yaml                    # GitHub Actions CI (lint, test, build)
 ├── pyproject.toml                 # Python project configuration
@@ -45,10 +52,11 @@
 - **Path**: `src/generated/` (NOT `src/ioc_cfn_mas_client/generated/`)
 - **Why**: Keeps generated code separate from hand-written code
 - **Rule**: NEVER manually edit files in `src/generated/` - regenerate instead
+- **Structure**: Separate subdirectories for `cfn/` and `management_plane/` clients
 
-### 2. **Client Wrapper Pattern**
+### 2. **CFN Client Wrapper Pattern**
 - **File**: `src/ioc_cfn_mas_client/client.py`
-- **Purpose**: User-friendly wrapper around OpenAPI-generated client
+- **Purpose**: User-friendly wrapper around OpenAPI-generated CFN client
 - **Design Philosophy**: Provide intuitive, well-documented methods that hide complexity
 - **Responsibilities**:
   - Centralize configuration (base_url, api_key, timeout)
@@ -56,11 +64,31 @@
   - Return clean responses (data only, not HTTP info tuples)
   - Expose underlying generated API for advanced usage via properties
 
-### 3. **Import Pattern**
-- Generated code is imported as: `from generated.api.shared_memories_api import SharedMemoriesApi`
+### 3. **Management Plane Functions (Simple Approach)**
+- **File**: `src/ioc_cfn_mas_client/management_plane_client.py`
+- **Purpose**: Two simple functions for listing workspaces and MAS
+- **Design Philosophy**: KISS (Keep It Simple, Stupid)
+  - No class wrapper - just pure functions
+  - Uses Python stdlib only (`urllib.request`) - no external dependencies
+  - Each function takes its own parameters (no shared state)
+  - X-API-Key authentication via header
+- **Functions**:
+  - `list_workspaces(mgmt_base_url, api_key, timeout=None)`
+  - `list_mas(mgmt_base_url, api_key, workspace_id, timeout=None)`
+- **Why Simple?**: User feedback indicated the class-based approach was too complicated
+
+### 4. **Clean Separation**
+- **CFN Service**: For shared memories and agent coordination
+- **Management Plane**: For workspace and MAS management
+- **No dependencies between them**: Can use one without the other
+- **Exported together**: `from ioc_cfn_mas_client import Client, list_workspaces, list_mas`
+
+### 5. **Import Pattern**
+- Generated CFN code: `from generated.cfn.api.shared_memories_api import SharedMemoriesApi`
+- Management Plane functions: `from ioc_cfn_mas_client import list_workspaces, list_mas`
 - This works because `src/` is in the Python path during development
 
-### 4. **No Docker/Kubernetes**
+### 6. **No Docker/Kubernetes**
 - This is a **library**, not a service
 - No Dockerfile, no Helm charts, no container deployment
 - Distributed via PyPI (or private package registry)
@@ -85,7 +113,11 @@ uv run pytest tests/ -v --cov=ioc_cfn_mas_client --cov-report=term-missing
 
 #### Run Examples
 ```bash
+# CFN service example
 uv run python examples/example.py
+
+# Management Plane functions example
+uv run python examples/simple_mgmt_example.py
 ```
 
 #### Regenerate OpenAPI Client
@@ -102,7 +134,8 @@ This command:
 ### File Editing Guidelines
 
 **ALWAYS EDIT**:
-- `src/ioc_cfn_mas_client/client.py` - Main SDK interface
+- `src/ioc_cfn_mas_client/client.py` - CFN Client wrapper
+- `src/ioc_cfn_mas_client/management_plane_client.py` - Management Plane functions
 - `examples/*.py` - Usage examples
 - `tests/*.py` - Test files
 - `README.md` - User documentation
@@ -110,7 +143,7 @@ This command:
 
 **NEVER EDIT**:
 - `src/generated/**` - Auto-generated from OpenAPI spec
-- Regenerate instead using `make gen-openapi`
+- Regenerate instead using `make gen-openapi` or `make gen-cfn` / `make gen-management-plane`
 
 **EDIT WITH CAUTION**:
 - `openapi/openapi.json` - Source of truth for API, coordinate with backend team
@@ -121,14 +154,23 @@ This command:
 
 ### Current APIs
 
-**Shared Memories** - User-friendly methods:
+**CFN Service (Shared Memories)** - User-friendly methods via Client class:
 - `client.upsert_shared_memories(workspace_id, system_id, memories)` - Upsert memory objects
 - `client.query_shared_memories(workspace_id, system_id, query, top_k=5)` - Semantic search
 
-**Advanced Access** (for power users):
+**CFN Advanced Access** (for power users):
 - `client.shared_memories_api` - Direct access to generated SharedMemoriesApi
   - `api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post_with_http_info()`
   - `api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post_with_http_info()`
+
+**Management Plane Functions** - Simple standalone functions:
+- `list_workspaces(mgmt_base_url, api_key, timeout=None)` - List all workspaces
+- `list_mas(mgmt_base_url, api_key, workspace_id, timeout=None)` - List MAS in a workspace
+
+**Design Note**: Management Plane uses simple functions (not class-based) because:
+1. No shared state needed between calls
+2. Simpler API surface for users
+3. Uses Python stdlib only (no external HTTP library dependencies)
 
 ### Adding New APIs
 When the OpenAPI spec is updated with new endpoints:
@@ -151,7 +193,13 @@ When the OpenAPI spec is updated with new endpoints:
 - `api_client` (optional): Pre-configured `ApiClient` object
 
 ### Environment Variables
-- `CFN_BASE_URL`: API base URL (used in examples, defaults to `http://localhost:9010`)
+**CFN Service**:
+- `CFN_BASE_URL`: CFN API base URL (used in examples, defaults to `http://localhost:9010`)
+- `CFN_API_KEY`: Optional API key for CFN authentication
+
+**Management Plane**:
+- `MANAGEMENT_PLANE_BASE_URL`: Management Plane base URL (defaults to `http://localhost:8080`)
+- `API_KEY`: API key for Management Plane X-API-Key header authentication
 
 ## CI/CD Pipeline
 
@@ -201,9 +249,9 @@ uv run pytest tests/ -v --cov=ioc_cfn_mas_client --cov-report=term-missing
 
 ## Common Patterns
 
-### Creating a Client
+### CFN Service - Creating a Client
 ```python
-from ioc_cfn_mas_client.client import Client
+from ioc_cfn_mas_client import Client
 
 client = Client(
     base_url="http://localhost:9010",
@@ -211,7 +259,7 @@ client = Client(
 )
 ```
 
-### Using the User-Friendly API
+### CFN Service - Using the User-Friendly API
 ```python
 # Upsert memories - clean, intuitive interface
 memories = [
@@ -231,6 +279,50 @@ results = client.query_shared_memories(
     query="user preferences",
     top_k=5,
 )
+```
+
+### Management Plane - List Workspaces and MAS
+```python
+from ioc_cfn_mas_client import list_workspaces, list_mas
+
+# List all workspaces
+workspaces = list_workspaces(
+    mgmt_base_url="http://localhost:8080",
+    api_key="your-api-key"
+)
+
+for workspace in workspaces['workspaces']:
+    print(f"{workspace['name']}: {workspace['id']}")
+
+# List multi-agentic systems in a workspace
+systems = list_mas(
+    mgmt_base_url="http://localhost:8080",
+    api_key="your-api-key",
+    workspace_id="workspace-uuid"
+)
+
+for mas in systems['systems']:
+    print(f"{mas['name']}: {mas['id']}")
+```
+
+### Complete Workflow - Using Both Services
+```python
+from ioc_cfn_mas_client import Client, list_workspaces, list_mas
+
+# Get workspace and MAS info from Management Plane
+workspaces = list_workspaces("http://localhost:8080", "your-api-key")
+workspace_id = workspaces['workspaces'][0]['id']
+
+systems = list_mas("http://localhost:8080", "your-api-key", workspace_id)
+mas_id = systems['systems'][0]['id']
+
+# Use CFN client for shared memories
+cfn = Client(base_url="http://localhost:9010")
+
+memories = [{"id": "m1", "content": "System initialized"}]
+cfn.upsert_shared_memories(workspace_id, mas_id, memories)
+
+results = cfn.query_shared_memories(workspace_id, mas_id, "system", top_k=5)
 ```
 
 ### Advanced Usage - Direct API Access
@@ -327,9 +419,17 @@ def upsert_shared_memories(
 When helping with this repository:
 1. **This is a library, not a service** - No Docker/K8s needed
 2. **Don't edit `src/generated/`** - Regenerate from OpenAPI spec
-3. **Main file to edit**: `src/ioc_cfn_mas_client/client.py`
-4. **Use `uv` commands** for package management
-5. **Environment variable**: `CFN_BASE_URL` (not `IOC_BASE_URL`)
-6. **Generated code location**: `src/generated/` (not `src/ioc_cfn_mas_client/generated/`)
-7. **CI runs**: unit tests on Python 3.9 via scripts/unit-test.sh
-8. **Git commits**: Do NOT include `Co-Authored-By: Claude` lines
+3. **Main files to edit**:
+   - `src/ioc_cfn_mas_client/client.py` - CFN Client wrapper
+   - `src/ioc_cfn_mas_client/management_plane_client.py` - Management Plane functions
+4. **Two services, clean separation**:
+   - CFN Service: For shared memories (class-based Client)
+   - Management Plane: For workspaces/MAS (simple functions)
+5. **Use `uv` commands** for package management
+6. **Environment variables**:
+   - `CFN_BASE_URL` (not `IOC_BASE_URL`) for CFN service
+   - `MANAGEMENT_PLANE_BASE_URL` and `API_KEY` for Management Plane
+7. **Generated code location**: `src/generated/cfn/` and `src/generated/management_plane/`
+8. **CI runs**: lint + unit tests on Python 3.9-3.12
+9. **Git commits**: Do NOT include `Co-Authored-By: Claude` lines
+10. **Design philosophy**: Keep Management Plane simple (no class, stdlib only) per user feedback
