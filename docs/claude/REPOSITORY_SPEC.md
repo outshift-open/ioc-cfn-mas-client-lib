@@ -21,14 +21,12 @@
 │   │   ├── __init__.py            # Package exports
 │   │   ├── client.py              # Main CFN Client class (EDIT THIS)
 │   │   └── management_plane_client.py  # Management Plane functions (EDIT THIS)
-│   └── generated/                 # OpenAPI-generated code (DO NOT EDIT)
-│       ├── cfn/                   # CFN service client
-│       │   ├── api/
-│       │   │   └── shared_memories_api.py
-│       │   ├── models/
-│       │   ├── api_client.py
-│       │   └── configuration.py
-│       └── management_plane/      # Management Plane client (auto-generated)
+│   └── generated/                 # OpenAPI-generated CFN client (DO NOT EDIT)
+│       ├── api/
+│       │   └── shared_memories_api.py
+│       ├── models/
+│       ├── api_client.py
+│       └── configuration.py
 ├── examples/
 │   ├── example.py                 # CFN service usage examples
 │   └── simple_mgmt_example.py     # Management Plane functions examples
@@ -37,8 +35,7 @@
 │   ├── unit-test.sh               # Run pytest with coverage
 │   └── lint.sh                    # Run ruff and mypy
 ├── openapi/
-│   ├── cfn.json                   # CFN API specification
-│   └── management-plane.json      # Management Plane API specification
+│   └── openapi.json               # CFN API specification (source of truth)
 ├── .github/workflows/
 │   └── ci.yaml                    # GitHub Actions CI (lint, test, build)
 ├── pyproject.toml                 # Python project configuration
@@ -52,7 +49,7 @@
 - **Path**: `src/generated/` (NOT `src/ioc_cfn_mas_client/generated/`)
 - **Why**: Keeps generated code separate from hand-written code
 - **Rule**: NEVER manually edit files in `src/generated/` - regenerate instead
-- **Structure**: Separate subdirectories for `cfn/` and `management_plane/` clients
+- **What's generated**: Only the CFN client - Management Plane functions are hand-written
 
 ### 2. **CFN Client Wrapper Pattern**
 - **File**: `src/ioc_cfn_mas_client/client.py`
@@ -72,10 +69,11 @@
   - Uses Python stdlib only (`urllib.request`) - no external dependencies
   - Each function takes its own parameters (no shared state)
   - X-API-Key authentication via header
+  - **NO generated code** - hand-written for simplicity
 - **Functions**:
   - `list_workspaces(mgmt_base_url, api_key, timeout=None)`
   - `list_mas(mgmt_base_url, api_key, workspace_id, timeout=None)`
-- **Why Simple?**: User feedback indicated the class-based approach was too complicated
+- **Why Simple?**: User only needs 2 basic listing operations - no need for full OpenAPI generation and class wrappers
 
 ### 4. **Clean Separation**
 - **CFN Service**: For shared memories and agent coordination
@@ -84,7 +82,7 @@
 - **Exported together**: `from ioc_cfn_mas_client import Client, list_workspaces, list_mas`
 
 ### 5. **Import Pattern**
-- Generated CFN code: `from generated.cfn.api.shared_memories_api import SharedMemoriesApi`
+- Generated CFN code: `from generated.api.shared_memories_api import SharedMemoriesApi`
 - Management Plane functions: `from ioc_cfn_mas_client import list_workspaces, list_mas`
 - This works because `src/` is in the Python path during development
 
@@ -127,9 +125,11 @@ make gen-openapi
 ```
 
 This command:
-1. Reads `openapi/openapi.json`
-2. Generates Python client code into `src/generated/`
+1. Reads `openapi/openapi.json` (CFN API spec)
+2. Generates Python CFN client code into `src/generated/`
 3. Package name: `generated`
+
+**Note**: Only the CFN client is generated. Management Plane functions are hand-written.
 
 ### File Editing Guidelines
 
@@ -142,8 +142,8 @@ This command:
 - `pyproject.toml` - Dependencies and config
 
 **NEVER EDIT**:
-- `src/generated/**` - Auto-generated from OpenAPI spec
-- Regenerate instead using `make gen-openapi` or `make gen-cfn` / `make gen-management-plane`
+- `src/generated/**` - Auto-generated CFN client from OpenAPI spec
+- Regenerate instead using `make gen-openapi`
 
 **EDIT WITH CAUTION**:
 - `openapi/openapi.json` - Source of truth for API, coordinate with backend team
@@ -418,18 +418,18 @@ def upsert_shared_memories(
 
 When helping with this repository:
 1. **This is a library, not a service** - No Docker/K8s needed
-2. **Don't edit `src/generated/`** - Regenerate from OpenAPI spec
+2. **Don't edit `src/generated/`** - Regenerate CFN client from OpenAPI spec
 3. **Main files to edit**:
    - `src/ioc_cfn_mas_client/client.py` - CFN Client wrapper
-   - `src/ioc_cfn_mas_client/management_plane_client.py` - Management Plane functions
+   - `src/ioc_cfn_mas_client/management_plane_client.py` - Management Plane functions (hand-written, NOT generated)
 4. **Two services, clean separation**:
-   - CFN Service: For shared memories (class-based Client)
-   - Management Plane: For workspaces/MAS (simple functions)
+   - CFN Service: For shared memories (class-based Client wrapping generated code)
+   - Management Plane: For workspaces/MAS (simple hand-written functions)
 5. **Use `uv` commands** for package management
 6. **Environment variables**:
    - `CFN_BASE_URL` (not `IOC_BASE_URL`) for CFN service
    - `MANAGEMENT_PLANE_BASE_URL` and `API_KEY` for Management Plane
-7. **Generated code location**: `src/generated/cfn/` and `src/generated/management_plane/`
+7. **Generated code location**: `src/generated/` (CFN only, not Management Plane)
 8. **CI runs**: lint + unit tests on Python 3.9-3.12
 9. **Git commits**: Do NOT include `Co-Authored-By: Claude` lines
-10. **Design philosophy**: Keep Management Plane simple (no class, stdlib only) per user feedback
+10. **Design philosophy**: Keep Management Plane simple (no generation, no class, stdlib only)
