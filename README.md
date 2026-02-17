@@ -7,7 +7,7 @@ Python SDK client library for IOC CFN MAS\.
 This repository contains:
 
 - `src/ioc_cfn_mas_client/client.py`: a small, user\-facing `Client` wrapper\.
-- `src/ioc_cfn_mas_client/generated/`: OpenAPI\-generated code \(implementation detail\)\. Avoid editing generated files directly\.
+- `src/generated/`: OpenAPI\-generated code \(implementation detail\)\. Avoid editing generated files directly\.
 
 ## Installation
 
@@ -24,21 +24,65 @@ import os
 from ioc_cfn_mas_client.client import Client
 
 client = Client(
-    base_url=os.getenv("IOC_BASE_URL", "http://localhost:9010"),
-    api_key=os.getenv("IOC_API_KEY"),
+    base_url=os.getenv("CFN_BASE_URL", "http://localhost:9010"),
+    api_key=os.getenv("CFN_API_KEY"),  # Optional
 )
 ```
 
-For additional usage examples, see `examples/example.py`\.
+### Using the Shared Memories API
+
+```python
+# Upsert shared memories
+memories = [
+    {"id": "m1", "content": "User prefers dark mode"},
+    {"id": "m2", "content": "Last login: 2024-01-15"},
+]
+
+response = client.upsert_shared_memories(
+    workspace_id="your_workspace_id",
+    system_id="your_system_id",
+    memories=memories,
+)
+
+# Query shared memories
+results = client.query_shared_memories(
+    workspace_id="your_workspace_id",
+    system_id="your_system_id",
+    query="user preferences",
+    top_k=5,
+)
+```
+
+### Advanced Usage
+
+For power users who need direct access to the generated OpenAPI client:
+
+```python
+# Access the underlying API client
+api = client.shared_memories_api
+response = api.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post_with_http_info(...)
+```
+
+For a complete example, see `examples/example.py`\.
 
 ## Configuration
 
-Supported environment variables:
+The `Client` constructor accepts the following parameters:
 
-- `IOC_BASE_URL`: API base URL \(for example, `http://localhost:8080`\)
-- `IOC_API_KEY`: API key or token \(optional; required only if your deployment enforces auth\)
-- `IOC_WORKSPACE_ID`: workspace ID used by examples \(optional\)
-- `IOC_SYSTEM_ID`: system ID used by examples \(optional\)
+- `base_url` \(required\): API base URL \(e\.g\., `http://localhost:9010`\)
+- `api_key` \(optional\): API key or token \(required only if your deployment enforces auth\)
+- `api_key_name` \(optional\): Header name for API key \(default: `"Authorization"`\)
+- `api_key_prefix` \(optional\): Prefix for API key value \(default: `"Bearer"`\)
+- `timeout` \(optional\): Request timeout in seconds
+- `debug` \(optional\): Enable debug mode \(default: `False`\)
+- `configuration` \(optional\): Pre\-configured `Configuration` object from generated client
+- `api_client` \(optional\): Pre\-configured `ApiClient` object from generated client
+
+### Environment variables
+
+The example code uses:
+
+- `CFN_BASE_URL`: API base URL \(defaults to `http://localhost:9010` if not set\)
 
 ## Development (macOS)
 
@@ -59,7 +103,7 @@ uv run python examples/example.py
 ## OpenAPI SDK generation
 
 - OpenAPI spec: `openapi/openapi.json`
-- Generated output: `src/ioc_cfn_mas_client/generated/`
+- Generated output: `src/generated/`
 
 ### Prerequisites (macOS)
 
@@ -81,4 +125,4 @@ export OPENAPI_GENERATOR=/opt/homebrew/bin/openapi-generator
 make gen-openapi
 ```
 
-This regenerates `src/ioc_cfn_mas_client/generated/` from `openapi/openapi.json`\.
+This regenerates `src/generated/` from `openapi/openapi.json`\.

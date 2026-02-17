@@ -1,52 +1,100 @@
 # examples/example.py
+"""Example usage of the IOC CFN MAS Client Library.
+
+This script demonstrates how to:
+1. Initialize the client
+2. Upsert shared memories
+3. Query shared memories using semantic search
+"""
 
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from ioc_cfn_mas_client.client import Client
 
 
 def main() -> None:
+    """Run example operations against the MAS API."""
+
+    # Initialize the client
+    # API key is optional - only needed if your deployment requires authentication
     client = Client(
         base_url=os.getenv("CFN_BASE_URL", "http://localhost:9010"),
+        api_key=os.getenv("CFN_API_KEY"),  # Optional
     )
 
-    workspace_id = "test"
-    system_id = "test"
+    # Configuration
+    workspace_id = "test_workspace"
+    system_id = "test_system"
 
-    # 1) Upsert shared memories
-    upsert_body: Dict[str, Any] = {
-        # Adjust keys to match your OpenAPI schema if needed.
-        "memories": [
-            {
-                "id": "m1",
-                "content": "hello from sdk wrapper",
-            }
-        ]
-    }
+    print("=" * 70)
+    print("IOC CFN MAS Client Library - Example Usage")
+    print("=" * 70)
 
-    upsert_res = client.shared_memories.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post_with_http_info(
-        workspace_id=workspace_id,
-        system_id=system_id,
-        body=upsert_body,
-    )
-    print("Upsert response:")
-    print(upsert_res)
+    # ========================================================================
+    # Example 1: Upsert Shared Memories
+    # ========================================================================
+    print("\n[1] Upserting shared memories...")
 
-    # 2) Query shared memories
-    query_body: Dict[str, Any] = {
-        # Adjust keys to match your OpenAPI schema if needed.
-        "query": "hello",
-        "topK": 5,
-    }
+    memories: List[Dict[str, Any]] = [
+        {
+            "id": "memory_001",
+            "content": "User prefers dark mode interface",
+        },
+        {
+            "id": "memory_002",
+            "content": "Last active session: 2024-01-15 10:30 UTC",
+        },
+        {
+            "id": "memory_003",
+            "content": "Preferred programming language: Python",
+        },
+    ]
 
-    query_res = client.shared_memories.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post_with_http_info(
-        workspace_id=workspace_id,
-        system_id=system_id,
-        body=query_body,
-    )
-    print("Query response:")
-    print(query_res)
+    try:
+        upsert_response = client.upsert_shared_memories(
+            workspace_id=workspace_id,
+            system_id=system_id,
+            memories=memories,
+        )
+        print(f"✓ Successfully upserted {len(memories)} memories")
+        print(f"  Response: {upsert_response}")
+    except Exception as e:
+        print(f"✗ Error upserting memories: {e}")
+
+    # ========================================================================
+    # Example 2: Query Shared Memories
+    # ========================================================================
+    print("\n[2] Querying shared memories...")
+
+    search_query = "user preferences"
+    top_k = 5
+
+    try:
+        query_response = client.query_shared_memories(
+            workspace_id=workspace_id,
+            system_id=system_id,
+            query=search_query,
+            top_k=top_k,
+        )
+        print(f"✓ Query completed for: '{search_query}'")
+        print(f"  Results (top {top_k}):")
+        print(f"  {query_response}")
+    except Exception as e:
+        print(f"✗ Error querying memories: {e}")
+
+    # ========================================================================
+    # Example 3: Advanced Usage - Direct API Access
+    # ========================================================================
+    print("\n[3] Advanced: Direct API access (for power users)...")
+    print("  Note: You can access the underlying OpenAPI client via:")
+    print("  - client.shared_memories_api  (SharedMemoriesApi)")
+    print("  - client.api_client           (ApiClient)")
+    print("  - client.configuration        (Configuration)")
+
+    print("\n" + "=" * 70)
+    print("Example completed!")
+    print("=" * 70)
 
 
 if __name__ == "__main__":

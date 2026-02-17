@@ -42,6 +42,9 @@ addopts = "-q"
 [tool.ruff]
 line-length = 100
 target-version = "py39"
+exclude = [
+  "src/generated",  # Exclude auto-generated OpenAPI code
+]
 
 [tool.mypy]
 python_version = "3.9"
@@ -49,3 +52,6 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
+exclude = [
+  "^src/generated/",  # Exclude auto-generated OpenAPI code
+]
