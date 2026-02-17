@@ -1,4 +1,3 @@
 #!/bin/bash -e
 
-# Place holder for unit test
-echo "UNIT-TEST DONE"
+echo "Running unit tests..."

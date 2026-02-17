@@ -2,92 +2,186 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from generated.api.shared_memories_api import SharedMemoriesApi
 from generated.api_client import ApiClient
 from generated.configuration import Configuration
 
 
-@dataclass(frozen=True)
-class ClientConfig:
-  base_url: str
-  api_key: Optional[str] = None
-  api_key_name: str = "Authorization"
-  api_key_prefix: Optional[str] = "Bearer"
-  timeout: Optional[float] = None
-  debug: bool = False
-
-
 class Client:
-  """Thin wrapper around the generated OpenAPI client.
+    """User-friendly client for IOC CFN MAS Multi-Agent System API.
 
-  Centralizes configuration/auth and exposes generated API groups.
-  """
+    This client provides convenient methods for interacting with the MAS API,
+    wrapping the auto-generated OpenAPI client with a more intuitive interface.
 
-  def __init__(
-          self,
-          base_url: str,
-          api_key: Optional[str] = None,
-          *,
-          api_key_name: str = "Authorization",
-          api_key_prefix: Optional[str] = "Bearer",
-          timeout: Optional[float] = None,
-          debug: bool = False,
-          configuration: Optional[Configuration] = None,
-          api_client: Optional[ApiClient] = None,
-  ) -> None:
-    if api_client is not None and configuration is not None:
-      raise ValueError("Provide only one of api_client or configuration")
+    Args:
+        base_url: API endpoint URL (e.g., "http://localhost:9010")
+        api_key: Optional API authentication token
+        api_key_name: Header name for API key (default: "Authorization")
+        api_key_prefix: Token prefix (default: "Bearer")
+        timeout: Request timeout in seconds
+        debug: Enable debug logging
+        configuration: Pre-configured Configuration object from generated client
+        api_client: Pre-configured ApiClient object from generated client
 
-    cfg = configuration or (api_client.configuration if api_client else None) or Configuration()
-    cfg.host = base_url
-    cfg.debug = bool(debug)
+    Example:
+        >>> client = Client(base_url="http://localhost:9010")
+        >>> memories = [{"id": "m1", "content": "hello world"}]
+        >>> response = client.upsert_shared_memories("ws1", "sys1", memories)
+    """
 
-    if api_key:
-      cfg.api_key[api_key_name] = api_key
-      if api_key_prefix:
-        cfg.api_key_prefix[api_key_name] = api_key_prefix
+    def __init__(
+        self,
+        base_url: str,
+        api_key: Optional[str] = None,
+        *,
+        api_key_name: str = "Authorization",
+        api_key_prefix: Optional[str] = "Bearer",
+        timeout: Optional[float] = None,
+        debug: bool = False,
+        configuration: Optional[Configuration] = None,
+        api_client: Optional[ApiClient] = None,
+    ) -> None:
+        if api_client is not None and configuration is not None:
+            raise ValueError("Provide only one of api_client or configuration")
 
-    self._configuration = cfg
-    self._api_client = api_client or ApiClient(configuration=cfg)
-    self._timeout = timeout
+        cfg = configuration or (api_client.configuration if api_client else None) or Configuration()
+        cfg.host = base_url
+        cfg.debug = bool(debug)
 
-    self._shared_memories = SharedMemoriesApi(api_client=self._api_client)
+        if api_key:
+            cfg.api_key[api_key_name] = api_key
+            if api_key_prefix:
+                cfg.api_key_prefix[api_key_name] = api_key_prefix
 
-  @property
-  def configuration(self) -> Configuration:
-    return self._configuration
+        self._configuration = cfg
+        self._api_client = api_client or ApiClient(configuration=cfg)
+        self._timeout = timeout
+        self._shared_memories_api = SharedMemoriesApi(api_client=self._api_client)
 
-  @property
-  def api_client(self) -> ApiClient:
-    return self._api_client
+    # ============================================================================
+    # Shared Memories Operations
+    # ============================================================================
 
-  @property
-  def shared_memories(self) -> SharedMemoriesApi:
-    return self._shared_memories
+    def upsert_shared_memories(
+        self,
+        workspace_id: str,
+        system_id: str,
+        memories: List[Dict[str, Any]],
+    ) -> Any:
+        """Upsert (insert or update) shared memories for a multi-agent system.
 
-  def request(
-          self,
-          method: str,
-          path: str,
-          *,
-          headers: Optional[Dict[str, str]] = None,
-          body: Optional[Any] = None,
-          timeout: Optional[float] = None,
-  ) -> bytes:
-    if not path.startswith("/"):
-      raise ValueError("path must start with '/'")
+        Args:
+            workspace_id: The workspace identifier
+            system_id: The multi-agent system identifier
+            memories: List of memory objects to upsert. Each memory should contain
+                     at least 'id' and 'content' fields.
 
-    resp = self._api_client.call_api(
-      method.upper(),
-      path,
-      header_params=headers or {},
-      body=body,
-      _request_timeout=self._timeout if timeout is None else timeout,
-    )
-    resp.read()
-    return resp.data
+        Returns:
+            API response with upsert results
 
+        Example:
+            >>> memories = [
+            ...     {"id": "m1", "content": "User prefers dark mode"},
+            ...     {"id": "m2", "content": "Last login: 2024-01-15"}
+            ... ]
+            >>> response = client.upsert_shared_memories("workspace1", "system1", memories)
+        """
+        body = {"memories": memories}
+        response = self._shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post_with_http_info(
+            workspace_id=workspace_id,
+            system_id=system_id,
+            body=body,
+        )
+        return response[0]  # Return data, not full http_info tuple
 
+    def query_shared_memories(
+        self,
+        workspace_id: str,
+        system_id: str,
+        query: str,
+        top_k: int = 5,
+    ) -> Any:
+        """Query shared memories using semantic search.
+
+        Args:
+            workspace_id: The workspace identifier
+            system_id: The multi-agent system identifier
+            query: Search query string
+            top_k: Maximum number of results to return (default: 5)
+
+        Returns:
+            API response containing matching memories
+
+        Example:
+            >>> results = client.query_shared_memories(
+            ...     workspace_id="workspace1",
+            ...     system_id="system1",
+            ...     query="user preferences",
+            ...     top_k=10
+            ... )
+        """
+        body = {"query": query, "topK": top_k}
+        response = self._shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post_with_http_info(
+            workspace_id=workspace_id,
+            system_id=system_id,
+            body=body,
+        )
+        return response[0]  # Return data, not full http_info tuple
+
+    # ============================================================================
+    # Advanced Access (for power users)
+    # ============================================================================
+
+    @property
+    def configuration(self) -> Configuration:
+        """Access the underlying OpenAPI configuration."""
+        return self._configuration
+
+    @property
+    def api_client(self) -> ApiClient:
+        """Access the underlying OpenAPI client."""
+        return self._api_client
+
+    @property
+    def shared_memories_api(self) -> SharedMemoriesApi:
+        """Direct access to the generated SharedMemoriesApi for advanced usage."""
+        return self._shared_memories_api
+
+    def request(
+        self,
+        method: str,
+        path: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        body: Optional[Any] = None,
+        timeout: Optional[float] = None,
+    ) -> bytes:
+        """Make a raw HTTP request to the API.
+
+        Args:
+            method: HTTP method (GET, POST, etc.)
+            path: API path (must start with '/')
+            headers: Optional HTTP headers
+            body: Optional request body
+            timeout: Optional request timeout (overrides client default)
+
+        Returns:
+            Response data as bytes
+
+        Raises:
+            ValueError: If path doesn't start with '/'
+        """
+        if not path.startswith("/"):
+            raise ValueError("path must start with '/'")
+
+        resp = self._api_client.call_api(
+            method.upper(),
+            path,
+            header_params=headers or {},
+            body=body,
+            _request_timeout=self._timeout if timeout is None else timeout,
+        )
+        resp.read()
+        return resp.data  # type: ignore[no-any-return]
