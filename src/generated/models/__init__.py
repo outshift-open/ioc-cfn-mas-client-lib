@@ -13,4 +13,6 @@
 """  # noqa: E501
 
 # import models into model package
+from generated.models.sharedmemory_shared_memory_upsert_request import SharedmemorySharedMemoryUpsertRequest
+from generated.models.sharedmemory_shared_memory_upsert_response import SharedmemorySharedMemoryUpsertResponse
 

@@ -29,7 +29,8 @@ __all__ = [
     "ApiKeyError",
     "ApiAttributeError",
     "ApiException",
-    
+    "SharedmemorySharedMemoryUpsertRequest",
+    "SharedmemorySharedMemoryUpsertResponse",
 ]
 
 # import apis into sdk package
@@ -48,4 +49,6 @@ from generated.exceptions import ApiAttributeError as ApiAttributeError
 from generated.exceptions import ApiException as ApiException
 
 # import models into sdk package
+from generated.models.sharedmemory_shared_memory_upsert_request import SharedmemorySharedMemoryUpsertRequest as SharedmemorySharedMemoryUpsertRequest
+from generated.models.sharedmemory_shared_memory_upsert_response import SharedmemorySharedMemoryUpsertResponse as SharedmemorySharedMemoryUpsertResponse
 

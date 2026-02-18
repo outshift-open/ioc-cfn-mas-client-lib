@@ -10,14 +10,14 @@ from generated.configuration import Configuration
 
 
 class Client:
-    """User-friendly client for IOC CFN MAS Multi-Agent System API.
+    """User-friendly client for IoC CFN MAS Multi-Agent System API.
 
     This client provides convenient methods for interacting with the MAS API,
     wrapping the auto-generated OpenAPI client with a more intuitive interface.
 
     Args:
         base_url: API endpoint URL (e.g., "http://localhost:9010")
-        api_key: Optional API authentication token
+        api_key: Optional API key (not required for most deployments)
         api_key_name: Header name for API key (default: "Authorization")
         api_key_prefix: Token prefix (default: "Bearer")
         timeout: Request timeout in seconds
@@ -28,7 +28,7 @@ class Client:
     Example:
         >>> client = Client(base_url="http://localhost:9010")
         >>> memories = [{"id": "m1", "content": "hello world"}]
-        >>> response = client.upsert_shared_memories("ws1", "sys1", memories)
+        >>> response = client.upsert_memories("ws1", "sys1", memories=memories)
     """
 
     def __init__(
@@ -64,60 +64,78 @@ class Client:
     # Shared Memories Operations
     # ============================================================================
 
-    def upsert_shared_memories(
+    def upsert_memories(
         self,
         workspace_id: str,
-        system_id: str,
-        memories: List[Dict[str, Any]],
+        mas_id: str,
+        memories: Optional[List[Dict[str, Any]]] = None,
+        relationships: Optional[List[Dict[str, Any]]] = None,
     ) -> Any:
-        """Upsert (insert or update) shared memories for a multi-agent system.
+        """Upsert (insert or update) shared memories and relationships for a multi-agent system.
 
         Args:
             workspace_id: The workspace identifier
-            system_id: The multi-agent system identifier
+            mas_id: The multi-agent system identifier
             memories: List of memory objects to upsert. Each memory should contain
                      at least 'id' and 'content' fields.
+            relationships: List of relationship objects to upsert between memories.
 
         Returns:
-            API response with upsert results
+            API response with upsert results containing status and message
 
         Example:
             >>> memories = [
             ...     {"id": "m1", "content": "User prefers dark mode"},
             ...     {"id": "m2", "content": "Last login: 2024-01-15"}
             ... ]
-            >>> response = client.upsert_shared_memories("workspace1", "system1", memories)
+            >>> relationships = [
+            ...     {"source": "m1", "target": "m2", "type": "related_to"}
+            ... ]
+            >>> response = client.upsert_memories(
+            ...     workspace_id="workspace1",
+            ...     mas_id="system1",
+            ...     memories=memories,
+            ...     relationships=relationships
+            ... )
         """
-        body = {"memories": memories}
+        body: Dict[str, Any] = {}
+        if memories is not None:
+            body["memories"] = memories
+        if relationships is not None:
+            body["relationships"] = relationships
+
+        if not body:
+            raise ValueError("At least one of 'memories' or 'relationships' must be provided")
+
         response = self._shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post_with_http_info(
             workspace_id=workspace_id,
-            system_id=system_id,
+            system_id=mas_id,
             body=body,
         )
-        return response[0]  # Return data, not full http_info tuple
+        return response.data  # Return data from ApiResponse object
 
-    def query_shared_memories(
+    def search_memories(
         self,
         workspace_id: str,
-        system_id: str,
+        mas_id: str,
         query: str,
         top_k: int = 5,
     ) -> Any:
-        """Query shared memories using semantic search.
+        """Search shared memories using semantic similarity.
 
         Args:
             workspace_id: The workspace identifier
-            system_id: The multi-agent system identifier
-            query: Search query string
+            mas_id: The multi-agent system identifier
+            query: Search query string for semantic matching
             top_k: Maximum number of results to return (default: 5)
 
         Returns:
-            API response containing matching memories
+            API response containing matching memories ranked by relevance
 
         Example:
-            >>> results = client.query_shared_memories(
+            >>> results = client.search_memories(
             ...     workspace_id="workspace1",
-            ...     system_id="system1",
+            ...     mas_id="system1",
             ...     query="user preferences",
             ...     top_k=10
             ... )
@@ -125,10 +143,10 @@ class Client:
         body = {"query": query, "topK": top_k}
         response = self._shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post_with_http_info(
             workspace_id=workspace_id,
-            system_id=system_id,
+            system_id=mas_id,
             body=body,
         )
-        return response[0]  # Return data, not full http_info tuple
+        return response.data  # Return data from ApiResponse object
 
     # ============================================================================
     # Advanced Access (for power users)

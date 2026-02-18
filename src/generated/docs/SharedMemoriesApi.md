@@ -5,11 +5,11 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post**](SharedMemoriesApi.md#api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{systemId}/shared-memories | Upsert shared memories
-[**api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post**](SharedMemoriesApi.md#api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{systemId}/shared-memories/query | Query shared memories
+[**api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post**](SharedMemoriesApi.md#api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{systemId}/shared-memories/query | Fetch shared memories
 
 
 # **api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post**
-> object api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post(workspace_id, system_id, body)
+> SharedmemorySharedMemoryUpsertResponse api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post(workspace_id, system_id, body)
 
 Upsert shared memories
 
@@ -20,6 +20,8 @@ Upserts shared memory entries for a given workspace and multi-agentic system
 
 ```python
 import generated
+from generated.models.sharedmemory_shared_memory_upsert_request import SharedmemorySharedMemoryUpsertRequest
+from generated.models.sharedmemory_shared_memory_upsert_response import SharedmemorySharedMemoryUpsertResponse
 from generated.rest import ApiException
 from pprint import pprint
 
@@ -36,7 +38,7 @@ with generated.ApiClient(configuration) as api_client:
     api_instance = generated.SharedMemoriesApi(api_client)
     workspace_id = 'workspace_id_example' # str | Workspace ID
     system_id = 'system_id_example' # str | System ID
-    body = None # object | Upsert request
+    body = generated.SharedmemorySharedMemoryUpsertRequest() # SharedmemorySharedMemoryUpsertRequest | Upsert request
 
     try:
         # Upsert shared memories
@@ -56,11 +58,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**| Workspace ID | 
  **system_id** | **str**| System ID | 
- **body** | **object**| Upsert request | 
+ **body** | [**SharedmemorySharedMemoryUpsertRequest**](SharedmemorySharedMemoryUpsertRequest.md)| Upsert request | 
 
 ### Return type
 
-**object**
+[**SharedmemorySharedMemoryUpsertResponse**](SharedmemorySharedMemoryUpsertResponse.md)
 
 ### Authorization
 
@@ -84,9 +86,9 @@ No authorization required
 # **api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post**
 > object api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post(workspace_id, system_id, body)
 
-Query shared memories
+Fetch shared memories
 
-Queries shared memory entries for a given workspace and multi-agentic system
+Fetches shared memory entries for a given workspace and multi-agentic system
 
 ### Example
 
@@ -112,7 +114,7 @@ with generated.ApiClient(configuration) as api_client:
     body = None # object | Query request
 
     try:
-        # Query shared memories
+        # Fetch shared memories
         api_response = api_instance.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post(workspace_id, system_id, body)
         print("The response of SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post:\n")
         pprint(api_response)

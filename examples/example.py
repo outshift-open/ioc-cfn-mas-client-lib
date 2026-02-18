@@ -1,10 +1,10 @@
 # examples/example.py
-"""Example usage of the IOC CFN MAS Client Library.
+"""Example usage of the IoC CFN MAS Client Library.
 
 This script demonstrates how to:
 1. Initialize the client
-2. Upsert shared memories
-3. Query shared memories using semantic search
+2. Upsert memories with relationships
+3. Search shared memories using semantic similarity
 """
 
 import os
@@ -16,25 +16,23 @@ from ioc_cfn_mas_client.client import Client
 def main() -> None:
     """Run example operations against the MAS API."""
 
-    # Initialize the client
-    # API key is optional - only needed if your deployment requires authentication
+    # Initialize the client (API key not required for standard deployments)
     client = Client(
         base_url=os.getenv("CFN_BASE_URL", "http://localhost:9010"),
-        api_key=os.getenv("CFN_API_KEY"),  # Optional
     )
 
     # Configuration
     workspace_id = "test_workspace"
-    system_id = "test_system"
+    mas_id = "test_system"
 
     print("=" * 70)
-    print("IOC CFN MAS Client Library - Example Usage")
+    print("IoC CFN MAS Client Library - Example Usage")
     print("=" * 70)
 
     # ========================================================================
-    # Example 1: Upsert Shared Memories
+    # Example 1: Upsert Memories with Relationships
     # ========================================================================
-    print("\n[1] Upserting shared memories...")
+    print("\n[1] Upserting memories with relationships...")
 
     memories: List[Dict[str, Any]] = [
         {
@@ -51,37 +49,46 @@ def main() -> None:
         },
     ]
 
+    relationships: List[Dict[str, Any]] = [
+        {
+            "source": "memory_001",
+            "target": "memory_002",
+            "type": "related_to",
+        },
+    ]
+
     try:
-        upsert_response = client.upsert_shared_memories(
+        upsert_response = client.upsert_memories(
             workspace_id=workspace_id,
-            system_id=system_id,
+            mas_id=mas_id,
             memories=memories,
+            relationships=relationships,
         )
-        print(f"✓ Successfully upserted {len(memories)} memories")
+        print(f"✓ Successfully upserted {len(memories)} memories and {len(relationships)} relationships")
         print(f"  Response: {upsert_response}")
     except Exception as e:
         print(f"✗ Error upserting memories: {e}")
 
     # ========================================================================
-    # Example 2: Query Shared Memories
+    # Example 2: Search Memories
     # ========================================================================
-    print("\n[2] Querying shared memories...")
+    print("\n[2] Searching shared memories...")
 
     search_query = "user preferences"
     top_k = 5
 
     try:
-        query_response = client.query_shared_memories(
+        search_results = client.search_memories(
             workspace_id=workspace_id,
-            system_id=system_id,
+            mas_id=mas_id,
             query=search_query,
             top_k=top_k,
         )
-        print(f"✓ Query completed for: '{search_query}'")
+        print(f"✓ Search completed for: '{search_query}'")
         print(f"  Results (top {top_k}):")
-        print(f"  {query_response}")
+        print(f"  {search_results}")
     except Exception as e:
-        print(f"✗ Error querying memories: {e}")
+        print(f"✗ Error searching memories: {e}")
 
     # ========================================================================
     # Example 3: Advanced Usage - Direct API Access

@@ -19,6 +19,8 @@ from typing_extensions import Annotated
 from pydantic import Field, StrictStr
 from typing import Any, Dict
 from typing_extensions import Annotated
+from generated.models.sharedmemory_shared_memory_upsert_request import SharedmemorySharedMemoryUpsertRequest
+from generated.models.sharedmemory_shared_memory_upsert_response import SharedmemorySharedMemoryUpsertResponse
 
 from generated.api_client import ApiClient, RequestSerialized
 from generated.api_response import ApiResponse
@@ -43,7 +45,7 @@ class SharedMemoriesApi:
         self,
         workspace_id: Annotated[StrictStr, Field(description="Workspace ID")],
         system_id: Annotated[StrictStr, Field(description="System ID")],
-        body: Annotated[Dict[str, Any], Field(description="Upsert request")],
+        body: Annotated[SharedmemorySharedMemoryUpsertRequest, Field(description="Upsert request")],
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -56,7 +58,7 @@ class SharedMemoriesApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> object:
+    ) -> SharedmemorySharedMemoryUpsertResponse:
         """Upsert shared memories
 
         Upserts shared memory entries for a given workspace and multi-agentic system
@@ -66,7 +68,7 @@ class SharedMemoriesApi:
         :param system_id: System ID (required)
         :type system_id: str
         :param body: Upsert request (required)
-        :type body: object
+        :type body: SharedmemorySharedMemoryUpsertRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -100,7 +102,7 @@ class SharedMemoriesApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '201': "object",
+            '201': "SharedmemorySharedMemoryUpsertResponse",
             '400': "Dict[str, str]",
             '500': "Dict[str, str]",
         }
@@ -120,7 +122,7 @@ class SharedMemoriesApi:
         self,
         workspace_id: Annotated[StrictStr, Field(description="Workspace ID")],
         system_id: Annotated[StrictStr, Field(description="System ID")],
-        body: Annotated[Dict[str, Any], Field(description="Upsert request")],
+        body: Annotated[SharedmemorySharedMemoryUpsertRequest, Field(description="Upsert request")],
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -133,7 +135,7 @@ class SharedMemoriesApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[object]:
+    ) -> ApiResponse[SharedmemorySharedMemoryUpsertResponse]:
         """Upsert shared memories
 
         Upserts shared memory entries for a given workspace and multi-agentic system
@@ -143,7 +145,7 @@ class SharedMemoriesApi:
         :param system_id: System ID (required)
         :type system_id: str
         :param body: Upsert request (required)
-        :type body: object
+        :type body: SharedmemorySharedMemoryUpsertRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -177,7 +179,7 @@ class SharedMemoriesApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '201': "object",
+            '201': "SharedmemorySharedMemoryUpsertResponse",
             '400': "Dict[str, str]",
             '500': "Dict[str, str]",
         }
@@ -197,7 +199,7 @@ class SharedMemoriesApi:
         self,
         workspace_id: Annotated[StrictStr, Field(description="Workspace ID")],
         system_id: Annotated[StrictStr, Field(description="System ID")],
-        body: Annotated[Dict[str, Any], Field(description="Upsert request")],
+        body: Annotated[SharedmemorySharedMemoryUpsertRequest, Field(description="Upsert request")],
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -220,7 +222,7 @@ class SharedMemoriesApi:
         :param system_id: System ID (required)
         :type system_id: str
         :param body: Upsert request (required)
-        :type body: object
+        :type body: SharedmemorySharedMemoryUpsertRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -254,7 +256,7 @@ class SharedMemoriesApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '201': "object",
+            '201': "SharedmemorySharedMemoryUpsertResponse",
             '400': "Dict[str, str]",
             '500': "Dict[str, str]",
         }
@@ -366,9 +368,9 @@ class SharedMemoriesApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> object:
-        """Query shared memories
+        """Fetch shared memories
 
-        Queries shared memory entries for a given workspace and multi-agentic system
+        Fetches shared memory entries for a given workspace and multi-agentic system
 
         :param workspace_id: Workspace ID (required)
         :type workspace_id: str
@@ -417,7 +419,6 @@ class SharedMemoriesApi:
             *_param,
             _request_timeout=_request_timeout
         )
-
         response_data.read()
         return self.api_client.response_deserialize(
             response_data=response_data,
@@ -444,9 +445,9 @@ class SharedMemoriesApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[object]:
-        """Query shared memories
+        """Fetch shared memories
 
-        Queries shared memory entries for a given workspace and multi-agentic system
+        Fetches shared memory entries for a given workspace and multi-agentic system
 
         :param workspace_id: Workspace ID (required)
         :type workspace_id: str
@@ -521,9 +522,9 @@ class SharedMemoriesApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Query shared memories
+        """Fetch shared memories
 
-        Queries shared memory entries for a given workspace and multi-agentic system
+        Fetches shared memory entries for a given workspace and multi-agentic system
 
         :param workspace_id: Workspace ID (required)
         :type workspace_id: str

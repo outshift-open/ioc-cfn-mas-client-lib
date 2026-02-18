@@ -1,8 +1,8 @@
-# IOC CFN MAS Client Library - Repository Specification
+# IoC CFN MAS Client Library - Repository Specification
 
 ## Project Overview
 
-**Purpose**: Python SDK client library for IOC CFN MAS (Multi-Agent System)
+**Purpose**: Python SDK client library for IoC CFN MAS (Multi-Agent System)
 
 **Type**: Python library/SDK (not a service or application)
 
@@ -51,8 +51,8 @@
 - **Purpose**: User-friendly wrapper around OpenAPI-generated client
 - **Design Philosophy**: Provide intuitive, well-documented methods that hide complexity
 - **Responsibilities**:
-  - Centralize configuration (base_url, api_key, timeout)
-  - Provide clean methods with good parameter names (e.g., `upsert_shared_memories()`)
+  - Centralize configuration (base_url, timeout, optional api_key)
+  - Provide clean methods with good parameter names (e.g., `upsert_memories()`)
   - Return clean responses (data only, not HTTP info tuples)
   - Expose underlying generated API for advanced usage via properties
 
@@ -122,8 +122,8 @@ This command:
 ### Current APIs
 
 **Shared Memories** - User-friendly methods:
-- `client.upsert_shared_memories(workspace_id, system_id, memories)` - Upsert memory objects
-- `client.query_shared_memories(workspace_id, system_id, query, top_k=5)` - Semantic search
+- `client.upsert_memories(workspace_id, mas_id, memories, relationships)` - Upsert memory objects and relationships
+- `client.search_memories(workspace_id, mas_id, query, top_k=5)` - Semantic search
 
 **Advanced Access** (for power users):
 - `client.shared_memories_api` - Direct access to generated SharedMemoriesApi
@@ -142,13 +142,9 @@ When the OpenAPI spec is updated with new endpoints:
 
 ### Client Constructor Parameters
 - `base_url` (required): API endpoint (e.g., `http://localhost:9010`)
-- `api_key` (optional): Authentication token
-- `api_key_name` (optional): Header name, default `"Authorization"`
-- `api_key_prefix` (optional): Token prefix, default `"Bearer"`
+- `api_key` (optional): API key - not required for standard deployments
 - `timeout` (optional): Request timeout in seconds
 - `debug` (optional): Enable debug logging
-- `configuration` (optional): Pre-configured `Configuration` object
-- `api_client` (optional): Pre-configured `ApiClient` object
 
 ### Environment Variables
 - `CFN_BASE_URL`: API base URL (used in examples, defaults to `http://localhost:9010`)
@@ -207,27 +203,32 @@ from ioc_cfn_mas_client.client import Client
 
 client = Client(
     base_url="http://localhost:9010",
-    api_key="your-api-key",  # Optional
 )
 ```
 
 ### Using the User-Friendly API
 ```python
-# Upsert memories - clean, intuitive interface
+# Upsert memories with relationships - clean, intuitive interface
 memories = [
     {"id": "m1", "content": "User prefers dark mode"},
     {"id": "m2", "content": "Last login: 2024-01-15"},
 ]
-response = client.upsert_shared_memories(
+
+relationships = [
+    {"source": "m1", "target": "m2", "type": "related_to"},
+]
+
+response = client.upsert_memories(
     workspace_id="workspace_id",
-    system_id="system_id",
+    mas_id="mas_id",
     memories=memories,
+    relationships=relationships,  # Optional
 )
 
-# Query memories - semantic search
-results = client.query_shared_memories(
+# Search memories - semantic search
+results = client.search_memories(
     workspace_id="workspace_id",
-    system_id="system_id",
+    mas_id="mas_id",
     query="user preferences",
     top_k=5,
 )
@@ -240,7 +241,7 @@ For power users needing full control:
 api = client.shared_memories_api
 response = api.api_workspaces_workspace_id_...(
     workspace_id="workspace_id",
-    system_id="system_id",
+    mas_id="mas_id",
     body={"key": "value"},
 )
 ```
@@ -255,30 +256,37 @@ When adding new operations, follow this pattern in `Client` class:
 
 Example:
 ```python
-def upsert_shared_memories(
+def upsert_memories(
     self,
     workspace_id: str,
-    system_id: str,
-    memories: List[Dict[str, Any]],
+    mas_id: str,
+    memories: Optional[List[Dict[str, Any]]] = None,
+    relationships: Optional[List[Dict[str, Any]]] = None,
 ) -> Any:
-    """Upsert (insert or update) shared memories.
+    """Upsert (insert or update) shared memories and relationships.
 
     Args:
         workspace_id: The workspace identifier
-        system_id: The multi-agent system identifier
+        mas_id: The multi-agent system identifier
         memories: List of memory objects with 'id' and 'content'
+        relationships: List of relationship objects between memories
 
     Returns:
         API response with upsert results
 
     Example:
         >>> memories = [{"id": "m1", "content": "hello"}]
-        >>> client.upsert_shared_memories("ws1", "sys1", memories)
+        >>> relationships = [{"source": "m1", "target": "m2", "type": "related_to"}]
+        >>> client.upsert_memories("ws1", "sys1", memories=memories, relationships=relationships)
     """
-    body = {"memories": memories}
+    body = {}
+    if memories is not None:
+        body["memories"] = memories
+    if relationships is not None:
+        body["relationships"] = relationships
     response = self._shared_memories_api.api_workspaces_...(
         workspace_id=workspace_id,
-        system_id=system_id,
+        mas_id=mas_id,
         body=body,
     )
     return response[0]  # Return data only, not HTTP info
@@ -329,7 +337,7 @@ When helping with this repository:
 2. **Don't edit `src/generated/`** - Regenerate from OpenAPI spec
 3. **Main file to edit**: `src/ioc_cfn_mas_client/client.py`
 4. **Use `uv` commands** for package management
-5. **Environment variable**: `CFN_BASE_URL` (not `IOC_BASE_URL`)
+5. **Environment variable**: `CFN_BASE_URL` (not `IoC_BASE_URL`)
 6. **Generated code location**: `src/generated/` (not `src/ioc_cfn_mas_client/generated/`)
 7. **CI runs**: unit tests on Python 3.9 via scripts/unit-test.sh
 8. **Git commits**: Do NOT include `Co-Authored-By: Claude` lines

@@ -1,7 +1,7 @@
 # Claude Code Instructions
 
 ## Project Type
-This is a **Python SDK library** for IOC CFN MAS Multi-Agent System. It is NOT a service - no Docker, Helm, or K8s deployments.
+This is a **Python SDK library** for IoC CFN MAS Multi-Agent System. It is NOT a service - no Docker, Helm, or K8s deployments.
 
 ## Critical Rules
 
@@ -27,7 +27,7 @@ openapi/openapi.json                # API spec (source of truth)
 ### Key Facts
 - **Package Manager**: `uv` (not pip/poetry)
 - **Python Versions**: 3.9, 3.10, 3.11, 3.12
-- **Environment Variable**: `CFN_BASE_URL` (NOT `IOC_BASE_URL`)
+- **Environment Variable**: `CFN_BASE_URL` (NOT `IoC_BASE_URL`)
 - **Generated Code Path**: `src/generated/` (NOT `src/ioc_cfn_mas_client/generated/`)
 - **Import Pattern**: `from generated.api.shared_memories_api import ...`
 
@@ -50,6 +50,12 @@ uv run python examples/example.py
 - **Test**: pytest on Python 3.9 with coverage via scripts/unit-test.sh
 - **Runners**: Standard GitHub `ubuntu-latest`
 
+### OpenAPI Spec Important Notes
+- **`additionalProperties: true`**: In `openapi/openapi.json`, memory and relationship objects use `"additionalProperties": true`
+  - This allows string, number, boolean values in the objects (e.g., `{"id": "m1", "content": "text"}`)
+  - **DO NOT** use `"additionalProperties": {}` - this causes Pydantic validation errors
+  - The generator interprets `{}` as "only dict values allowed", which breaks simple string/number properties
+
 ### Git Commits
 - **DO NOT** include `Co-Authored-By: Claude` lines in commit messages
 - Keep commit messages clean and conventional
@@ -57,7 +63,7 @@ uv run python examples/example.py
 ## Architecture
 
 The `Client` class in `src/ioc_cfn_mas_client/client.py` is a user-friendly wrapper that:
-1. Centralizes configuration (base_url, api_key, timeout)
+1. Centralizes configuration (base_url, timeout, optional api_key)
 2. Provides clean, intuitive methods for common operations
 3. Exposes underlying generated API for advanced usage
 
@@ -65,11 +71,11 @@ Example:
 ```python
 from ioc_cfn_mas_client.client import Client
 
-client = Client(base_url="http://localhost:9010", api_key="optional")
+client = Client(base_url="http://localhost:9010")
 
 # User-friendly methods
-client.upsert_shared_memories(workspace_id, system_id, memories)
-client.query_shared_memories(workspace_id, system_id, query, top_k=5)
+client.upsert_memories(workspace_id, mas_id, memories=memories, relationships=relationships)
+client.search_memories(workspace_id, mas_id, query, top_k=5)
 
 # Advanced: direct API access
 client.shared_memories_api.api_workspaces_...(...)
