@@ -1,6 +1,6 @@
 # ioc-cfn-mas-client-lib
 
-Python SDK client library for IOC CFN MAS\.
+Python SDK client library for IoC CFN MAS\.
 
 ## Overview
 
@@ -32,26 +32,40 @@ client = Client(
 ### Using the Shared Memories API
 
 ```python
-# Upsert shared memories
+# Insert a single memory
+response = client.insert_memory(
+    workspace_id="your_workspace_id",
+    system_id="your_system_id",
+    memory={"id": "m1", "content": "User prefers dark mode"},
+)
+
+# Upsert multiple memories with relationships
 memories = [
     {"id": "m1", "content": "User prefers dark mode"},
     {"id": "m2", "content": "Last login: 2024-01-15"},
 ]
 
-response = client.upsert_shared_memories(
+relationships = [
+    {"source": "m1", "target": "m2", "type": "related_to"},
+]
+
+response = client.upsert_memories(
     workspace_id="your_workspace_id",
     system_id="your_system_id",
     memories=memories,
+    relationships=relationships,  # Optional
 )
 
-# Query shared memories
-results = client.query_shared_memories(
+# Search shared memories
+results = client.search_memories(
     workspace_id="your_workspace_id",
     system_id="your_system_id",
     query="user preferences",
     top_k=5,
 )
 ```
+
+**Note:** The old method names `upsert_shared_memories()` and `query_shared_memories()` are still available for backwards compatibility but are deprecated in favor of `upsert_memories()` and `search_memories()`.
 
 ### Advanced Usage
 

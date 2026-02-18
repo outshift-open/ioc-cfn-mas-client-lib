@@ -1,8 +1,8 @@
-# IOC CFN MAS Client Library - Repository Specification
+# IoC CFN MAS Client Library - Repository Specification
 
 ## Project Overview
 
-**Purpose**: Python SDK client library for IOC CFN MAS (Multi-Agent System)
+**Purpose**: Python SDK client library for IoC CFN MAS (Multi-Agent System)
 
 **Type**: Python library/SDK (not a service or application)
 
@@ -329,7 +329,7 @@ When helping with this repository:
 2. **Don't edit `src/generated/`** - Regenerate from OpenAPI spec
 3. **Main file to edit**: `src/ioc_cfn_mas_client/client.py`
 4. **Use `uv` commands** for package management
-5. **Environment variable**: `CFN_BASE_URL` (not `IOC_BASE_URL`)
+5. **Environment variable**: `CFN_BASE_URL` (not `IoC_BASE_URL`)
 6. **Generated code location**: `src/generated/` (not `src/ioc_cfn_mas_client/generated/`)
 7. **CI runs**: unit tests on Python 3.9 via scripts/unit-test.sh
 8. **Git commits**: Do NOT include `Co-Authored-By: Claude` lines
