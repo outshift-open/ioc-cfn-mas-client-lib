@@ -52,7 +52,7 @@
 - **Design Philosophy**: Provide intuitive, well-documented methods that hide complexity
 - **Responsibilities**:
   - Centralize configuration (base_url, api_key, timeout)
-  - Provide clean methods with good parameter names (e.g., `upsert_shared_memories()`)
+  - Provide clean methods with good parameter names (e.g., `upsert_memories()`)
   - Return clean responses (data only, not HTTP info tuples)
   - Expose underlying generated API for advanced usage via properties
 
@@ -122,8 +122,8 @@ This command:
 ### Current APIs
 
 **Shared Memories** - User-friendly methods:
-- `client.upsert_shared_memories(workspace_id, system_id, memories)` - Upsert memory objects
-- `client.query_shared_memories(workspace_id, system_id, query, top_k=5)` - Semantic search
+- `client.upsert_memories(workspace_id, system_id, memories, relationships)` - Upsert memory objects and relationships
+- `client.search_memories(workspace_id, system_id, query, top_k=5)` - Semantic search
 
 **Advanced Access** (for power users):
 - `client.shared_memories_api` - Direct access to generated SharedMemoriesApi
@@ -213,19 +213,25 @@ client = Client(
 
 ### Using the User-Friendly API
 ```python
-# Upsert memories - clean, intuitive interface
+# Upsert memories with relationships - clean, intuitive interface
 memories = [
     {"id": "m1", "content": "User prefers dark mode"},
     {"id": "m2", "content": "Last login: 2024-01-15"},
 ]
-response = client.upsert_shared_memories(
+
+relationships = [
+    {"source": "m1", "target": "m2", "type": "related_to"},
+]
+
+response = client.upsert_memories(
     workspace_id="workspace_id",
     system_id="system_id",
     memories=memories,
+    relationships=relationships,  # Optional
 )
 
-# Query memories - semantic search
-results = client.query_shared_memories(
+# Search memories - semantic search
+results = client.search_memories(
     workspace_id="workspace_id",
     system_id="system_id",
     query="user preferences",
@@ -255,27 +261,34 @@ When adding new operations, follow this pattern in `Client` class:
 
 Example:
 ```python
-def upsert_shared_memories(
+def upsert_memories(
     self,
     workspace_id: str,
     system_id: str,
-    memories: List[Dict[str, Any]],
+    memories: Optional[List[Dict[str, Any]]] = None,
+    relationships: Optional[List[Dict[str, Any]]] = None,
 ) -> Any:
-    """Upsert (insert or update) shared memories.
+    """Upsert (insert or update) shared memories and relationships.
 
     Args:
         workspace_id: The workspace identifier
         system_id: The multi-agent system identifier
         memories: List of memory objects with 'id' and 'content'
+        relationships: List of relationship objects between memories
 
     Returns:
         API response with upsert results
 
     Example:
         >>> memories = [{"id": "m1", "content": "hello"}]
-        >>> client.upsert_shared_memories("ws1", "sys1", memories)
+        >>> relationships = [{"source": "m1", "target": "m2", "type": "related_to"}]
+        >>> client.upsert_memories("ws1", "sys1", memories=memories, relationships=relationships)
     """
-    body = {"memories": memories}
+    body = {}
+    if memories is not None:
+        body["memories"] = memories
+    if relationships is not None:
+        body["relationships"] = relationships
     response = self._shared_memories_api.api_workspaces_...(
         workspace_id=workspace_id,
         system_id=system_id,
