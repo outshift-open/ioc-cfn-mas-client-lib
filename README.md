@@ -32,14 +32,7 @@ client = Client(
 ### Using the Shared Memories API
 
 ```python
-# Insert a single memory
-response = client.insert_memory(
-    workspace_id="your_workspace_id",
-    system_id="your_system_id",
-    memory={"id": "m1", "content": "User prefers dark mode"},
-)
-
-# Upsert multiple memories with relationships
+# Upsert memories with relationships
 memories = [
     {"id": "m1", "content": "User prefers dark mode"},
     {"id": "m2", "content": "Last login: 2024-01-15"},
@@ -64,8 +57,6 @@ results = client.search_memories(
     top_k=5,
 )
 ```
-
-**Note:** The old method names `upsert_shared_memories()` and `query_shared_memories()` are still available for backwards compatibility but are deprecated in favor of `upsert_memories()` and `search_memories()`.
 
 ### Advanced Usage
 

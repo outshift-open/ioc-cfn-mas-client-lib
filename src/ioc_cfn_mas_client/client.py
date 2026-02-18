@@ -28,7 +28,7 @@ class Client:
     Example:
         >>> client = Client(base_url="http://localhost:9010")
         >>> memories = [{"id": "m1", "content": "hello world"}]
-        >>> response = client.upsert_shared_memories("ws1", "sys1", memories)
+        >>> response = client.upsert_memories("ws1", "sys1", memories=memories)
     """
 
     def __init__(
@@ -114,34 +114,6 @@ class Client:
         )
         return response.data  # Return data from ApiResponse object
 
-    def insert_memory(
-        self,
-        workspace_id: str,
-        system_id: str,
-        memory: Dict[str, Any],
-    ) -> Any:
-        """Insert or update a single shared memory entry.
-
-        Convenience method for inserting a single memory without relationships.
-
-        Args:
-            workspace_id: The workspace identifier
-            system_id: The multi-agent system identifier
-            memory: Memory object to insert with 'id' and 'content' fields
-
-        Returns:
-            API response with upsert results
-
-        Example:
-            >>> memory = {"id": "m1", "content": "User prefers dark mode"}
-            >>> response = client.insert_memory("workspace1", "system1", memory)
-        """
-        return self.upsert_memories(
-            workspace_id=workspace_id,
-            system_id=system_id,
-            memories=[memory],
-        )
-
     def search_memories(
         self,
         workspace_id: str,
@@ -175,58 +147,6 @@ class Client:
             body=body,
         )
         return response.data  # Return data from ApiResponse object
-
-    # Backwards compatibility aliases
-    def upsert_shared_memories(
-        self,
-        workspace_id: str,
-        system_id: str,
-        memories: List[Dict[str, Any]],
-    ) -> Any:
-        """Deprecated: Use upsert_memories() instead.
-
-        Upsert (insert or update) shared memories for a multi-agent system.
-
-        Args:
-            workspace_id: The workspace identifier
-            system_id: The multi-agent system identifier
-            memories: List of memory objects to upsert
-
-        Returns:
-            API response with upsert results
-        """
-        return self.upsert_memories(
-            workspace_id=workspace_id,
-            system_id=system_id,
-            memories=memories,
-        )
-
-    def query_shared_memories(
-        self,
-        workspace_id: str,
-        system_id: str,
-        query: str,
-        top_k: int = 5,
-    ) -> Any:
-        """Deprecated: Use search_memories() instead.
-
-        Query shared memories using semantic search.
-
-        Args:
-            workspace_id: The workspace identifier
-            system_id: The multi-agent system identifier
-            query: Search query string
-            top_k: Maximum number of results to return (default: 5)
-
-        Returns:
-            API response containing matching memories
-        """
-        return self.search_memories(
-            workspace_id=workspace_id,
-            system_id=system_id,
-            query=query,
-            top_k=top_k,
-        )
 
     # ============================================================================
     # Advanced Access (for power users)

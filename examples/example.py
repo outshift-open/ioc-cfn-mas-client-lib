@@ -3,9 +3,8 @@
 
 This script demonstrates how to:
 1. Initialize the client
-2. Insert single memories
-3. Upsert multiple memories with relationships
-4. Search shared memories using semantic similarity
+2. Upsert memories with relationships
+3. Search shared memories using semantic similarity
 """
 
 import os
@@ -33,30 +32,15 @@ def main() -> None:
     print("=" * 70)
 
     # ========================================================================
-    # Example 1: Insert a Single Memory
+    # Example 1: Upsert Memories with Relationships
     # ========================================================================
-    print("\n[1] Inserting a single memory...")
-
-    try:
-        response = client.insert_memory(
-            workspace_id=workspace_id,
-            system_id=system_id,
-            memory={
-                "id": "memory_001",
-                "content": "User prefers dark mode interface",
-            },
-        )
-        print(f"✓ Successfully inserted memory")
-        print(f"  Response: {response}")
-    except Exception as e:
-        print(f"✗ Error inserting memory: {e}")
-
-    # ========================================================================
-    # Example 2: Upsert Multiple Memories with Relationships
-    # ========================================================================
-    print("\n[2] Upserting memories with relationships...")
+    print("\n[1] Upserting memories with relationships...")
 
     memories: List[Dict[str, Any]] = [
+        {
+            "id": "memory_001",
+            "content": "User prefers dark mode interface",
+        },
         {
             "id": "memory_002",
             "content": "Last active session: 2024-01-15 10:30 UTC",
@@ -88,9 +72,9 @@ def main() -> None:
         print(f"✗ Error upserting memories: {e}")
 
     # ========================================================================
-    # Example 3: Search Memories
+    # Example 2: Search Memories
     # ========================================================================
-    print("\n[3] Searching shared memories...")
+    print("\n[2] Searching shared memories...")
 
     search_query = "user preferences"
     top_k = 5
