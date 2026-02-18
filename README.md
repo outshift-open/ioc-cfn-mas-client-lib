@@ -43,7 +43,7 @@ relationships = [
 
 response = client.upsert_memories(
     workspace_id="your_workspace_id",
-    system_id="your_system_id",
+    mas_id="your_mas_id",
     memories=memories,
     relationships=relationships,  # Optional
 )
@@ -51,7 +51,7 @@ response = client.upsert_memories(
 # Search shared memories
 results = client.search_memories(
     workspace_id="your_workspace_id",
-    system_id="your_system_id",
+    mas_id="your_mas_id",
     query="user preferences",
     top_k=5,
 )

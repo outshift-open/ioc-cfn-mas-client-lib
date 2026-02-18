@@ -67,7 +67,7 @@ class Client:
     def upsert_memories(
         self,
         workspace_id: str,
-        system_id: str,
+        mas_id: str,
         memories: Optional[List[Dict[str, Any]]] = None,
         relationships: Optional[List[Dict[str, Any]]] = None,
     ) -> Any:
@@ -75,7 +75,7 @@ class Client:
 
         Args:
             workspace_id: The workspace identifier
-            system_id: The multi-agent system identifier
+            mas_id: The multi-agent system identifier
             memories: List of memory objects to upsert. Each memory should contain
                      at least 'id' and 'content' fields.
             relationships: List of relationship objects to upsert between memories.
@@ -93,7 +93,7 @@ class Client:
             ... ]
             >>> response = client.upsert_memories(
             ...     workspace_id="workspace1",
-            ...     system_id="system1",
+            ...     mas_id="system1",
             ...     memories=memories,
             ...     relationships=relationships
             ... )
@@ -109,7 +109,7 @@ class Client:
 
         response = self._shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post_with_http_info(
             workspace_id=workspace_id,
-            system_id=system_id,
+            system_id=mas_id,
             body=body,
         )
         return response.data  # Return data from ApiResponse object
@@ -117,7 +117,7 @@ class Client:
     def search_memories(
         self,
         workspace_id: str,
-        system_id: str,
+        mas_id: str,
         query: str,
         top_k: int = 5,
     ) -> Any:
@@ -125,7 +125,7 @@ class Client:
 
         Args:
             workspace_id: The workspace identifier
-            system_id: The multi-agent system identifier
+            mas_id: The multi-agent system identifier
             query: Search query string for semantic matching
             top_k: Maximum number of results to return (default: 5)
 
@@ -135,7 +135,7 @@ class Client:
         Example:
             >>> results = client.search_memories(
             ...     workspace_id="workspace1",
-            ...     system_id="system1",
+            ...     mas_id="system1",
             ...     query="user preferences",
             ...     top_k=10
             ... )
@@ -143,7 +143,7 @@ class Client:
         body = {"query": query, "topK": top_k}
         response = self._shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post_with_http_info(
             workspace_id=workspace_id,
-            system_id=system_id,
+            system_id=mas_id,
             body=body,
         )
         return response.data  # Return data from ApiResponse object

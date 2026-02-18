@@ -122,8 +122,8 @@ This command:
 ### Current APIs
 
 **Shared Memories** - User-friendly methods:
-- `client.upsert_memories(workspace_id, system_id, memories, relationships)` - Upsert memory objects and relationships
-- `client.search_memories(workspace_id, system_id, query, top_k=5)` - Semantic search
+- `client.upsert_memories(workspace_id, mas_id, memories, relationships)` - Upsert memory objects and relationships
+- `client.search_memories(workspace_id, mas_id, query, top_k=5)` - Semantic search
 
 **Advanced Access** (for power users):
 - `client.shared_memories_api` - Direct access to generated SharedMemoriesApi
@@ -220,7 +220,7 @@ relationships = [
 
 response = client.upsert_memories(
     workspace_id="workspace_id",
-    system_id="system_id",
+    mas_id="mas_id",
     memories=memories,
     relationships=relationships,  # Optional
 )
@@ -228,7 +228,7 @@ response = client.upsert_memories(
 # Search memories - semantic search
 results = client.search_memories(
     workspace_id="workspace_id",
-    system_id="system_id",
+    mas_id="mas_id",
     query="user preferences",
     top_k=5,
 )
@@ -241,7 +241,7 @@ For power users needing full control:
 api = client.shared_memories_api
 response = api.api_workspaces_workspace_id_...(
     workspace_id="workspace_id",
-    system_id="system_id",
+    mas_id="mas_id",
     body={"key": "value"},
 )
 ```
@@ -259,7 +259,7 @@ Example:
 def upsert_memories(
     self,
     workspace_id: str,
-    system_id: str,
+    mas_id: str,
     memories: Optional[List[Dict[str, Any]]] = None,
     relationships: Optional[List[Dict[str, Any]]] = None,
 ) -> Any:
@@ -267,7 +267,7 @@ def upsert_memories(
 
     Args:
         workspace_id: The workspace identifier
-        system_id: The multi-agent system identifier
+        mas_id: The multi-agent system identifier
         memories: List of memory objects with 'id' and 'content'
         relationships: List of relationship objects between memories
 
@@ -286,7 +286,7 @@ def upsert_memories(
         body["relationships"] = relationships
     response = self._shared_memories_api.api_workspaces_...(
         workspace_id=workspace_id,
-        system_id=system_id,
+        mas_id=mas_id,
         body=body,
     )
     return response[0]  # Return data only, not HTTP info

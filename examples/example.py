@@ -23,7 +23,7 @@ def main() -> None:
 
     # Configuration
     workspace_id = "test_workspace"
-    system_id = "test_system"
+    mas_id = "test_system"
 
     print("=" * 70)
     print("IoC CFN MAS Client Library - Example Usage")
@@ -60,7 +60,7 @@ def main() -> None:
     try:
         upsert_response = client.upsert_memories(
             workspace_id=workspace_id,
-            system_id=system_id,
+            mas_id=mas_id,
             memories=memories,
             relationships=relationships,
         )
@@ -80,7 +80,7 @@ def main() -> None:
     try:
         search_results = client.search_memories(
             workspace_id=workspace_id,
-            system_id=system_id,
+            mas_id=mas_id,
             query=search_query,
             top_k=top_k,
         )

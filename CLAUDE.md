@@ -68,8 +68,8 @@ from ioc_cfn_mas_client.client import Client
 client = Client(base_url="http://localhost:9010")
 
 # User-friendly methods
-client.upsert_memories(workspace_id, system_id, memories=memories, relationships=relationships)
-client.search_memories(workspace_id, system_id, query, top_k=5)
+client.upsert_memories(workspace_id, mas_id, memories=memories, relationships=relationships)
+client.search_memories(workspace_id, mas_id, query, top_k=5)
 
 # Advanced: direct API access
 client.shared_memories_api.api_workspaces_...(...)
