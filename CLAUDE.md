@@ -57,7 +57,7 @@ uv run python examples/example.py
 ## Architecture
 
 The `Client` class in `src/ioc_cfn_mas_client/client.py` is a user-friendly wrapper that:
-1. Centralizes configuration (base_url, api_key, timeout)
+1. Centralizes configuration (base_url, timeout, optional api_key)
 2. Provides clean, intuitive methods for common operations
 3. Exposes underlying generated API for advanced usage
 
@@ -65,7 +65,7 @@ Example:
 ```python
 from ioc_cfn_mas_client.client import Client
 
-client = Client(base_url="http://localhost:9010", api_key="optional")
+client = Client(base_url="http://localhost:9010")
 
 # User-friendly methods
 client.upsert_memories(workspace_id, system_id, memories=memories, relationships=relationships)

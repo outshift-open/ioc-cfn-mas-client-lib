@@ -17,15 +17,14 @@ pip install ioc_cfn_mas_client_lib
 
 ## Quick start
 
-Create a client using the base URL \(and optionally an API key\):
+Create a client using the base URL:
 
 ```python
-import os
 from ioc_cfn_mas_client.client import Client
 
 client = Client(
-    base_url=os.getenv("CFN_BASE_URL", "http://localhost:9010"),
-    api_key=os.getenv("CFN_API_KEY"),  # Optional
+    base_url="http://localhost:9010",
+    # api_key="your-key",  # Optional - only if your deployment requires auth
 )
 ```
 
@@ -75,19 +74,17 @@ For a complete example, see `examples/example.py`\.
 The `Client` constructor accepts the following parameters:
 
 - `base_url` \(required\): API base URL \(e\.g\., `http://localhost:9010`\)
-- `api_key` \(optional\): API key or token \(required only if your deployment enforces auth\)
-- `api_key_name` \(optional\): Header name for API key \(default: `"Authorization"`\)
-- `api_key_prefix` \(optional\): Prefix for API key value \(default: `"Bearer"`\)
+- `api_key` \(optional\): API key \(not required for most deployments\)
 - `timeout` \(optional\): Request timeout in seconds
 - `debug` \(optional\): Enable debug mode \(default: `False`\)
-- `configuration` \(optional\): Pre\-configured `Configuration` object from generated client
-- `api_client` \(optional\): Pre\-configured `ApiClient` object from generated client
 
 ### Environment variables
 
-The example code uses:
+Optional environment variable:
 
 - `CFN_BASE_URL`: API base URL \(defaults to `http://localhost:9010` if not set\)
+
+**Note:** API keys are not required for standard deployments\.
 
 ## Development (macOS)
 

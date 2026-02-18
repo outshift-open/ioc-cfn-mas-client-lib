@@ -16,11 +16,9 @@ from ioc_cfn_mas_client.client import Client
 def main() -> None:
     """Run example operations against the MAS API."""
 
-    # Initialize the client
-    # API key is optional - only needed if your deployment requires authentication
+    # Initialize the client (API key not required for standard deployments)
     client = Client(
         base_url=os.getenv("CFN_BASE_URL", "http://localhost:9010"),
-        api_key=os.getenv("CFN_API_KEY"),  # Optional
     )
 
     # Configuration

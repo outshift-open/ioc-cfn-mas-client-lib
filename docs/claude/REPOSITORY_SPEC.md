@@ -51,7 +51,7 @@
 - **Purpose**: User-friendly wrapper around OpenAPI-generated client
 - **Design Philosophy**: Provide intuitive, well-documented methods that hide complexity
 - **Responsibilities**:
-  - Centralize configuration (base_url, api_key, timeout)
+  - Centralize configuration (base_url, timeout, optional api_key)
   - Provide clean methods with good parameter names (e.g., `upsert_memories()`)
   - Return clean responses (data only, not HTTP info tuples)
   - Expose underlying generated API for advanced usage via properties
@@ -142,13 +142,9 @@ When the OpenAPI spec is updated with new endpoints:
 
 ### Client Constructor Parameters
 - `base_url` (required): API endpoint (e.g., `http://localhost:9010`)
-- `api_key` (optional): Authentication token
-- `api_key_name` (optional): Header name, default `"Authorization"`
-- `api_key_prefix` (optional): Token prefix, default `"Bearer"`
+- `api_key` (optional): API key - not required for standard deployments
 - `timeout` (optional): Request timeout in seconds
 - `debug` (optional): Enable debug logging
-- `configuration` (optional): Pre-configured `Configuration` object
-- `api_client` (optional): Pre-configured `ApiClient` object
 
 ### Environment Variables
 - `CFN_BASE_URL`: API base URL (used in examples, defaults to `http://localhost:9010`)
@@ -207,7 +203,6 @@ from ioc_cfn_mas_client.client import Client
 
 client = Client(
     base_url="http://localhost:9010",
-    api_key="your-api-key",  # Optional
 )
 ```
 

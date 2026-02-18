@@ -17,7 +17,7 @@ class Client:
 
     Args:
         base_url: API endpoint URL (e.g., "http://localhost:9010")
-        api_key: Optional API authentication token
+        api_key: Optional API key (not required for most deployments)
         api_key_name: Header name for API key (default: "Authorization")
         api_key_prefix: Token prefix (default: "Bearer")
         timeout: Request timeout in seconds
