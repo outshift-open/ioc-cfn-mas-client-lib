@@ -50,6 +50,12 @@ uv run python examples/example.py
 - **Test**: pytest on Python 3.9 with coverage via scripts/unit-test.sh
 - **Runners**: Standard GitHub `ubuntu-latest`
 
+### OpenAPI Spec Important Notes
+- **`additionalProperties: true`**: In `openapi/openapi.json`, memory and relationship objects use `"additionalProperties": true`
+  - This allows string, number, boolean values in the objects (e.g., `{"id": "m1", "content": "text"}`)
+  - **DO NOT** use `"additionalProperties": {}` - this causes Pydantic validation errors
+  - The generator interprets `{}` as "only dict values allowed", which breaks simple string/number properties
+
 ### Git Commits
 - **DO NOT** include `Co-Authored-By: Claude` lines in commit messages
 - Keep commit messages clean and conventional
