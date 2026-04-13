@@ -22,49 +22,125 @@ Create a client using the base URL:
 ```python
 from ioc_cfn_mas_client.client import Client
 
-client = Client(
-    base_url="http://localhost:9010",
-    # api_key="your-key",  # Optional - only if your deployment requires auth
+client = Client(base_url="http://localhost:9010")
+```
+
+### Shared Memories API
+
+#### Create or update shared memories from trace data
+
+```python
+# Create memories from trace data (e.g., OpenTelemetry traces)
+trace_data = [
+    {
+        "TraceId": "trace-001",
+        "SpanId": "span-001",
+        "SpanName": "user_login",
+        "ServiceName": "auth-service",
+        "SpanAttributes": {"user_id": "user123"},
+        "Duration": 150
+    }
+]
+
+response = client.create_shared_memories(
+    workspace_id="your_workspace_id",
+    mas_id="your_mas_id",
+    data=trace_data,
+    format="observe-sdk-otel",  # or "openclaw"
+    agent_id="your_agent_id",  # Optional
 )
 ```
 
-### Using the Shared Memories API
+#### Query shared memories with natural language
 
 ```python
-# Upsert memories with relationships
-memories = [
-    {"id": "m1", "content": "User prefers dark mode"},
-    {"id": "m2", "content": "Last login: 2024-01-15"},
-]
-
-relationships = [
-    {"source": "m1", "target": "m2", "type": "related_to"},
-]
-
-response = client.upsert_memories(
+# Query memories using natural language intent
+results = client.query_shared_memories(
     workspace_id="your_workspace_id",
     mas_id="your_mas_id",
-    memories=memories,
-    relationships=relationships,  # Optional
+    intent="Find information about user login events",
+    agent_id="your_agent_id",
+    additional_context=[{"context": "prior conversation"}],  # Optional
+)
+```
+
+### Memory Operations API (Proxy to Remote Providers)
+
+Forward memory operations to remote providers like Mem0 or Graphiti:
+
+```python
+# GET memories from remote provider
+response = client.memory_operation(
+    workspace_id="your_workspace_id",
+    mas_id="your_mas_id",
+    agent_id="your_agent_id",
+    http_method="GET",
+    http_url="v1/memories/?user_id=test-user",
 )
 
-# Search shared memories
-results = client.search_memories(
+# POST memories to remote provider
+response = client.memory_operation(
     workspace_id="your_workspace_id",
     mas_id="your_mas_id",
-    query="user preferences",
-    top_k=5,
+    agent_id="your_agent_id",
+    http_method="POST",
+    http_url="/v1/memories/",
+    http_body={
+        "messages": [{"role": "user", "content": "I prefer dark mode"}],
+        "user_id": "test-user"
+    },
+)
+```
+
+### Semantic Negotiation API
+
+Run multi\-agent negotiation sessions:
+
+```python
+# Start a negotiation session
+response = client.start_negotiation(
+    workspace_id="your_workspace_id",
+    mas_id="your_mas_id",
+    session_id="session-123",
+    agents=[
+        {"id": "agent1", "name": "Planner Agent"},
+        {"id": "agent2", "name": "Executor Agent"}
+    ],
+    content_text="Plan a deployment strategy",
+    n_steps=10,  # Optional, defaults to 20
+)
+
+# Advance negotiation with agent replies
+response = client.advance_negotiation(
+    workspace_id="your_workspace_id",
+    mas_id="your_mas_id",
+    session_id="session-123",
+    agent_replies=[
+        {
+            "agent_id": "agent1",
+            "action": "counter_offer",
+            "offer": {"strategy": "blue-green deployment"}
+        },
+        {
+            "agent_id": "agent2",
+            "action": "accept"
+        }
+    ],
 )
 ```
 
 ### Advanced Usage
 
-For power users who need direct access to the generated OpenAPI client:
+For power users who need direct access to the generated OpenAPI clients:
 
 ```python
-# Access the underlying API client
-api = client.shared_memories_api
-response = api.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post_with_http_info(...)
+# Access the underlying API clients
+shared_memories_api = client.shared_memories_api
+memory_operations_api = client.memory_operations_api
+semantic_negotiation_api = client.semantic_negotiation_api
+
+# Use generated methods directly
+response = shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post_with_http_info(...)
 ```
 
 For a complete example, see `examples/example.py`\.
@@ -74,17 +150,15 @@ For a complete example, see `examples/example.py`\.
 The `Client` constructor accepts the following parameters:
 
 - `base_url` \(required\): API base URL \(e\.g\., `http://localhost:9010`\)
-- `api_key` \(optional\): API key \(not required for most deployments\)
 - `timeout` \(optional\): Request timeout in seconds
-- `debug` \(optional\): Enable debug mode \(default: `False`\)
+- `configuration` \(optional\): Pre\-configured Configuration object \(for advanced users\)
+- `api_client` \(optional\): Pre\-configured ApiClient object \(for advanced users\)
 
 ### Environment variables
 
 Optional environment variable:
 
 - `CFN_BASE_URL`: API base URL \(defaults to `http://localhost:9010` if not set\)
-
-**Note:** API keys are not required for standard deployments\.
 
 ## Development (macOS)
 

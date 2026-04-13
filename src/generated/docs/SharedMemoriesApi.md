@@ -4,24 +4,24 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post**](SharedMemoriesApi.md#api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{systemId}/shared-memories | Upsert shared memories
-[**api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post**](SharedMemoriesApi.md#api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{systemId}/shared-memories/query | Fetch shared memories
+[**api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post**](SharedMemoriesApi.md#api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories | Create or update shared memories.
+[**api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post**](SharedMemoriesApi.md#api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories/query | Fetch shared memories
 
 
-# **api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post**
-> SharedmemorySharedMemoryUpsertResponse api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post(workspace_id, system_id, body)
+# **api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post**
+> SharedmemoryCreateOrUpdateResponse api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post(workspace_id, mas_id, body=body)
 
-Upsert shared memories
+Create or update shared memories.
 
-Upserts shared memory entries for a given workspace and multi-agentic system
+Creates or updates shared memories with entries (concepts and relations) extracted from the provided trace or OpenClaw output for a given workspace and multi-agentic system.
 
 ### Example
 
 
 ```python
 import generated
-from generated.models.sharedmemory_shared_memory_upsert_request import SharedmemorySharedMemoryUpsertRequest
-from generated.models.sharedmemory_shared_memory_upsert_response import SharedmemorySharedMemoryUpsertResponse
+from generated.models.sharedmemory_create_or_update_request import SharedmemoryCreateOrUpdateRequest
+from generated.models.sharedmemory_create_or_update_response import SharedmemoryCreateOrUpdateResponse
 from generated.rest import ApiException
 from pprint import pprint
 
@@ -37,16 +37,16 @@ with generated.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = generated.SharedMemoriesApi(api_client)
     workspace_id = 'workspace_id_example' # str | Workspace ID
-    system_id = 'system_id_example' # str | System ID
-    body = generated.SharedmemorySharedMemoryUpsertRequest() # SharedmemorySharedMemoryUpsertRequest | Upsert request
+    mas_id = 'mas_id_example' # str | Multi-Agentic System ID
+    body = generated.SharedmemoryCreateOrUpdateRequest() # SharedmemoryCreateOrUpdateRequest | Create or update shared memories request (optional)
 
     try:
-        # Upsert shared memories
-        api_response = api_instance.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post(workspace_id, system_id, body)
-        print("The response of SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post:\n")
+        # Create or update shared memories.
+        api_response = api_instance.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post(workspace_id, mas_id, body=body)
+        print("The response of SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post: %s\n" % e)
+        print("Exception when calling SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post: %s\n" % e)
 ```
 
 
@@ -57,12 +57,12 @@ with generated.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**| Workspace ID | 
- **system_id** | **str**| System ID | 
- **body** | [**SharedmemorySharedMemoryUpsertRequest**](SharedmemorySharedMemoryUpsertRequest.md)| Upsert request | 
+ **mas_id** | **str**| Multi-Agentic System ID | 
+ **body** | [**SharedmemoryCreateOrUpdateRequest**](SharedmemoryCreateOrUpdateRequest.md)| Create or update shared memories request | [optional] 
 
 ### Return type
 
-[**SharedmemorySharedMemoryUpsertResponse**](SharedmemorySharedMemoryUpsertResponse.md)
+[**SharedmemoryCreateOrUpdateResponse**](SharedmemoryCreateOrUpdateResponse.md)
 
 ### Authorization
 
@@ -77,24 +77,26 @@ No authorization required
 
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**201** | Created |  -  |
-**400** | Bad Request |  -  |
-**500** | Internal Server Error |  -  |
+**201** | Shared memories successfully created or updated |  -  |
+**400** | Invalid request |  -  |
+**500** | Internal server error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post**
-> object api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post(workspace_id, system_id, body)
+# **api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post**
+> SharedmemoryQueryResponse api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post(workspace_id, mas_id, body)
 
 Fetch shared memories
 
-Fetches shared memory entries for a given workspace and multi-agentic system
+Queries shared memories for a given workspace and multi-agentic system using a graph path query.
 
 ### Example
 
 
 ```python
 import generated
+from generated.models.sharedmemory_query_request import SharedmemoryQueryRequest
+from generated.models.sharedmemory_query_response import SharedmemoryQueryResponse
 from generated.rest import ApiException
 from pprint import pprint
 
@@ -110,16 +112,16 @@ with generated.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = generated.SharedMemoriesApi(api_client)
     workspace_id = 'workspace_id_example' # str | Workspace ID
-    system_id = 'system_id_example' # str | System ID
-    body = None # object | Query request
+    mas_id = 'mas_id_example' # str | Multi-Agentic System ID
+    body = generated.SharedmemoryQueryRequest() # SharedmemoryQueryRequest | Query request
 
     try:
         # Fetch shared memories
-        api_response = api_instance.api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post(workspace_id, system_id, body)
-        print("The response of SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post:\n")
+        api_response = api_instance.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post(workspace_id, mas_id, body)
+        print("The response of SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post: %s\n" % e)
+        print("Exception when calling SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post: %s\n" % e)
 ```
 
 
@@ -130,12 +132,12 @@ with generated.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**| Workspace ID | 
- **system_id** | **str**| System ID | 
- **body** | **object**| Query request | 
+ **mas_id** | **str**| Multi-Agentic System ID | 
+ **body** | [**SharedmemoryQueryRequest**](SharedmemoryQueryRequest.md)| Query request | 
 
 ### Return type
 
-**object**
+[**SharedmemoryQueryResponse**](SharedmemoryQueryResponse.md)
 
 ### Authorization
 
@@ -150,9 +152,9 @@ No authorization required
 
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | OK |  -  |
-**400** | Bad Request |  -  |
-**500** | Internal Server Error |  -  |
+**200** | Query executed successfully |  -  |
+**400** | Invalid request |  -  |
+**500** | Internal server error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
