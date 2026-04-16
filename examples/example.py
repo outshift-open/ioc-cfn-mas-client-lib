@@ -66,7 +66,9 @@ def main() -> None:
             agent_id=agent_id,
         )
         print(f"✓ Successfully created shared memories")
-        print(f"  Response: {create_response}")
+        print(f"  Status: {create_response.status}")
+        print(f"  Response ID: {create_response.response_id}")
+        print(f"  Message: {create_response.message}")
     except Exception as e:
         print(f"✗ Error creating shared memories: {e}")
 
@@ -89,7 +91,8 @@ def main() -> None:
             ],
         )
         print(f"✓ Query completed for: '{intent}'")
-        print(f"  Results: {query_response}")
+        print(f"  Response ID: {query_response.response_id}")
+        print(f"  Message: {query_response.message}")
     except Exception as e:
         print(f"✗ Error querying memories: {e}")
 
@@ -109,8 +112,8 @@ def main() -> None:
             http_url="v1/memories/?user_id=test-user",
         )
         print(f"  ✓ GET request successful")
-        print(f"    Status: {get_response.get('http_status')}")
-        print(f"    Body: {get_response.get('http_response_body')}")
+        print(f"    HTTP Status: {get_response.http_status}")
+        print(f"    Response Body: {get_response.http_response_body}")
     except Exception as e:
         print(f"  ✗ Error with GET request: {e}")
 
@@ -131,8 +134,8 @@ def main() -> None:
             },
         )
         print(f"  ✓ POST request successful")
-        print(f"    Status: {post_response.get('http_status')}")
-        print(f"    Body: {post_response.get('http_response_body')}")
+        print(f"    HTTP Status: {post_response.http_status}")
+        print(f"    Response Body: {post_response.http_response_body}")
     except Exception as e:
         print(f"  ✗ Error with POST request: {e}")
 
@@ -158,8 +161,10 @@ def main() -> None:
             n_steps=5,
         )
         print(f"  ✓ Negotiation started")
-        print(f"    Status: {start_response.get('status')}")
-        print(f"    Message: {start_response.get('message')}")
+        print(f"    Status: {start_response.status}")
+        print(f"    Message: {start_response.message}")
+        if start_response.result:
+            print(f"    Result: {start_response.result}")
     except Exception as e:
         print(f"  ✗ Error starting negotiation: {e}")
 
@@ -183,8 +188,10 @@ def main() -> None:
             ],
         )
         print(f"  ✓ Negotiation advanced")
-        print(f"    Status: {advance_response.get('status')}")
-        print(f"    Message: {advance_response.get('message')}")
+        print(f"    Status: {advance_response.status}")
+        print(f"    Message: {advance_response.message}")
+        if advance_response.result:
+            print(f"    Result: {advance_response.result}")
     except Exception as e:
         print(f"  ✗ Error advancing negotiation: {e}")
 

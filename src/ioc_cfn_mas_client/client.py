@@ -9,17 +9,17 @@ from generated.api.semantic_negotiation_api import SemanticNegotiationApi
 from generated.api.shared_memories_api import SharedMemoriesApi
 from generated.api_client import ApiClient
 from generated.configuration import Configuration
-from generated.models.cognitionagentclient_extraction_payload import CognitionagentclientExtractionPayload
-from generated.models.cognitionagentclient_extraction_payload_metadata import CognitionagentclientExtractionPayloadMetadata
-from generated.models.memoryoperations_memory_operation_payload import MemoryoperationsMemoryOperationPayload
-from generated.models.memoryoperations_memory_operation_request import MemoryoperationsMemoryOperationRequest
-from generated.models.semanticnegotiation_agent import SemanticnegotiationAgent
-from generated.models.semanticnegotiation_agent_reply import SemanticnegotiationAgentReply
-from generated.models.semanticnegotiation_decide_request import SemanticnegotiationDecideRequest
-from generated.models.semanticnegotiation_start_request import SemanticnegotiationStartRequest
-from generated.models.sharedmemory_create_or_update_request import SharedmemoryCreateOrUpdateRequest
-from generated.models.sharedmemory_header import SharedmemoryHeader
-from generated.models.sharedmemory_query_request import SharedmemoryQueryRequest
+from generated.models.agent import Agent
+from generated.models.agent_reply import AgentReply
+from generated.models.create_or_update_request import CreateOrUpdateRequest
+from generated.models.decide_request import DecideRequest
+from generated.models.extraction_payload import ExtractionPayload
+from generated.models.extraction_payload_metadata import ExtractionPayloadMetadata
+from generated.models.header import Header
+from generated.models.memory_operation_payload import MemoryOperationPayload
+from generated.models.memory_operation_request import MemoryOperationRequest
+from generated.models.query_request import QueryRequest
+from generated.models.start_request import StartRequest
 
 
 class Client:
@@ -102,22 +102,21 @@ class Client:
             ...     agent_id="agent1"
             ... )
         """
-        metadata = CognitionagentclientExtractionPayloadMetadata(format=format)
-        payload = CognitionagentclientExtractionPayload(data=data, metadata=metadata)
-        header = SharedmemoryHeader(agent_id=agent_id) if agent_id else None
+        metadata = ExtractionPayloadMetadata(format=format)
+        payload = ExtractionPayload(data=data, metadata=metadata)
+        header = Header(agent_id=agent_id) if agent_id else None
 
-        request = SharedmemoryCreateOrUpdateRequest(
+        request = CreateOrUpdateRequest(
             header=header,
             payload=payload,
             request_id=request_id
         )
 
-        response = self._shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post_with_http_info(
+        return self._shared_memories_api.create_or_update_shared_memories(
             workspace_id=workspace_id,
             mas_id=mas_id,
-            body=request,
+            create_or_update_request=request,
         )
-        return response.data
 
     def query_shared_memories(
         self,
@@ -152,9 +151,9 @@ class Client:
             ...     additional_context=[{"context": "previous conversation"}]
             ... )
         """
-        header = SharedmemoryHeader(agent_id=agent_id)
+        header = Header(agent_id=agent_id)
 
-        request = SharedmemoryQueryRequest(
+        request = QueryRequest(
             header=header,
             intent=intent,
             additional_context=additional_context,
@@ -162,12 +161,11 @@ class Client:
             request_id=request_id
         )
 
-        response = self._shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post_with_http_info(
+        return self._shared_memories_api.fetch_shared_memories(
             workspace_id=workspace_id,
             mas_id=mas_id,
-            body=request,
+            query_request=request,
         )
-        return response.data
 
     # ============================================================================
     # Memory Operations (Proxy to Remote Providers)
@@ -222,25 +220,24 @@ class Client:
             ...     }
             ... )
         """
-        payload = MemoryoperationsMemoryOperationPayload(
+        payload = MemoryOperationPayload(
             http_request_type=http_method,
             http_url=http_url,
             http_request_body=http_body or {},
             http_headers=http_headers or {}
         )
 
-        request = MemoryoperationsMemoryOperationRequest(
+        request = MemoryOperationRequest(
             header={},
             payload=payload
         )
 
-        response = self._memory_operations_api.api_workspaces_workspace_id_multi_agentic_systems_mas_id_agents_agent_id_memory_operations_post_with_http_info(
+        return self._memory_operations_api.memory_operations(
             workspace_id=workspace_id,
             mas_id=mas_id,
             agent_id=agent_id,
-            body=request,
+            memory_operation_request=request,
         )
-        return response.data
 
     # ============================================================================
     # Semantic Negotiation
@@ -282,23 +279,22 @@ class Client:
             ... )
         """
         agent_objects = [
-            SemanticnegotiationAgent(id=agent["id"], name=agent["name"])
+            Agent(id=agent["id"], name=agent["name"])
             for agent in agents
         ]
 
-        request = SemanticnegotiationStartRequest(
+        request = StartRequest(
             session_id=session_id,
             agents=agent_objects,
             content_text=content_text,
             n_steps=n_steps
         )
 
-        response = self._semantic_negotiation_api.api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_start_post_with_http_info(
+        return self._semantic_negotiation_api.start_semantic_negotiation(
             workspace_id=workspace_id,
             mas_id=mas_id,
-            body=request,
+            start_request=request,
         )
-        return response.data
 
     def advance_negotiation(
         self,
@@ -332,7 +328,7 @@ class Client:
             ... )
         """
         reply_objects = [
-            SemanticnegotiationAgentReply(
+            AgentReply(
                 agent_id=reply["agent_id"],
                 action=reply["action"],
                 offer=reply.get("offer")
@@ -340,17 +336,16 @@ class Client:
             for reply in agent_replies
         ]
 
-        request = SemanticnegotiationDecideRequest(
+        request = DecideRequest(
             session_id=session_id,
             agent_replies=reply_objects
         )
 
-        response = self._semantic_negotiation_api.api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_decide_post_with_http_info(
+        return self._semantic_negotiation_api.decide_semantic_negotiation(
             workspace_id=workspace_id,
             mas_id=mas_id,
-            body=request,
+            decide_request=request,
         )
-        return response.data
 
     # ============================================================================
     # Advanced Access (for power users)

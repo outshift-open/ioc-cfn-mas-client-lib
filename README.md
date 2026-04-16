@@ -178,21 +178,20 @@ uv run python examples/example.py
 
 ## OpenAPI SDK generation
 
-- OpenAPI spec: `openapi/openapi.json`
-- Generated output: `src/generated/`
+- **OpenAPI spec source**: [ioc-cfn-svc public-api-v1.0.yaml](https://github.com/cisco-eti/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
+- **Local spec**: `openapi/public-api-v1.0.yaml` (copied from source)
+- **Generated output**: `src/generated/`
 
-### Prerequisites (macOS)
+### Prerequisites
 
+**Docker** (required):
 ```bash
-brew update
-brew install openapi-generator
-openapi-generator version
+docker pull openapitools/openapi-generator-cli
 ```
 
-If `make gen-openapi` cannot locate the binary:
-
+Or use the make target:
 ```bash
-export OPENAPI_GENERATOR=/opt/homebrew/bin/openapi-generator
+make pull-openapi-generator
 ```
 
 ### Generate
@@ -201,4 +200,22 @@ export OPENAPI_GENERATOR=/opt/homebrew/bin/openapi-generator
 make gen-openapi
 ```
 
-This regenerates `src/generated/` from `openapi/openapi.json`\.
+This regenerates `src/generated/` from `openapi/public-api-v1.0.yaml` using Docker.
+
+**Note**: The spec follows Python naming conventions (snake_case for methods/fields, PascalCase for classes). See [ioc-cfn-svc public API docs](https://github.com/cisco-eti/ioc-cfn-svc/tree/main/docs/public-api) for details.
+
+### Updating the spec
+
+To update to a newer version:
+
+1. Copy the latest spec from ioc-cfn-svc:
+   ```bash
+   cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml openapi/
+   ```
+
+2. Regenerate:
+   ```bash
+   make gen-openapi
+   ```
+
+3. Update `client.py` if the API surface changed\.

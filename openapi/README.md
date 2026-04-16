@@ -4,11 +4,15 @@ This directory contains the OpenAPI specification for the IoC CFN MAS API.
 
 ## Files
 
-- **`openapi.json`**: OpenAPI 3.0 specification that defines the MAS API contract
+- **`public-api-v1.0.yaml`**: Official OpenAPI 3.0 spec from [ioc-cfn-svc](https://github.com/cisco-eti/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
+- **`openapi.json`**: (Deprecated) Old spec, kept for reference
 
-## Purpose
+## Source of Truth
 
-The OpenAPI spec is the **source of truth** for generating the Python SDK client code in `src/generated/`. Any changes to the API should be made here first, then the SDK should be regenerated.
+**The spec in ioc-cfn-svc is the authoritative source.** This copy is used for local SDK generation.
+
+- **Upstream source**: https://github.com/cisco-eti/ioc-cfn-svc/tree/main/docs/public-api
+- **Local copy**: `public-api-v1.0.yaml`
 
 ## Generating SDK Client
 
@@ -18,43 +22,56 @@ To regenerate the Python SDK from this spec:
 make gen-openapi
 ```
 
-This uses `openapi-generator` to create type-safe Python client code in `src/generated/`.
+This uses Docker with `openapitools/openapi-generator-cli` to create type-safe Python client code in `src/generated/`.
 
-### Prerequisites (macOS)
+### Prerequisites
 
-```bash
-brew install openapi-generator
-```
-
-If the generator binary is not found, set:
+Pull the Docker image:
 
 ```bash
-export OPENAPI_GENERATOR=/opt/homebrew/bin/openapi-generator
+docker pull openapitools/openapi-generator-cli
 ```
 
-## Important Notes
+Or use the make target:
 
-### additionalProperties
-
-For flexible object schemas (like `memories` and `relationships`), use:
-
-```json
-{
-  "type": "object",
-  "additionalProperties": true
-}
+```bash
+make pull-openapi-generator
 ```
 
-**DO NOT** use `"additionalProperties": {}` as this causes Pydantic validation errors. The generator interprets `{}` as "only dict values allowed", which breaks properties with string/number/boolean values.
+## Updating the Spec
 
-### Editing the Spec
+**DO NOT edit `public-api-v1.0.yaml` directly.** Changes must be made in the [ioc-cfn-svc repository](https://github.com/cisco-eti/ioc-cfn-svc).
 
-When modifying `openapi.json`:
+To update to a newer version:
 
-1. Make your changes to the spec
-2. Run `make gen-openapi` to regenerate the SDK
-3. Test the changes with `uv run python examples/example.py`
-4. Update `src/ioc_cfn_mas_client/client.py` if the API surface changed
+1. Copy the latest spec from ioc-cfn-svc:
+   ```bash
+   cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml .
+   ```
+
+2. Regenerate the SDK:
+   ```bash
+   make gen-openapi
+   ```
+
+3. Update `src/ioc_cfn_mas_client/client.py` if the API surface changed
+
+4. Test the changes:
+   ```bash
+   uv run python examples/example.py
+   ./scripts/unit-test.sh
+   ```
+
+## Naming Conventions
+
+The spec follows **Python PEP 8** conventions automatically:
+
+- **Package**: `generated`
+- **Classes**: `SharedMemoriesApi`, `CreateOrUpdateRequest`
+- **Methods**: `create_or_update_shared_memories()`, `fetch_shared_memories()`
+- **Fields**: `workspace_id`, `mas_id`, `agent_id`
+
+This resolves the snake_case vs camelCase inconsistencies from the old spec.
 
 ## Documentation
 

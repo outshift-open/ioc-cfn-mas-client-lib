@@ -1,34 +1,37 @@
 # generated.SharedMemoriesApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to *http://localhost:9002*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post**](SharedMemoriesApi.md#api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories | Create or update shared memories.
-[**api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post**](SharedMemoriesApi.md#api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories/query | Fetch shared memories
+[**create_or_update_shared_memories**](SharedMemoriesApi.md#create_or_update_shared_memories) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories | Create or update shared memories
+[**fetch_shared_memories**](SharedMemoriesApi.md#fetch_shared_memories) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories/query | Fetch shared memories
+[**onboard_vector_store**](SharedMemoriesApi.md#onboard_vector_store) | **POST** /api/workspaces/{workspaceId}/shared-memories/vector-store | Onboard shared memory vector store
 
 
-# **api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post**
-> SharedmemoryCreateOrUpdateResponse api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post(workspace_id, mas_id, body=body)
+# **create_or_update_shared_memories**
+> CreateOrUpdateResponse create_or_update_shared_memories(workspace_id, mas_id, create_or_update_request)
 
-Create or update shared memories.
+Create or update shared memories
 
-Creates or updates shared memories with entries (concepts and relations) extracted from the provided trace or OpenClaw output for a given workspace and multi-agentic system.
+Creates or updates shared memories with entries (concepts and relations)
+extracted from the provided trace or OpenClaw output for a given workspace
+and multi-agentic system.
 
 ### Example
 
 
 ```python
 import generated
-from generated.models.sharedmemory_create_or_update_request import SharedmemoryCreateOrUpdateRequest
-from generated.models.sharedmemory_create_or_update_response import SharedmemoryCreateOrUpdateResponse
+from generated.models.create_or_update_request import CreateOrUpdateRequest
+from generated.models.create_or_update_response import CreateOrUpdateResponse
 from generated.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost
+# Defining the host is optional and defaults to http://localhost:9002
 # See configuration.py for a list of all supported configuration parameters.
 configuration = generated.Configuration(
-    host = "http://localhost"
+    host = "http://localhost:9002"
 )
 
 
@@ -38,15 +41,15 @@ with generated.ApiClient(configuration) as api_client:
     api_instance = generated.SharedMemoriesApi(api_client)
     workspace_id = 'workspace_id_example' # str | Workspace ID
     mas_id = 'mas_id_example' # str | Multi-Agentic System ID
-    body = generated.SharedmemoryCreateOrUpdateRequest() # SharedmemoryCreateOrUpdateRequest | Create or update shared memories request (optional)
+    create_or_update_request = generated.CreateOrUpdateRequest() # CreateOrUpdateRequest | Create or update shared memories request
 
     try:
-        # Create or update shared memories.
-        api_response = api_instance.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post(workspace_id, mas_id, body=body)
-        print("The response of SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post:\n")
+        # Create or update shared memories
+        api_response = api_instance.create_or_update_shared_memories(workspace_id, mas_id, create_or_update_request)
+        print("The response of SharedMemoriesApi->create_or_update_shared_memories:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post: %s\n" % e)
+        print("Exception when calling SharedMemoriesApi->create_or_update_shared_memories: %s\n" % e)
 ```
 
 
@@ -58,11 +61,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**| Workspace ID | 
  **mas_id** | **str**| Multi-Agentic System ID | 
- **body** | [**SharedmemoryCreateOrUpdateRequest**](SharedmemoryCreateOrUpdateRequest.md)| Create or update shared memories request | [optional] 
+ **create_or_update_request** | [**CreateOrUpdateRequest**](CreateOrUpdateRequest.md)| Create or update shared memories request | 
 
 ### Return type
 
-[**SharedmemoryCreateOrUpdateResponse**](SharedmemoryCreateOrUpdateResponse.md)
+[**CreateOrUpdateResponse**](CreateOrUpdateResponse.md)
 
 ### Authorization
 
@@ -83,27 +86,28 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post**
-> SharedmemoryQueryResponse api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post(workspace_id, mas_id, body)
+# **fetch_shared_memories**
+> QueryResponse fetch_shared_memories(workspace_id, mas_id, query_request)
 
 Fetch shared memories
 
-Queries shared memories for a given workspace and multi-agentic system using a graph path query.
+Queries shared memories for a given workspace and multi-agentic
+system using a graph path query.
 
 ### Example
 
 
 ```python
 import generated
-from generated.models.sharedmemory_query_request import SharedmemoryQueryRequest
-from generated.models.sharedmemory_query_response import SharedmemoryQueryResponse
+from generated.models.query_request import QueryRequest
+from generated.models.query_response import QueryResponse
 from generated.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost
+# Defining the host is optional and defaults to http://localhost:9002
 # See configuration.py for a list of all supported configuration parameters.
 configuration = generated.Configuration(
-    host = "http://localhost"
+    host = "http://localhost:9002"
 )
 
 
@@ -113,15 +117,15 @@ with generated.ApiClient(configuration) as api_client:
     api_instance = generated.SharedMemoriesApi(api_client)
     workspace_id = 'workspace_id_example' # str | Workspace ID
     mas_id = 'mas_id_example' # str | Multi-Agentic System ID
-    body = generated.SharedmemoryQueryRequest() # SharedmemoryQueryRequest | Query request
+    query_request = generated.QueryRequest() # QueryRequest | Query request
 
     try:
         # Fetch shared memories
-        api_response = api_instance.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post(workspace_id, mas_id, body)
-        print("The response of SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post:\n")
+        api_response = api_instance.fetch_shared_memories(workspace_id, mas_id, query_request)
+        print("The response of SharedMemoriesApi->fetch_shared_memories:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling SharedMemoriesApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_query_post: %s\n" % e)
+        print("Exception when calling SharedMemoriesApi->fetch_shared_memories: %s\n" % e)
 ```
 
 
@@ -133,11 +137,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**| Workspace ID | 
  **mas_id** | **str**| Multi-Agentic System ID | 
- **body** | [**SharedmemoryQueryRequest**](SharedmemoryQueryRequest.md)| Query request | 
+ **query_request** | [**QueryRequest**](QueryRequest.md)| Query request | 
 
 ### Return type
 
-[**SharedmemoryQueryResponse**](SharedmemoryQueryResponse.md)
+[**QueryResponse**](QueryResponse.md)
 
 ### Authorization
 
@@ -153,6 +157,80 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Query executed successfully |  -  |
+**400** | Invalid request |  -  |
+**500** | Internal server error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **onboard_vector_store**
+> OnboardVectorStoreResponse onboard_vector_store(workspace_id, onboard_vector_store_request=onboard_vector_store_request)
+
+Onboard shared memory vector store
+
+Creates a vector store for shared memories within a workspace.
+This initializes the vector database storage for knowledge graph embeddings.
+
+### Example
+
+
+```python
+import generated
+from generated.models.onboard_vector_store_request import OnboardVectorStoreRequest
+from generated.models.onboard_vector_store_response import OnboardVectorStoreResponse
+from generated.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost:9002
+# See configuration.py for a list of all supported configuration parameters.
+configuration = generated.Configuration(
+    host = "http://localhost:9002"
+)
+
+
+# Enter a context with an instance of the API client
+with generated.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = generated.SharedMemoriesApi(api_client)
+    workspace_id = 'workspace_id_example' # str | Workspace ID
+    onboard_vector_store_request = generated.OnboardVectorStoreRequest() # OnboardVectorStoreRequest | Optional onboarding request with metadata (optional)
+
+    try:
+        # Onboard shared memory vector store
+        api_response = api_instance.onboard_vector_store(workspace_id, onboard_vector_store_request=onboard_vector_store_request)
+        print("The response of SharedMemoriesApi->onboard_vector_store:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling SharedMemoriesApi->onboard_vector_store: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **workspace_id** | **str**| Workspace ID | 
+ **onboard_vector_store_request** | [**OnboardVectorStoreRequest**](OnboardVectorStoreRequest.md)| Optional onboarding request with metadata | [optional] 
+
+### Return type
+
+[**OnboardVectorStoreResponse**](OnboardVectorStoreResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**201** | Vector store successfully onboarded |  -  |
 **400** | Invalid request |  -  |
 **500** | Internal server error |  -  |
 

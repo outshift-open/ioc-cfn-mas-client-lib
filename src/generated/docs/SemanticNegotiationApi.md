@@ -1,15 +1,15 @@
 # generated.SemanticNegotiationApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to *http://localhost:9002*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_decide_post**](SemanticNegotiationApi.md#api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_decide_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/semantic-negotiation/decide | Advance semantic negotiation session
-[**api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_start_post**](SemanticNegotiationApi.md#api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_start_post) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/semantic-negotiation/start | Start semantic negotiation session
+[**decide_semantic_negotiation**](SemanticNegotiationApi.md#decide_semantic_negotiation) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/semantic-negotiation/decide | Advance semantic negotiation session
+[**start_semantic_negotiation**](SemanticNegotiationApi.md#start_semantic_negotiation) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/semantic-negotiation/start | Start semantic negotiation session
 
 
-# **api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_decide_post**
-> SemanticnegotiationResponse api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_decide_post(workspace_id, mas_id, body)
+# **decide_semantic_negotiation**
+> NegotiationResponse decide_semantic_negotiation(workspace_id, mas_id, decide_request)
 
 Advance semantic negotiation session
 
@@ -20,15 +20,15 @@ Advances an existing semantic negotiation session with agent replies.
 
 ```python
 import generated
-from generated.models.semanticnegotiation_decide_request import SemanticnegotiationDecideRequest
-from generated.models.semanticnegotiation_response import SemanticnegotiationResponse
+from generated.models.decide_request import DecideRequest
+from generated.models.negotiation_response import NegotiationResponse
 from generated.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost
+# Defining the host is optional and defaults to http://localhost:9002
 # See configuration.py for a list of all supported configuration parameters.
 configuration = generated.Configuration(
-    host = "http://localhost"
+    host = "http://localhost:9002"
 )
 
 
@@ -38,15 +38,15 @@ with generated.ApiClient(configuration) as api_client:
     api_instance = generated.SemanticNegotiationApi(api_client)
     workspace_id = 'workspace_id_example' # str | Workspace ID
     mas_id = 'mas_id_example' # str | Multi-Agentic System ID
-    body = generated.SemanticnegotiationDecideRequest() # SemanticnegotiationDecideRequest | Semantic negotiation decide request
+    decide_request = generated.DecideRequest() # DecideRequest | Semantic negotiation decide request
 
     try:
         # Advance semantic negotiation session
-        api_response = api_instance.api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_decide_post(workspace_id, mas_id, body)
-        print("The response of SemanticNegotiationApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_decide_post:\n")
+        api_response = api_instance.decide_semantic_negotiation(workspace_id, mas_id, decide_request)
+        print("The response of SemanticNegotiationApi->decide_semantic_negotiation:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling SemanticNegotiationApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_decide_post: %s\n" % e)
+        print("Exception when calling SemanticNegotiationApi->decide_semantic_negotiation: %s\n" % e)
 ```
 
 
@@ -58,11 +58,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**| Workspace ID | 
  **mas_id** | **str**| Multi-Agentic System ID | 
- **body** | [**SemanticnegotiationDecideRequest**](SemanticnegotiationDecideRequest.md)| Semantic negotiation decide request | 
+ **decide_request** | [**DecideRequest**](DecideRequest.md)| Semantic negotiation decide request | 
 
 ### Return type
 
-[**SemanticnegotiationResponse**](SemanticnegotiationResponse.md)
+[**NegotiationResponse**](NegotiationResponse.md)
 
 ### Authorization
 
@@ -84,8 +84,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_start_post**
-> SemanticnegotiationResponse api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_start_post(workspace_id, mas_id, body)
+# **start_semantic_negotiation**
+> NegotiationResponse start_semantic_negotiation(workspace_id, mas_id, start_request)
 
 Start semantic negotiation session
 
@@ -96,15 +96,15 @@ Initiates a new semantic negotiation session with multiple agents.
 
 ```python
 import generated
-from generated.models.semanticnegotiation_response import SemanticnegotiationResponse
-from generated.models.semanticnegotiation_start_request import SemanticnegotiationStartRequest
+from generated.models.negotiation_response import NegotiationResponse
+from generated.models.start_request import StartRequest
 from generated.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost
+# Defining the host is optional and defaults to http://localhost:9002
 # See configuration.py for a list of all supported configuration parameters.
 configuration = generated.Configuration(
-    host = "http://localhost"
+    host = "http://localhost:9002"
 )
 
 
@@ -114,15 +114,15 @@ with generated.ApiClient(configuration) as api_client:
     api_instance = generated.SemanticNegotiationApi(api_client)
     workspace_id = 'workspace_id_example' # str | Workspace ID
     mas_id = 'mas_id_example' # str | Multi-Agentic System ID
-    body = generated.SemanticnegotiationStartRequest() # SemanticnegotiationStartRequest | Semantic negotiation start request
+    start_request = generated.StartRequest() # StartRequest | Semantic negotiation start request
 
     try:
         # Start semantic negotiation session
-        api_response = api_instance.api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_start_post(workspace_id, mas_id, body)
-        print("The response of SemanticNegotiationApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_start_post:\n")
+        api_response = api_instance.start_semantic_negotiation(workspace_id, mas_id, start_request)
+        print("The response of SemanticNegotiationApi->start_semantic_negotiation:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling SemanticNegotiationApi->api_workspaces_workspace_id_multi_agentic_systems_mas_id_semantic_negotiation_start_post: %s\n" % e)
+        print("Exception when calling SemanticNegotiationApi->start_semantic_negotiation: %s\n" % e)
 ```
 
 
@@ -134,11 +134,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**| Workspace ID | 
  **mas_id** | **str**| Multi-Agentic System ID | 
- **body** | [**SemanticnegotiationStartRequest**](SemanticnegotiationStartRequest.md)| Semantic negotiation start request | 
+ **start_request** | [**StartRequest**](StartRequest.md)| Semantic negotiation start request | 
 
 ### Return type
 
-[**SemanticnegotiationResponse**](SemanticnegotiationResponse.md)
+[**NegotiationResponse**](NegotiationResponse.md)
 
 ### Authorization
 
