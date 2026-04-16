@@ -33,8 +33,7 @@
 ├── scripts/
 │   └── unit-test.sh               # Run pytest with coverage
 ├── openapi/
-│   ├── public-api-v1.0.yaml       # OpenAPI spec (copied from ioc-cfn-svc)
-│   └── openapi.json               # (Deprecated) Old spec
+│   └── public-api-v1.0.yaml       # OpenAPI spec (copied from ioc-cfn-svc)
 ├── .github/workflows/
 │   └── ci.yaml                    # GitHub Actions CI (lint, test, build)
 ├── pyproject.toml                 # Python project configuration

@@ -5,7 +5,6 @@ This directory contains the OpenAPI specification for the IoC CFN MAS API.
 ## Files
 
 - **`public-api-v1.0.yaml`**: Official OpenAPI 3.0 spec from [ioc-cfn-svc](https://github.com/cisco-eti/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
-- **`openapi.json`**: (Deprecated) Old spec, kept for reference
 
 ## Source of Truth
 
