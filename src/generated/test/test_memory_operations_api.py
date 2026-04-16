@@ -14,36 +14,22 @@
 
 import unittest
 
-from generated.api.shared_memories_api import SharedMemoriesApi
+from generated.api.memory_operations_api import MemoryOperationsApi
 
 
-class TestSharedMemoriesApi(unittest.TestCase):
-    """SharedMemoriesApi unit test stubs"""
+class TestMemoryOperationsApi(unittest.TestCase):
+    """MemoryOperationsApi unit test stubs"""
 
     def setUp(self) -> None:
-        self.api = SharedMemoriesApi()
+        self.api = MemoryOperationsApi()
 
     def tearDown(self) -> None:
         pass
 
-    def test_create_or_update_shared_memories(self) -> None:
-        """Test case for create_or_update_shared_memories
+    def test_memory_operations(self) -> None:
+        """Test case for memory_operations
 
-        Create or update shared memories
-        """
-        pass
-
-    def test_fetch_shared_memories(self) -> None:
-        """Test case for fetch_shared_memories
-
-        Fetch shared memories
-        """
-        pass
-
-    def test_onboard_vector_store(self) -> None:
-        """Test case for onboard_vector_store
-
-        Onboard shared memory vector store
+        Proxy API requests to a remote memory provider
         """
         pass
 

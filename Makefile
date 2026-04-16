@@ -1,17 +1,26 @@
-OPENAPI_SPEC ?= openapi/openapi.json
-OPENAPI_GENERATOR ?= openapi-generator
+# OpenAPI spec from ioc-cfn-svc public API
+OPENAPI_SPEC ?= openapi/public-api-v1.0.yaml
 
 GEN_PKG ?= generated
 GEN_OUT ?= src
 
 .PHONY: gen-openapi
 gen-openapi:
-	@echo "Generating OpenAPI Python SDK to $(GEN_OUT)"
-#	@rm -rf $(GEN_OUT)
+	@echo "Generating OpenAPI Python SDK from $(OPENAPI_SPEC)"
+	@echo "Using Docker with openapitools/openapi-generator-cli"
 	@mkdir -p $(GEN_OUT)
-	@$(OPENAPI_GENERATOR) generate \
-		-i $(OPENAPI_SPEC) \
+	@docker run --rm \
+		-v "$${PWD}:/local" \
+		openapitools/openapi-generator-cli generate \
+		-i /local/$(OPENAPI_SPEC) \
 		-g python \
-		-o $(GEN_OUT) \
+		-o /local/$(GEN_OUT) \
 		--package-name $(GEN_PKG) \
-		--additional-properties=projectName=$(GEN_PKG),packageVersion=0.1.0,generateSourceCodeOnly=true
+		--additional-properties=projectName=$(GEN_PKG),packageVersion=1.0.0,generateSourceCodeOnly=true
+	@echo "✓ SDK generated successfully in $(GEN_OUT)/$(GEN_PKG)"
+
+.PHONY: pull-openapi-generator
+pull-openapi-generator:
+	@echo "Pulling OpenAPI Generator Docker image"
+	@docker pull openapitools/openapi-generator-cli
+	@echo "✓ Docker image ready"

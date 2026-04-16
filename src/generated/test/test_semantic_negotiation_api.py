@@ -14,36 +14,29 @@
 
 import unittest
 
-from generated.api.shared_memories_api import SharedMemoriesApi
+from generated.api.semantic_negotiation_api import SemanticNegotiationApi
 
 
-class TestSharedMemoriesApi(unittest.TestCase):
-    """SharedMemoriesApi unit test stubs"""
+class TestSemanticNegotiationApi(unittest.TestCase):
+    """SemanticNegotiationApi unit test stubs"""
 
     def setUp(self) -> None:
-        self.api = SharedMemoriesApi()
+        self.api = SemanticNegotiationApi()
 
     def tearDown(self) -> None:
         pass
 
-    def test_create_or_update_shared_memories(self) -> None:
-        """Test case for create_or_update_shared_memories
+    def test_decide_semantic_negotiation(self) -> None:
+        """Test case for decide_semantic_negotiation
 
-        Create or update shared memories
+        Advance semantic negotiation session
         """
         pass
 
-    def test_fetch_shared_memories(self) -> None:
-        """Test case for fetch_shared_memories
+    def test_start_semantic_negotiation(self) -> None:
+        """Test case for start_semantic_negotiation
 
-        Fetch shared memories
-        """
-        pass
-
-    def test_onboard_vector_store(self) -> None:
-        """Test case for onboard_vector_store
-
-        Onboard shared memory vector store
+        Start semantic negotiation session
         """
         pass
 

@@ -3,12 +3,13 @@
 
 This script demonstrates how to:
 1. Initialize the client
-2. Upsert memories with relationships
-3. Search shared memories using semantic similarity
+2. Create/update shared memories from trace data
+3. Query shared memories using natural language intent
+4. Proxy memory operations to remote providers
+5. Start and advance semantic negotiation sessions
 """
 
 import os
-from typing import Any, Dict, List
 
 from ioc_cfn_mas_client.client import Client
 
@@ -16,7 +17,7 @@ from ioc_cfn_mas_client.client import Client
 def main() -> None:
     """Run example operations against the MAS API."""
 
-    # Initialize the client (API key not required for standard deployments)
+    # Initialize the client
     client = Client(
         base_url=os.getenv("CFN_BASE_URL", "http://localhost:9010"),
     )
@@ -24,80 +25,186 @@ def main() -> None:
     # Configuration
     workspace_id = "test_workspace"
     mas_id = "test_system"
+    agent_id = "test_agent"
 
     print("=" * 70)
     print("IoC CFN MAS Client Library - Example Usage")
     print("=" * 70)
 
     # ========================================================================
-    # Example 1: Upsert Memories with Relationships
+    # Example 1: Create Shared Memories from Trace Data
     # ========================================================================
-    print("\n[1] Upserting memories with relationships...")
+    print("\n[1] Creating shared memories from trace data...")
 
-    memories: List[Dict[str, Any]] = [
+    trace_data = [
         {
-            "id": "memory_001",
-            "content": "User prefers dark mode interface",
+            "TraceId": "trace-001",
+            "SpanId": "span-001",
+            "ParentSpanId": "",
+            "SpanName": "user_login",
+            "ServiceName": "auth-service",
+            "SpanAttributes": {"user_id": "user123", "action": "login"},
+            "Duration": 150
         },
         {
-            "id": "memory_002",
-            "content": "Last active session: 2024-01-15 10:30 UTC",
-        },
-        {
-            "id": "memory_003",
-            "content": "Preferred programming language: Python",
-        },
-    ]
-
-    relationships: List[Dict[str, Any]] = [
-        {
-            "source": "memory_001",
-            "target": "memory_002",
-            "type": "related_to",
-        },
+            "TraceId": "trace-001",
+            "SpanId": "span-002",
+            "ParentSpanId": "span-001",
+            "SpanName": "validate_credentials",
+            "ServiceName": "auth-service",
+            "SpanAttributes": {"user_id": "user123"},
+            "Duration": 50
+        }
     ]
 
     try:
-        upsert_response = client.upsert_memories(
+        create_response = client.create_shared_memories(
             workspace_id=workspace_id,
             mas_id=mas_id,
-            memories=memories,
-            relationships=relationships,
+            data=trace_data,
+            format="observe-sdk-otel",
+            agent_id=agent_id,
         )
-        print(f"✓ Successfully upserted {len(memories)} memories and {len(relationships)} relationships")
-        print(f"  Response: {upsert_response}")
+        print(f"✓ Successfully created shared memories")
+        print(f"  Status: {create_response.status}")
+        print(f"  Response ID: {create_response.response_id}")
+        print(f"  Message: {create_response.message}")
     except Exception as e:
-        print(f"✗ Error upserting memories: {e}")
+        print(f"✗ Error creating shared memories: {e}")
 
     # ========================================================================
-    # Example 2: Search Memories
+    # Example 2: Query Shared Memories with Natural Language
     # ========================================================================
-    print("\n[2] Searching shared memories...")
+    print("\n[2] Querying shared memories...")
 
-    search_query = "user preferences"
-    top_k = 5
+    intent = "Find information about user login events and authentication"
 
     try:
-        search_results = client.search_memories(
+        query_response = client.query_shared_memories(
             workspace_id=workspace_id,
             mas_id=mas_id,
-            query=search_query,
-            top_k=top_k,
+            intent=intent,
+            agent_id=agent_id,
+            additional_context=[
+                {"context": "Looking for authentication patterns"},
+                {"time_range": "last 24 hours"}
+            ],
         )
-        print(f"✓ Search completed for: '{search_query}'")
-        print(f"  Results (top {top_k}):")
-        print(f"  {search_results}")
+        print(f"✓ Query completed for: '{intent}'")
+        print(f"  Response ID: {query_response.response_id}")
+        print(f"  Message: {query_response.message}")
     except Exception as e:
-        print(f"✗ Error searching memories: {e}")
+        print(f"✗ Error querying memories: {e}")
 
     # ========================================================================
-    # Example 3: Advanced Usage - Direct API Access
+    # Example 3: Memory Operations (Proxy to Remote Provider)
     # ========================================================================
-    print("\n[3] Advanced: Direct API access (for power users)...")
-    print("  Note: You can access the underlying OpenAPI client via:")
-    print("  - client.shared_memories_api  (SharedMemoriesApi)")
-    print("  - client.api_client           (ApiClient)")
-    print("  - client.configuration        (Configuration)")
+    print("\n[3] Memory operations via proxy...")
+
+    # Example 3a: GET memories from remote provider
+    print("\n  [3a] Getting memories from remote provider...")
+    try:
+        get_response = client.memory_operation(
+            workspace_id=workspace_id,
+            mas_id=mas_id,
+            agent_id=agent_id,
+            http_method="GET",
+            http_url="v1/memories/?user_id=test-user",
+        )
+        print(f"  ✓ GET request successful")
+        print(f"    HTTP Status: {get_response.http_status}")
+        print(f"    Response Body: {get_response.http_response_body}")
+    except Exception as e:
+        print(f"  ✗ Error with GET request: {e}")
+
+    # Example 3b: POST memories to remote provider
+    print("\n  [3b] Posting memories to remote provider...")
+    try:
+        post_response = client.memory_operation(
+            workspace_id=workspace_id,
+            mas_id=mas_id,
+            agent_id=agent_id,
+            http_method="POST",
+            http_url="/v1/memories/",
+            http_body={
+                "messages": [
+                    {"role": "user", "content": "I prefer dark mode in all my apps"}
+                ],
+                "user_id": "test-user"
+            },
+        )
+        print(f"  ✓ POST request successful")
+        print(f"    HTTP Status: {post_response.http_status}")
+        print(f"    Response Body: {post_response.http_response_body}")
+    except Exception as e:
+        print(f"  ✗ Error with POST request: {e}")
+
+    # ========================================================================
+    # Example 4: Semantic Negotiation
+    # ========================================================================
+    print("\n[4] Semantic negotiation...")
+
+    session_id = "demo-session-001"
+
+    # Example 4a: Start negotiation
+    print("\n  [4a] Starting negotiation session...")
+    try:
+        start_response = client.start_negotiation(
+            workspace_id=workspace_id,
+            mas_id=mas_id,
+            session_id=session_id,
+            agents=[
+                {"id": "planner", "name": "Planning Agent"},
+                {"id": "executor", "name": "Execution Agent"},
+            ],
+            content_text="Plan a deployment strategy for the new microservice",
+            n_steps=5,
+        )
+        print(f"  ✓ Negotiation started")
+        print(f"    Status: {start_response.status}")
+        print(f"    Message: {start_response.message}")
+        if start_response.result:
+            print(f"    Result: {start_response.result}")
+    except Exception as e:
+        print(f"  ✗ Error starting negotiation: {e}")
+
+    # Example 4b: Advance negotiation
+    print("\n  [4b] Advancing negotiation with agent replies...")
+    try:
+        advance_response = client.advance_negotiation(
+            workspace_id=workspace_id,
+            mas_id=mas_id,
+            session_id=session_id,
+            agent_replies=[
+                {
+                    "agent_id": "planner",
+                    "action": "counter_offer",
+                    "offer": {"strategy": "blue-green deployment"}
+                },
+                {
+                    "agent_id": "executor",
+                    "action": "accept"
+                },
+            ],
+        )
+        print(f"  ✓ Negotiation advanced")
+        print(f"    Status: {advance_response.status}")
+        print(f"    Message: {advance_response.message}")
+        if advance_response.result:
+            print(f"    Result: {advance_response.result}")
+    except Exception as e:
+        print(f"  ✗ Error advancing negotiation: {e}")
+
+    # ========================================================================
+    # Example 5: Advanced Usage - Direct API Access
+    # ========================================================================
+    print("\n[5] Advanced: Direct API access (for power users)...")
+    print("  Note: You can access the underlying OpenAPI clients via:")
+    print("  - client.shared_memories_api      (SharedMemoriesApi)")
+    print("  - client.memory_operations_api    (MemoryOperationsApi)")
+    print("  - client.semantic_negotiation_api (SemanticNegotiationApi)")
+    print("  - client.api_client               (ApiClient)")
+    print("  - client.configuration            (Configuration)")
 
     print("\n" + "=" * 70)
     print("Example completed!")

@@ -21,21 +21,23 @@
 │   │   └── client.py              # Main Client class (EDIT THIS)
 │   └── generated/                 # OpenAPI-generated code (DO NOT EDIT)
 │       ├── api/
-│       │   └── shared_memories_api.py
+│       │   ├── shared_memories_api.py
+│       │   ├── memory_operations_api.py
+│       │   └── semantic_negotiation_api.py
 │       ├── models/
 │       ├── api_client.py
 │       └── configuration.py
 ├── examples/
-│   └── example.py                 # Usage examples for shared memories API
+│   └── example.py                 # Usage examples for all APIs
 ├── tests/                         # Pytest test files
 ├── scripts/
 │   └── unit-test.sh               # Run pytest with coverage
 ├── openapi/
-│   └── openapi.json               # OpenAPI specification (source of truth)
+│   └── public-api-v1.0.yaml       # OpenAPI spec (copied from ioc-cfn-svc)
 ├── .github/workflows/
 │   └── ci.yaml                    # GitHub Actions CI (lint, test, build)
 ├── pyproject.toml                 # Python project configuration
-├── Makefile                       # OpenAPI generation tasks
+├── Makefile                       # OpenAPI generation tasks (Docker-based)
 └── README.md                      # User documentation
 ```
 
@@ -46,21 +48,27 @@
 - **Why**: Keeps generated code separate from hand-written code
 - **Rule**: NEVER manually edit files in `src/generated/` - regenerate instead
 
-### 2. **Client Wrapper Pattern**
+### 2. **OpenAPI Spec Source of Truth**
+- **Authoritative Source**: [ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml](https://github.com/cisco-eti/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
+- **Local Copy**: `openapi/public-api-v1.0.yaml`
+- **Rule**: DO NOT edit local copy - changes must be made in ioc-cfn-svc
+- **Naming**: Follows Python PEP 8 conventions (snake_case methods/fields, PascalCase classes)
+
+### 3. **Client Wrapper Pattern**
 - **File**: `src/ioc_cfn_mas_client/client.py`
 - **Purpose**: User-friendly wrapper around OpenAPI-generated client
 - **Design Philosophy**: Provide intuitive, well-documented methods that hide complexity
 - **Responsibilities**:
-  - Centralize configuration (base_url, timeout, optional api_key)
-  - Provide clean methods with good parameter names (e.g., `upsert_memories()`)
-  - Return clean responses (data only, not HTTP info tuples)
+  - Centralize configuration (base_url, timeout)
+  - Provide clean methods (e.g., `create_shared_memories()`, `query_shared_memories()`)
+  - Return Pydantic response models
   - Expose underlying generated API for advanced usage via properties
 
-### 3. **Import Pattern**
+### 4. **Import Pattern**
 - Generated code is imported as: `from generated.api.shared_memories_api import SharedMemoriesApi`
 - This works because `src/` is in the Python path during development
 
-### 4. **No Docker/Kubernetes**
+### 5. **No Docker/Kubernetes**
 - This is a **library**, not a service
 - No Dockerfile, no Helm charts, no container deployment
 - Distributed via PyPI (or private package registry)
@@ -90,14 +98,34 @@ uv run python examples/example.py
 
 #### Regenerate OpenAPI Client
 ```bash
-# Prerequisites: brew install openapi-generator
+# Prerequisites: Docker
+docker pull openapitools/openapi-generator-cli
+# Or: make pull-openapi-generator
+
+# Generate SDK
 make gen-openapi
 ```
 
 This command:
-1. Reads `openapi/openapi.json`
-2. Generates Python client code into `src/generated/`
-3. Package name: `generated`
+1. Reads `openapi/public-api-v1.0.yaml`
+2. Uses Docker with `openapitools/openapi-generator-cli`
+3. Generates Python client code into `src/generated/`
+4. Package name: `generated`
+
+#### Update OpenAPI Spec
+```bash
+# 1. Copy latest spec from ioc-cfn-svc
+cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml openapi/
+
+# 2. Regenerate SDK
+make gen-openapi
+
+# 3. Update client.py if API surface changed
+
+# 4. Test
+./scripts/unit-test.sh
+uv run python examples/example.py
+```
 
 ### File Editing Guidelines
 
@@ -113,7 +141,7 @@ This command:
 - Regenerate instead using `make gen-openapi`
 
 **EDIT WITH CAUTION**:
-- `openapi/openapi.json` - Source of truth for API, coordinate with backend team
+- `openapi/public-api-v1.0.yaml` - **DO NOT EDIT** - changes must be made in ioc-cfn-svc
 - `.github/workflows/ci.yaml` - CI pipeline
 - `Makefile` - Build automation
 
@@ -121,30 +149,64 @@ This command:
 
 ### Current APIs
 
-**Shared Memories** - User-friendly methods:
-- `client.upsert_memories(workspace_id, mas_id, memories, relationships)` - Upsert memory objects and relationships
-- `client.search_memories(workspace_id, mas_id, query, top_k=5)` - Semantic search
+#### 1. Shared Memories API
+**User-friendly methods**:
+- `client.create_shared_memories(workspace_id, mas_id, data, format, agent_id)` - Create/update from trace data
+- `client.query_shared_memories(workspace_id, mas_id, intent, agent_id)` - Query using natural language
 
-**Advanced Access** (for power users):
-- `client.shared_memories_api` - Direct access to generated SharedMemoriesApi
-  - `api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_post_with_http_info()`
-  - `api_workspaces_workspace_id_multi_agentic_systems_system_id_shared_memories_query_post_with_http_info()`
+**Generated methods**:
+- `client.shared_memories_api.create_or_update_shared_memories(workspace_id, mas_id, create_or_update_request)`
+- `client.shared_memories_api.fetch_shared_memories(workspace_id, mas_id, query_request)`
+- `client.shared_memories_api.onboard_vector_store(workspace_id, onboard_vector_store_request)`
+
+#### 2. Memory Operations API
+**User-friendly methods**:
+- `client.memory_operation(workspace_id, mas_id, agent_id, http_method, http_url, http_body)` - Proxy to remote memory providers
+
+**Generated methods**:
+- `client.memory_operations_api.memory_operations(workspace_id, mas_id, agent_id, memory_operation_request)`
+
+#### 3. Semantic Negotiation API
+**User-friendly methods**:
+- `client.start_negotiation(workspace_id, mas_id, session_id, agents, content_text, n_steps)` - Start negotiation
+- `client.advance_negotiation(workspace_id, mas_id, session_id, agent_replies)` - Advance with agent replies
+
+**Generated methods**:
+- `client.semantic_negotiation_api.start_semantic_negotiation(workspace_id, mas_id, start_request)`
+- `client.semantic_negotiation_api.decide_semantic_negotiation(workspace_id, mas_id, decide_request)`
+
+### Response Models
+
+All methods return Pydantic models with proper attributes:
+- `CreateOrUpdateResponse`: `.status`, `.response_id`, `.message`
+- `QueryResponse`: `.response_id`, `.message`
+- `MemoryOperationResponse`: `.http_status`, `.http_response_body`, `.http_headers`
+- `NegotiationResponse`: `.status`, `.message`, `.result`
+
+### Advanced Access (for power users)
+Direct access to generated APIs:
+- `client.shared_memories_api` - SharedMemoriesApi
+- `client.memory_operations_api` - MemoryOperationsApi
+- `client.semantic_negotiation_api` - SemanticNegotiationApi
+- `client.api_client` - ApiClient
+- `client.configuration` - Configuration
 
 ### Adding New APIs
 When the OpenAPI spec is updated with new endpoints:
-1. Update `openapi/openapi.json`
-2. Run `make gen-openapi`
-3. Update `src/ioc_cfn_mas_client/client.py` to expose the new API group
-4. Add examples in `examples/`
-5. Update `README.md` with usage documentation
+1. Update spec in [ioc-cfn-svc repository](https://github.com/cisco-eti/ioc-cfn-svc)
+2. Copy updated spec: `cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml openapi/`
+3. Run `make gen-openapi`
+4. Update `src/ioc_cfn_mas_client/client.py` to expose new methods
+5. Add examples in `examples/`
+6. Update `README.md` with usage documentation
 
 ## Configuration
 
 ### Client Constructor Parameters
 - `base_url` (required): API endpoint (e.g., `http://localhost:9010`)
-- `api_key` (optional): API key - not required for standard deployments
 - `timeout` (optional): Request timeout in seconds
-- `debug` (optional): Enable debug logging
+- `configuration` (optional): Pre-configured Configuration object
+- `api_client` (optional): Pre-configured ApiClient object
 
 ### Environment Variables
 - `CFN_BASE_URL`: API base URL (used in examples, defaults to `http://localhost:9010`)
@@ -169,7 +231,7 @@ When the OpenAPI spec is updated with new endpoints:
 ## Dependencies
 
 ### Runtime Dependencies
-- `pydantic>=2.5` - Data validation
+- `pydantic>=2.5` - Data validation (used by generated code)
 - `urllib3>=1.26` - HTTP client
 - `python-dateutil>=2.8` - Date/time utilities
 - `typing-extensions>=4.7` - Type hints backport
@@ -183,7 +245,7 @@ When the OpenAPI spec is updated with new endpoints:
 ## Testing Strategy
 
 ### Test Location
-- `tests/` directory (currently exists but may need test files)
+- `tests/` directory
 
 ### Testing Approach
 - Unit tests for `Client` class
@@ -201,37 +263,85 @@ uv run pytest tests/ -v --cov=ioc_cfn_mas_client --cov-report=term-missing
 ```python
 from ioc_cfn_mas_client.client import Client
 
-client = Client(
-    base_url="http://localhost:9010",
-)
+client = Client(base_url="http://localhost:9010")
 ```
 
 ### Using the User-Friendly API
+
+#### Create Shared Memories from Trace Data
 ```python
-# Upsert memories with relationships - clean, intuitive interface
-memories = [
-    {"id": "m1", "content": "User prefers dark mode"},
-    {"id": "m2", "content": "Last login: 2024-01-15"},
+trace_data = [
+    {
+        "TraceId": "trace-001",
+        "SpanId": "span-001",
+        "SpanName": "user_login",
+        "ServiceName": "auth-service",
+        "SpanAttributes": {"user_id": "user123"},
+        "Duration": 150
+    }
 ]
 
-relationships = [
-    {"source": "m1", "target": "m2", "type": "related_to"},
-]
-
-response = client.upsert_memories(
+response = client.create_shared_memories(
     workspace_id="workspace_id",
     mas_id="mas_id",
-    memories=memories,
-    relationships=relationships,  # Optional
+    data=trace_data,
+    format="observe-sdk-otel",
+    agent_id="agent1",
 )
 
-# Search memories - semantic search
-results = client.search_memories(
+print(response.status)
+print(response.response_id)
+print(response.message)
+```
+
+#### Query Shared Memories
+```python
+response = client.query_shared_memories(
     workspace_id="workspace_id",
     mas_id="mas_id",
-    query="user preferences",
-    top_k=5,
+    intent="Find information about user login events",
+    agent_id="agent1",
+    additional_context=[{"context": "authentication patterns"}],
 )
+
+print(response.response_id)
+print(response.message)
+```
+
+#### Memory Operations (Proxy)
+```python
+# GET from remote provider
+response = client.memory_operation(
+    workspace_id="ws1",
+    mas_id="sys1",
+    agent_id="agent1",
+    http_method="GET",
+    http_url="v1/memories/?user_id=test-user",
+)
+
+print(response.http_status)
+print(response.http_response_body)
+```
+
+#### Semantic Negotiation
+```python
+# Start negotiation
+response = client.start_negotiation(
+    workspace_id="ws1",
+    mas_id="sys1",
+    session_id="session-123",
+    agents=[
+        {"id": "agent1", "name": "Planner Agent"},
+        {"id": "agent2", "name": "Executor Agent"}
+    ],
+    content_text="Plan a deployment strategy",
+    n_steps=10,
+)
+
+print(response.status)
+print(response.message)
+if response.result:
+    print(response.result)
 ```
 
 ### Advanced Usage - Direct API Access
@@ -239,10 +349,21 @@ For power users needing full control:
 ```python
 # Access the underlying generated API
 api = client.shared_memories_api
-response = api.api_workspaces_workspace_id_...(
-    workspace_id="workspace_id",
-    mas_id="mas_id",
-    body={"key": "value"},
+
+# Use generated method directly
+from generated.models.create_or_update_request import CreateOrUpdateRequest
+from generated.models.header import Header
+from generated.models.extraction_payload import ExtractionPayload
+
+request = CreateOrUpdateRequest(
+    header=Header(agent_id="agent1"),
+    payload=ExtractionPayload(data=data, metadata=metadata)
+)
+
+response = api.create_or_update_shared_memories(
+    workspace_id="ws1",
+    mas_id="sys1",
+    create_or_update_request=request,
 )
 ```
 
@@ -251,45 +372,57 @@ When adding new operations, follow this pattern in `Client` class:
 1. Use clear, descriptive method names (verbs + nouns)
 2. Add comprehensive docstrings with examples
 3. Use explicit parameters (not generic `body` dicts)
-4. Return clean data (unwrap HTTP info tuples)
+4. Return Pydantic models (not HTTP info tuples)
 5. Keep the underlying generated API accessible for advanced usage
 
 Example:
 ```python
-def upsert_memories(
+def create_shared_memories(
     self,
     workspace_id: str,
     mas_id: str,
-    memories: Optional[List[Dict[str, Any]]] = None,
-    relationships: Optional[List[Dict[str, Any]]] = None,
+    data: Dict[str, Any],
+    format: str,
+    agent_id: Optional[str] = None,
+    request_id: Optional[str] = None,
 ) -> Any:
-    """Upsert (insert or update) shared memories and relationships.
+    """Create or update shared memories from trace or OpenClaw output.
 
     Args:
         workspace_id: The workspace identifier
         mas_id: The multi-agent system identifier
-        memories: List of memory objects with 'id' and 'content'
-        relationships: List of relationship objects between memories
+        data: The extraction payload data
+        format: Data format ("observe-sdk-otel" or "openclaw")
+        agent_id: Optional agent identifier
+        request_id: Optional request identifier
 
     Returns:
-        API response with upsert results
+        CreateOrUpdateResponse with status and message
 
     Example:
-        >>> memories = [{"id": "m1", "content": "hello"}]
-        >>> relationships = [{"source": "m1", "target": "m2", "type": "related_to"}]
-        >>> client.upsert_memories("ws1", "sys1", memories=memories, relationships=relationships)
+        >>> response = client.create_shared_memories(
+        ...     workspace_id="ws1",
+        ...     mas_id="sys1",
+        ...     data=[{"TraceId": "...", "SpanId": "..."}],
+        ...     format="observe-sdk-otel",
+        ...     agent_id="agent1"
+        ... )
     """
-    body = {}
-    if memories is not None:
-        body["memories"] = memories
-    if relationships is not None:
-        body["relationships"] = relationships
-    response = self._shared_memories_api.api_workspaces_...(
+    metadata = ExtractionPayloadMetadata(format=format)
+    payload = ExtractionPayload(data=data, metadata=metadata)
+    header = Header(agent_id=agent_id) if agent_id else None
+
+    request = CreateOrUpdateRequest(
+        header=header,
+        payload=payload,
+        request_id=request_id
+    )
+
+    return self._shared_memories_api.create_or_update_shared_memories(
         workspace_id=workspace_id,
         mas_id=mas_id,
-        body=body,
+        create_or_update_request=request,
     )
-    return response[0]  # Return data only, not HTTP info
 ```
 
 ## Troubleshooting
@@ -300,9 +433,9 @@ def upsert_memories(
 - Verify `src/` is in Python path
 
 ### OpenAPI Generation Issues
-- Ensure `openapi-generator` is installed: `brew install openapi-generator`
-- Set `OPENAPI_GENERATOR` env var if needed: `export OPENAPI_GENERATOR=/opt/homebrew/bin/openapi-generator`
-- Check `openapi/openapi.json` is valid JSON
+- Ensure Docker is installed: `docker --version`
+- Pull generator image: `make pull-openapi-generator`
+- Check `openapi/public-api-v1.0.yaml` is valid YAML
 
 ### Test Failures
 - Ensure all dependencies installed: `uv pip install -e ".[dev]"`
@@ -327,17 +460,21 @@ def upsert_memories(
 
 - **Repository**: cisco-eti/ioc-cfn-mas-client-lib
 - **Main Branch**: `main`
-- **OpenAPI Spec**: Backend team maintains source of truth
+- **OpenAPI Spec**: Maintained in [ioc-cfn-svc](https://github.com/cisco-eti/ioc-cfn-svc/tree/main/docs/public-api)
 - **Issues**: Report in GitHub Issues
 
 ## Quick Reference for Claude
 
 When helping with this repository:
-1. **This is a library, not a service** - No Docker/K8s needed
-2. **Don't edit `src/generated/`** - Regenerate from OpenAPI spec
+1. **This is a library, not a service** - No Docker/K8s deployment
+2. **Don't edit `src/generated/`** - Regenerate from OpenAPI spec using Docker
 3. **Main file to edit**: `src/ioc_cfn_mas_client/client.py`
 4. **Use `uv` commands** for package management
 5. **Environment variable**: `CFN_BASE_URL` (not `IoC_BASE_URL`)
 6. **Generated code location**: `src/generated/` (not `src/ioc_cfn_mas_client/generated/`)
-7. **CI runs**: unit tests on Python 3.9 via scripts/unit-test.sh
-8. **Git commits**: Do NOT include `Co-Authored-By: Claude` lines
+7. **OpenAPI spec source**: [ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml](https://github.com/cisco-eti/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
+8. **SDK generation**: Docker-based, not local brew install
+9. **Naming conventions**: PEP 8 (snake_case methods, PascalCase classes)
+10. **Response types**: Pydantic models with direct attribute access
+11. **CI runs**: unit tests on Python 3.9 via scripts/unit-test.sh
+12. **Git commits**: Do NOT include `Co-Authored-By: Claude` lines

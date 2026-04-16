@@ -21,7 +21,7 @@ This is a **Python SDK library** for IoC CFN MAS Multi-Agent System. It is NOT a
 src/ioc_cfn_mas_client/client.py   # Main Client class (hand-written)
 src/generated/                      # OpenAPI-generated code (auto-generated)
 examples/example.py                 # Usage examples
-openapi/openapi.json                # API spec (source of truth)
+openapi/public-api-v1.0.yaml        # API spec (copied from ioc-cfn-svc)
 ```
 
 ### Key Facts
@@ -30,6 +30,7 @@ openapi/openapi.json                # API spec (source of truth)
 - **Environment Variable**: `CFN_BASE_URL` (NOT `IoC_BASE_URL`)
 - **Generated Code Path**: `src/generated/` (NOT `src/ioc_cfn_mas_client/generated/`)
 - **Import Pattern**: `from generated.api.shared_memories_api import ...`
+- **OpenAPI Source**: [ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml](https://github.com/cisco-eti/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
 
 ### Common Commands
 ```bash
@@ -39,8 +40,11 @@ uv venv && source .venv/bin/activate && uv pip install -e ".[dev]"
 # Test
 ./scripts/unit-test.sh
 
-# Regenerate OpenAPI client
+# Regenerate OpenAPI client (requires Docker)
 make gen-openapi
+
+# Pull OpenAPI generator Docker image
+make pull-openapi-generator
 
 # Run example
 uv run python examples/example.py
@@ -51,10 +55,11 @@ uv run python examples/example.py
 - **Runners**: Standard GitHub `ubuntu-latest`
 
 ### OpenAPI Spec Important Notes
-- **`additionalProperties: true`**: In `openapi/openapi.json`, memory and relationship objects use `"additionalProperties": true`
-  - This allows string, number, boolean values in the objects (e.g., `{"id": "m1", "content": "text"}`)
-  - **DO NOT** use `"additionalProperties": {}` - this causes Pydantic validation errors
-  - The generator interprets `{}` as "only dict values allowed", which breaks simple string/number properties
+- **Source of Truth**: The spec in [ioc-cfn-svc](https://github.com/cisco-eti/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml) is authoritative
+- **Local Copy**: `openapi/public-api-v1.0.yaml` is copied from ioc-cfn-svc for SDK generation
+- **DO NOT** edit `openapi/public-api-v1.0.yaml` directly - changes must be made in ioc-cfn-svc
+- **Naming Conventions**: The spec follows Python PEP 8 conventions (snake_case methods/fields, PascalCase classes)
+- **SDK Generation**: Uses Docker with `openapitools/openapi-generator-cli` (not local brew install)
 
 ### Git Commits
 - **DO NOT** include `Co-Authored-By: Claude` lines in commit messages
@@ -74,11 +79,12 @@ from ioc_cfn_mas_client.client import Client
 client = Client(base_url="http://localhost:9010")
 
 # User-friendly methods
-client.upsert_memories(workspace_id, mas_id, memories=memories, relationships=relationships)
-client.search_memories(workspace_id, mas_id, query, top_k=5)
+client.create_shared_memories(workspace_id, mas_id, data=data, format="observe-sdk-otel")
+client.query_shared_memories(workspace_id, mas_id, intent="Find user preferences", agent_id="agent1")
 
 # Advanced: direct API access
-client.shared_memories_api.api_workspaces_...(...)
+client.shared_memories_api.create_or_update_shared_memories(...)
+client.shared_memories_api.fetch_shared_memories(...)
 ```
 
 ## Documentation
