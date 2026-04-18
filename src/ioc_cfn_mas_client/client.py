@@ -412,3 +412,47 @@ class Client:
         )
         resp.read()
         return resp.data  # type: ignore[no-any-return]
+
+    def log_a2a_interaction(
+        self,
+        workspace_id: str,
+        mas_id: str,
+        agent_id: str,
+        interaction_type: str,
+        data: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Log A2A interaction to CFN (mock endpoint for testing).
+
+        This is a lightweight endpoint for testing instrumentation without
+        actually storing data in shared memory.
+
+        Args:
+            workspace_id: Workspace identifier
+            mas_id: Multi-agent system identifier
+            agent_id: Agent identifier
+            interaction_type: Type of interaction ("message", "task_completion")
+            data: Interaction data
+
+        Returns:
+            Dict with acknowledgment
+
+        Example:
+            >>> client.log_a2a_interaction(
+            ...     workspace_id="ws1",
+            ...     mas_id="mas1",
+            ...     agent_id="agent-a",
+            ...     interaction_type="message",
+            ...     data={"text": "Hello"}
+            ... )
+            {'status': 'logged', 'workspace_id': 'ws1', ...}
+        """
+        # For now, just log and return success
+        # In production, this could call a real CFN endpoint
+        return {
+            "status": "logged",
+            "workspace_id": workspace_id,
+            "mas_id": mas_id,
+            "agent_id": agent_id,
+            "interaction_type": interaction_type,
+            "data_size": len(str(data)),
+        }

@@ -129,6 +129,55 @@ response = client.advance_negotiation(
 )
 ```
 
+### Google A2A Protocol Integration
+
+Use `A2AInstrumentor` to automatically track all A2A agents without decorators (monkey patching approach):
+
+```python
+from ioc_cfn_mas_client import Client, A2AInstrumentor
+from a2a.server.agent_execution import AgentExecutor
+
+client = Client(base_url="http://localhost:9010")
+
+# One-time setup - instruments ALL AgentExecutor classes automatically
+instrumentor = A2AInstrumentor(
+    client=client,
+    workspace_id="my-workspace",
+    mas_id="my-mas",
+    publish_input=True,   # Publish incoming A2A messages
+    publish_output=True,  # Publish task results
+)
+instrumentor.instrument()
+
+# Now ALL agents are automatically tracked - no decorators needed!
+class MyA2AAgent(AgentExecutor):
+    async def execute(self, context, event_queue):
+        """Execute agent - automatically published to CFN."""
+        # Your A2A agent logic here
+        # All interactions automatically saved to CFN shared memory
+        pass
+```
+
+**Key Features:**
+- **Zero code changes** - works with any A2A agent
+- Automatic publishing of A2A messages to CFN shared memory
+- Uses monkey patching (similar to OpenTelemetry auto-instrumentation)
+- Preserves A2A protocol structure (messages, tasks, artifacts)
+- Can be enabled/disabled globally with `uninstrument()`
+
+For detailed documentation, see [docs/A2A_INTEGRATION.md](docs/A2A_INTEGRATION.md).
+
+**Example:**
+```bash
+# Terminal 1 - Start Agent B server
+python examples/instrumentation/a2a/multi_agent_example.py --server
+
+# Terminal 2 - Run Agent A client
+python examples/instrumentation/a2a/multi_agent_example.py --client
+```
+
+See [examples/instrumentation/a2a/multi_agent_example.py](examples/instrumentation/a2a/multi_agent_example.py) for the complete code, and [examples/instrumentation/README.md](examples/instrumentation/README.md) for more details.
+
 ### Advanced Usage
 
 For power users who need direct access to the generated OpenAPI clients:
