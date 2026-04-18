@@ -8,8 +8,11 @@ The `a2a/` directory shows how to automatically instrument Google A2A agents usi
 
 ### Prerequisites
 
+**Requires Python >= 3.10** (a2a-sdk constraint)
+
 ```bash
-pip install a2a-sdk[http-server]
+pip install ioc_cfn_mas_client_lib
+pip install a2a-sdk[http-server]  # Latest: 0.3.26
 ```
 
 ### Running the Multi-Agent Example
@@ -17,13 +20,15 @@ pip install a2a-sdk[http-server]
 This example demonstrates two agents communicating via A2A protocol, with automatic CFN instrumentation on both sides:
 
 **Terminal 1** - Start Agent B (Trend Analyzer Server):
+
 ```bash
-python examples/instrumentation/a2a/multi_agent_example.py --server
+uv run python examples/instrumentation/a2a/multi_agent_example.py --server
 ```
 
 **Terminal 2** - Run Agent A (Query Client):
+
 ```bash
-python examples/instrumentation/a2a/multi_agent_example.py --client
+uv run python examples/instrumentation/a2a/multi_agent_example.py --client
 ```
 
 ### What Gets Instrumented
@@ -32,6 +37,7 @@ python examples/instrumentation/a2a/multi_agent_example.py --client
 - **Agent B (Server)**: Incoming messages and task completions are logged
 
 Both agents will print `[CFN]` log messages showing:
+
 - `Query from shared memory` - when reading input
 - `Update to shared memory` - when writing output
 

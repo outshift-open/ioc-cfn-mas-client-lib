@@ -15,6 +15,11 @@ This repository contains:
 pip install ioc_cfn_mas_client_lib
 ```
 
+**For A2A Instrumentation (requires Python >= 3.10):**
+```bash
+pip install a2a-sdk[http-server]  # Latest: 0.3.26
+```
+
 ## Quick start
 
 Create a client using the base URL:
@@ -159,6 +164,7 @@ class MyA2AAgent(AgentExecutor):
 ```
 
 **Key Features:**
+
 - **Zero code changes** - works with any A2A agent
 - Automatic publishing of A2A messages to CFN shared memory
 - Uses monkey patching (similar to OpenTelemetry auto-instrumentation)
@@ -168,12 +174,13 @@ class MyA2AAgent(AgentExecutor):
 For detailed documentation, see [docs/A2A_INTEGRATION.md](docs/A2A_INTEGRATION.md).
 
 **Example:**
+
 ```bash
 # Terminal 1 - Start Agent B server
-python examples/instrumentation/a2a/multi_agent_example.py --server
+uv run python examples/instrumentation/a2a/multi_agent_example.py --server
 
 # Terminal 2 - Run Agent A client
-python examples/instrumentation/a2a/multi_agent_example.py --client
+uv run python examples/instrumentation/a2a/multi_agent_example.py --client
 ```
 
 See [examples/instrumentation/a2a/multi_agent_example.py](examples/instrumentation/a2a/multi_agent_example.py) for the complete code, and [examples/instrumentation/README.md](examples/instrumentation/README.md) for more details.
@@ -234,11 +241,13 @@ uv run python examples/example.py
 ### Prerequisites
 
 **Docker** (required):
+
 ```bash
 docker pull openapitools/openapi-generator-cli
 ```
 
 Or use the make target:
+
 ```bash
 make pull-openapi-generator
 ```
@@ -258,11 +267,13 @@ This regenerates `src/generated/` from `openapi/public-api-v1.0.yaml` using Dock
 To update to a newer version:
 
 1. Copy the latest spec from ioc-cfn-svc:
+
    ```bash
    cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml openapi/
    ```
 
 2. Regenerate:
+
    ```bash
    make gen-openapi
    ```

@@ -26,6 +26,9 @@ dev = [
   "ruff>=0.4",
   "mypy>=1.8",
 ]
+# Note: a2a-sdk is not included as an optional dependency because it requires Python>=3.10
+# while this package supports Python>=3.9. Users who want A2A instrumentation should install:
+#   pip install a2a-sdk[http-server]  # Latest: 0.3.26 (tested with 0.3.x)
 
 [tool.setuptools]
 package-dir = { "" = "src" }

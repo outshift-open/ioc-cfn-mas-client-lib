@@ -8,7 +8,8 @@ This example shows the typical A2A pattern with automatic CFN instrumentation:
 4. All interactions are automatically logged to CFN via monkey patching
 
 Prerequisites:
-    pip install a2a-sdk[http-server]
+    Requires Python >= 3.10
+    pip install a2a-sdk[http-server]  # Tested with 0.3.26
 
 Usage:
     # Terminal 1 - Start Agent B server
