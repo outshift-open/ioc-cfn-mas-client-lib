@@ -9,7 +9,7 @@ name = "ioc_cfn_mas_client_lib"
 version = "0.1.0"
 description = "Python SDK client library for IoC CFN MAS."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [{ name = "samuyang_cisco" }]
 dependencies = [
@@ -17,6 +17,8 @@ dependencies = [
   "urllib3>=1.26",
   "python-dateutil>=2.8",
   "typing-extensions>=4.7",
+  "a2a-sdk[http-server]==0.3.26",
+  "uvicorn>=0.44.0",
 ]
 
 [project.optional-dependencies]
@@ -41,13 +43,13 @@ addopts = "-q"
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 exclude = [
   "src/generated",  # Exclude auto-generated OpenAPI code
 ]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false

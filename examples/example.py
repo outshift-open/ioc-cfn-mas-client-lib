@@ -19,7 +19,7 @@ def main() -> None:
 
     # Initialize the client
     client = Client(
-        base_url=os.getenv("CFN_BASE_URL", "http://localhost:9010"),
+        cfn_url=os.getenv("CFN_URL", "http://localhost:9002"),
     )
 
     # Configuration

@@ -11,18 +11,20 @@ This repository contains:
 
 ## Installation
 
+**Requires Python >= 3.10**
+
 ```bash
 pip install ioc_cfn_mas_client_lib
 ```
 
 ## Quick start
 
-Create a client using the base URL:
+Create a client using the CFN URL:
 
 ```python
 from ioc_cfn_mas_client.client import Client
 
-client = Client(base_url="http://localhost:9010")
+client = Client(cfn_url="http://localhost:9002")
 ```
 
 ### Shared Memories API
@@ -129,6 +131,57 @@ response = client.advance_negotiation(
 )
 ```
 
+### Google A2A Protocol Integration
+
+Use `A2AInstrumentor` to automatically track all A2A agents without decorators (monkey patching approach):
+
+```python
+from ioc_cfn_mas_client import Client, A2AInstrumentor
+from a2a.server.agent_execution import AgentExecutor
+
+client = Client(cfn_url="http://localhost:9002")
+
+# One-time setup - instruments ALL AgentExecutor classes automatically
+instrumentor = A2AInstrumentor(
+    client=client,
+    workspace_id="my-workspace",
+    mas_id="my-mas",
+    publish_input=True,   # Publish incoming A2A messages
+    publish_output=True,  # Publish task results
+)
+instrumentor.instrument()
+
+# Now ALL agents are automatically tracked - no decorators needed!
+class MyA2AAgent(AgentExecutor):
+    async def execute(self, context, event_queue):
+        """Execute agent - automatically published to CFN."""
+        # Your A2A agent logic here
+        # All interactions automatically saved to CFN shared memory
+        pass
+```
+
+**Key Features:**
+
+- **Zero code changes** - works with any A2A agent
+- Automatic publishing of A2A messages to CFN shared memory
+- Uses monkey patching (similar to OpenTelemetry auto-instrumentation)
+- Preserves A2A protocol structure (messages, tasks, artifacts)
+- Can be enabled/disabled globally with `uninstrument()`
+
+For detailed documentation, see [docs/A2A_INTEGRATION.md](docs/A2A_INTEGRATION.md).
+
+**Example:**
+
+```bash
+# Terminal 1 - Start Agent B server
+uv run python examples/instrumentation/a2a/multi_agent_example.py --server
+
+# Terminal 2 - Run Agent A client
+uv run python examples/instrumentation/a2a/multi_agent_example.py --client
+```
+
+See [examples/instrumentation/a2a/multi_agent_example.py](examples/instrumentation/a2a/multi_agent_example.py) for the complete code, and [examples/instrumentation/README.md](examples/instrumentation/README.md) for more details.
+
 ### Advanced Usage
 
 For power users who need direct access to the generated OpenAPI clients:
@@ -149,7 +202,7 @@ For a complete example, see `examples/example.py`\.
 
 The `Client` constructor accepts the following parameters:
 
-- `base_url` \(required\): API base URL \(e\.g\., `http://localhost:9010`\)
+- `cfn_url` \(required\): CFN API endpoint URL \(e\.g\., `http://localhost:9002`\)
 - `timeout` \(optional\): Request timeout in seconds
 - `configuration` \(optional\): Pre\-configured Configuration object \(for advanced users\)
 - `api_client` \(optional\): Pre\-configured ApiClient object \(for advanced users\)
@@ -158,7 +211,7 @@ The `Client` constructor accepts the following parameters:
 
 Optional environment variable:
 
-- `CFN_BASE_URL`: API base URL \(defaults to `http://localhost:9010` if not set\)
+- `CFN_URL`: CFN API endpoint URL \(defaults to `http://localhost:9002` if not set\)
 
 ## Development (macOS)
 
@@ -185,11 +238,13 @@ uv run python examples/example.py
 ### Prerequisites
 
 **Docker** (required):
+
 ```bash
 docker pull openapitools/openapi-generator-cli
 ```
 
 Or use the make target:
+
 ```bash
 make pull-openapi-generator
 ```
@@ -209,11 +264,13 @@ This regenerates `src/generated/` from `openapi/public-api-v1.0.yaml` using Dock
 To update to a newer version:
 
 1. Copy the latest spec from ioc-cfn-svc:
+
    ```bash
    cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml openapi/
    ```
 
 2. Regenerate:
+
    ```bash
    make gen-openapi
    ```
