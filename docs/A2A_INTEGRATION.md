@@ -57,7 +57,7 @@ from ioc_cfn_mas_client import Client, A2AInstrumentor
 from a2a.server.agent_execution import AgentExecutor
 
 # Initialize CFN client
-client = Client(base_url="http://localhost:9002")
+client = Client(cfn_url="http://localhost:9002")
 
 # One-time setup - instrument ALL AgentExecutor classes
 instrumentor = A2AInstrumentor(
@@ -218,7 +218,7 @@ def main():
 
 ```python
 # Configuration from environment
-client = Client(base_url=os.getenv("CFN_BASE_URL"))
+client = Client(cfn_url=os.getenv("CFN_URL"))
 
 instrumentor = A2AInstrumentor(
     client=client,
@@ -277,7 +277,7 @@ instrumentor.instrument()  # Second call: Prints warning and skips
 
 1. Verify CFN server is running
 2. Verify workspace and MAS exist
-3. Check client base URL is correct
+3. Check client CFN URL is correct
 4. Look for error messages in console output
 
 ### Restore Original Behavior

@@ -22,12 +22,12 @@ pip install a2a-sdk[http-server]  # Latest: 0.3.26
 
 ## Quick start
 
-Create a client using the base URL:
+Create a client using the CFN URL:
 
 ```python
 from ioc_cfn_mas_client.client import Client
 
-client = Client(base_url="http://localhost:9002")
+client = Client(cfn_url="http://localhost:9002")
 ```
 
 ### Shared Memories API
@@ -142,7 +142,7 @@ Use `A2AInstrumentor` to automatically track all A2A agents without decorators (
 from ioc_cfn_mas_client import Client, A2AInstrumentor
 from a2a.server.agent_execution import AgentExecutor
 
-client = Client(base_url="http://localhost:9002")
+client = Client(cfn_url="http://localhost:9002")
 
 # One-time setup - instruments ALL AgentExecutor classes automatically
 instrumentor = A2AInstrumentor(
@@ -205,7 +205,7 @@ For a complete example, see `examples/example.py`\.
 
 The `Client` constructor accepts the following parameters:
 
-- `base_url` \(required\): API base URL \(e\.g\., `http://localhost:9002`\)
+- `cfn_url` \(required\): CFN API endpoint URL \(e\.g\., `http://localhost:9002`\)
 - `timeout` \(optional\): Request timeout in seconds
 - `configuration` \(optional\): Pre\-configured Configuration object \(for advanced users\)
 - `api_client` \(optional\): Pre\-configured ApiClient object \(for advanced users\)
@@ -214,7 +214,7 @@ The `Client` constructor accepts the following parameters:
 
 Optional environment variable:
 
-- `CFN_BASE_URL`: API base URL \(defaults to `http://localhost:9002` if not set\)
+- `CFN_URL`: CFN API endpoint URL \(defaults to `http://localhost:9002` if not set\)
 
 ## Development (macOS)
 

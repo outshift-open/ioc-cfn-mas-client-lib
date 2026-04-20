@@ -34,7 +34,7 @@ class A2AInstrumentor:
         >>> from ioc_cfn_mas_client import Client
         >>> from ioc_cfn_mas_client.instrumentation import A2AInstrumentor
         >>>
-        >>> client = Client(base_url="http://localhost:9002")
+        >>> client = Client(cfn_url="http://localhost:9002")
         >>> instrumentor = A2AInstrumentor(
         ...     client=client,
         ...     workspace_id="ws1",
