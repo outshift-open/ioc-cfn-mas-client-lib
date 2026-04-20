@@ -41,11 +41,10 @@ The `A2AInstrumentor` automatically instruments all A2A agents to publish their 
 ## Installation
 
 **Requirements:**
-- Python >= 3.10 (due to a2a-sdk constraint)
+- Python >= 3.10
 
 ```bash
 pip install ioc-cfn-mas-client-lib
-pip install a2a-sdk[http-server]  # Latest: 0.3.26, tested with 0.3.x
 ```
 
 ## Usage
@@ -259,9 +258,9 @@ The `A2AInstrumentor` follows the same pattern as [Observe SDK](https://github.c
 
 ### "A2A SDK not found"
 
-```python
-# Install A2A SDK
-pip install a2a-sdk
+```bash
+# Install the SDK (includes A2A dependencies)
+pip install ioc-cfn-mas-client-lib
 ```
 
 ### "Already instrumented"

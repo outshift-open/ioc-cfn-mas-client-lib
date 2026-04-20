@@ -8,11 +8,10 @@ The `a2a/` directory shows how to automatically instrument Google A2A agents usi
 
 ### Prerequisites
 
-**Requires Python >= 3.10** (a2a-sdk constraint)
+**Requires Python >= 3.10**
 
 ```bash
-pip install ioc_cfn_mas_client_lib
-pip install a2a-sdk[http-server]  # Latest: 0.3.26
+uv sync
 ```
 
 ### Running the Multi-Agent Example

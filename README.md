@@ -11,13 +11,10 @@ This repository contains:
 
 ## Installation
 
+**Requires Python >= 3.10**
+
 ```bash
 pip install ioc_cfn_mas_client_lib
-```
-
-**For A2A Instrumentation (requires Python >= 3.10):**
-```bash
-pip install a2a-sdk[http-server]  # Latest: 0.3.26
 ```
 
 ## Quick start
