@@ -10,12 +10,15 @@ from __future__ import annotations
 
 import functools
 import importlib.util
+import logging
 import sys
 from datetime import datetime, timezone
 from typing import Optional
 from uuid import uuid4
 
 from ioc_cfn_mas_client.client import Client
+
+logger = logging.getLogger(__name__)
 
 
 class A2AInstrumentor:
@@ -31,7 +34,7 @@ class A2AInstrumentor:
         >>> from ioc_cfn_mas_client import Client
         >>> from ioc_cfn_mas_client.instrumentation import A2AInstrumentor
         >>>
-        >>> client = Client(base_url="http://localhost:9010")
+        >>> client = Client(base_url="http://localhost:9002")
         >>> instrumentor = A2AInstrumentor(
         ...     client=client,
         ...     workspace_id="ws1",
@@ -74,7 +77,7 @@ class A2AInstrumentor:
     def instrument(self) -> None:
         """Apply instrumentation by monkey-patching AgentExecutor."""
         if self._instrumented:
-            print("[CFN] Already instrumented, skipping...")
+            logger.info("Already instrumented, skipping...")
             return
 
         # Check if A2A SDK is available
@@ -119,7 +122,7 @@ class A2AInstrumentor:
                                 direction="input",
                             )
                         except Exception as e:
-                            print(f"[CFN] Input publish failed: {e}", file=sys.stderr, flush=True)
+                            logger.error(f"Input publish failed: {e}")
 
                     # 2. Call original execute
                     result = await original_execute(self, context, event_queue)
@@ -137,7 +140,7 @@ class A2AInstrumentor:
                                 result=result,
                             )
                         except Exception as e:
-                            print(f"[CFN] Output publish failed: {e}", file=sys.stderr, flush=True)
+                            logger.error(f"Output publish failed: {e}")
 
                     return result
                 return instrumented_execute
@@ -169,7 +172,7 @@ class A2AInstrumentor:
             patch_subclasses(AgentExecutor)
             self._instrumented = True
 
-            print(f"[CFN] ✓ Instrumented AgentExecutor for workspace={workspace_id}, mas={mas_id}")
+            logger.info(f"✓ Instrumented AgentExecutor for workspace={workspace_id}, mas={mas_id}")
 
         except ImportError as e:
             raise ImportError(f"Failed to instrument A2A SDK: {e}")
@@ -188,7 +191,7 @@ class A2AInstrumentor:
                 del self._original_methods["AgentExecutor.execute"]
 
             self._instrumented = False
-            print("[CFN] ✓ Uninstrumented AgentExecutor")
+            logger.info("✓ Uninstrumented AgentExecutor")
 
         except ImportError:
             pass
@@ -255,8 +258,7 @@ def _publish_a2a_message(
         interaction_type="message",
         data=message_data,
     )
-    print(f"[CFN] Query from shared memory: workspace_id={workspace_id}, mas_id={mas_id}, agent_id={agent_id}",
-          file=sys.stderr, flush=True)
+    logger.info(f"Query from shared memory: workspace_id={workspace_id}, mas_id={mas_id}, agent_id={agent_id}")
 
 
 def _publish_a2a_task_completion(
@@ -312,8 +314,7 @@ def _publish_a2a_task_completion(
         interaction_type="task_completion",
         data=task_data,
     )
-    print(f"[CFN] Update to shared memory: workspace_id={workspace_id}, mas_id={mas_id}, agent_id={agent_id}",
-          file=sys.stderr, flush=True)
+    logger.info(f"Update to shared memory: workspace_id={workspace_id}, mas_id={mas_id}, agent_id={agent_id}")
 
 
 def _serialize_parts(message) -> list:

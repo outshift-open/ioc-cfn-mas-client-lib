@@ -29,13 +29,13 @@ class Client:
     wrapping the auto-generated OpenAPI client with a more intuitive interface.
 
     Args:
-        base_url: API endpoint URL (e.g., "http://localhost:9010")
+        base_url: API endpoint URL (e.g., "http://localhost:9002")
         timeout: Request timeout in seconds (default: None)
         configuration: Pre-configured Configuration object (for advanced users)
         api_client: Pre-configured ApiClient object (for advanced users)
 
     Example:
-        >>> client = Client(base_url="http://localhost:9010")
+        >>> client = Client(base_url="http://localhost:9002")
         >>> response = client.create_shared_memories(
         ...     workspace_id="ws1",
         ...     mas_id="sys1",

@@ -150,7 +150,7 @@ async def run_agent_b_server():
 
     # Apply CFN instrumentation to automatically log all A2A interactions
     logger.info("Applying CFN instrumentation (monkey patching)...")
-    cfn_client = Client(base_url=os.getenv("CFN_BASE_URL", "http://localhost:9010"))
+    cfn_client = Client(base_url=os.getenv("CFN_BASE_URL", "http://localhost:9002"))
     instrumentor = A2AInstrumentor(
         client=cfn_client,
         workspace_id="demo-workspace",
@@ -242,7 +242,7 @@ async def run_agent_a_client():
 
     # Apply CFN instrumentation to Agent A
     logger.info("Applying CFN instrumentation to Agent A...")
-    cfn_client = Client(base_url=os.getenv("CFN_BASE_URL", "http://localhost:9010"))
+    cfn_client = Client(base_url=os.getenv("CFN_BASE_URL", "http://localhost:9002"))
     instrumentor = A2AInstrumentor(
         client=cfn_client,
         workspace_id="demo-workspace",

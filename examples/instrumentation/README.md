@@ -51,7 +51,7 @@ The instrumentation uses monkey patching to automatically wrap `AgentExecutor.ex
 from ioc_cfn_mas_client import Client, A2AInstrumentor
 
 # Initialize CFN client
-cfn_client = Client(base_url="http://localhost:9010")
+cfn_client = Client(base_url="http://localhost:9002")
 
 # Apply instrumentation (monkey patching)
 instrumentor = A2AInstrumentor(

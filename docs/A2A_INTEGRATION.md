@@ -57,7 +57,7 @@ from ioc_cfn_mas_client import Client, A2AInstrumentor
 from a2a.server.agent_execution import AgentExecutor
 
 # Initialize CFN client
-client = Client(base_url="http://localhost:9010")
+client = Client(base_url="http://localhost:9002")
 
 # One-time setup - instrument ALL AgentExecutor classes
 instrumentor = A2AInstrumentor(
@@ -275,7 +275,7 @@ instrumentor.instrument()  # Second call: Prints warning and skips
 
 ### Messages Not Appearing in CFN
 
-1. Check CFN server is running: `curl http://localhost:9010/health`
+1. Verify CFN server is running
 2. Verify workspace and MAS exist
 3. Check client base URL is correct
 4. Look for error messages in console output
