@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: agent-a
+  namespace: a2a-demo
+  labels:
+    app: agent-a
+  annotations:
+    sidecar.istio.io/inject: "true"
+spec:
+  restartPolicy: Never
+  containers:
+  - name: agent-a
+    image: agent-a:latest
+    imagePullPolicy: Never
+  - name: a2a-sidecar
+    image: a2a-sidecar:latest
+    imagePullPolicy: Never
+    env:
+    - name: CFN_URL
+      value: "http://mock-cfn.a2a-demo.svc.cluster.local:9002"
+    - name: WORKSPACE_ID
+      value: "demo-workspace"
+    - name: MAS_ID
+      value: "demo-mas"

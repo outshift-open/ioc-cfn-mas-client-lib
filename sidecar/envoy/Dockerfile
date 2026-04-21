@@ -27,6 +27,10 @@ RUN pip install --no-cache-dir -e .
 COPY sidecar/envoy/ ./sidecar/envoy/
 WORKDIR /app/sidecar/envoy
 
+# Copy Envoy config to standard location
+RUN mkdir -p /etc/envoy && \
+    cp envoy.yaml /etc/envoy/envoy.yaml
+
 # Make entrypoint executable
 RUN chmod +x entrypoint.sh
 
