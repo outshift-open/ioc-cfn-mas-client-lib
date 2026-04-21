@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any, Dict, List, Optional
 
 from generated.api.memory_operations_api import MemoryOperationsApi
@@ -116,6 +117,39 @@ class Client:
             workspace_id=workspace_id,
             mas_id=mas_id,
             create_or_update_request=request,
+        )
+
+    async def create_shared_memories_async(
+        self,
+        workspace_id: str,
+        mas_id: str,
+        data: Dict[str, Any],
+        format: str,
+        agent_id: Optional[str] = None,
+        request_id: Optional[str] = None,
+    ) -> Any:
+        """Async version of create_shared_memories.
+
+        Runs the synchronous SDK call in a thread pool to avoid blocking
+        the event loop.
+
+        Args:
+            Same as create_shared_memories()
+
+        Returns:
+            API response with status and message
+        """
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            lambda: self.create_shared_memories(
+                workspace_id=workspace_id,
+                mas_id=mas_id,
+                data=data,
+                format=format,
+                agent_id=agent_id,
+                request_id=request_id,
+            )
         )
 
     def query_shared_memories(
