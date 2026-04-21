@@ -172,5 +172,7 @@ src/.openapi-generator-ignore
 src/.openapi-generator/
 src/generated_README.md
 
+.claude/
+
 # Istio downloads
 istio-*/
