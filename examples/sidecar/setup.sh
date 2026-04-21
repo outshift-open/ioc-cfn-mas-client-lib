@@ -54,9 +54,9 @@ echo "Step 3: Building Docker images..."
 
 cd "${REPO_ROOT}"
 
-# Build sidecar image
-echo "Building a2a-sidecar..."
-docker build -t a2a-sidecar:latest -f sidecar/envoy/Dockerfile .
+# Build ext-authz sidecar image (Istio approach)
+echo "Building ext-authz-only..."
+docker build -t ext-authz-only:latest -f sidecar/istio/Dockerfile .
 
 # Build demo images
 cd examples/sidecar
@@ -70,7 +70,7 @@ docker build -t agent-a:latest -f Dockerfile.agent_a .
 # Step 4: Load images into kind
 echo ""
 echo "Step 4: Loading images into kind..."
-kind load docker-image a2a-sidecar:latest --name ${CLUSTER_NAME}
+kind load docker-image ext-authz-only:latest --name ${CLUSTER_NAME}
 kind load docker-image mock-cfn:latest --name ${CLUSTER_NAME}
 kind load docker-image agent-b:latest --name ${CLUSTER_NAME}
 kind load docker-image agent-a:latest --name ${CLUSTER_NAME}
@@ -79,6 +79,7 @@ kind load docker-image agent-a:latest --name ${CLUSTER_NAME}
 echo ""
 echo "Step 5: Deploying to Kubernetes..."
 kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/envoy-filter.yaml
 kubectl apply -f k8s/mock-cfn.yaml
 kubectl apply -f k8s/agent-a.yaml
 kubectl apply -f k8s/agent-b.yaml
@@ -99,9 +100,9 @@ echo ""
 echo "Watch logs:"
 echo "  Mock CFN API:    kubectl logs -f -n a2a-demo deployment/mock-cfn"
 echo "  Agent A:         kubectl logs -f -n a2a-demo deployment/agent-a -c agent-a"
-echo "  Agent A Sidecar: kubectl logs -f -n a2a-demo deployment/agent-a -c a2a-sidecar"
+echo "  Agent A Sidecar: kubectl logs -f -n a2a-demo deployment/agent-a -c ext-authz"
 echo "  Agent B:         kubectl logs -f -n a2a-demo deployment/agent-b -c agent-b"
-echo "  Agent B Sidecar: kubectl logs -f -n a2a-demo deployment/agent-b -c a2a-sidecar"
+echo "  Agent B Sidecar: kubectl logs -f -n a2a-demo deployment/agent-b -c ext-authz"
 echo ""
 echo "Cleanup:"
 echo "  kind delete cluster --name ${CLUSTER_NAME}"

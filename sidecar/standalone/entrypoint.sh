@@ -13,7 +13,7 @@ echo "========================================="
 # This service handles A2A message interception and CFN integration
 # Envoy calls this service via gRPC for authorization decisions on each request
 echo "Starting ext_authz gRPC service..."
-python ext_authz_service.py \
+python ../shared/ext_authz_service.py \
     --cfn-url="${CFN_URL}" \
     --workspace-id="${WORKSPACE_ID}" \
     --mas-id="${MAS_ID}" &

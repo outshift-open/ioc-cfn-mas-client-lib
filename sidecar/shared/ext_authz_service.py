@@ -12,9 +12,9 @@ from envoy.service.auth.v3 import external_auth_pb2, external_auth_pb2_grpc
 from envoy.type.v3 import http_status_pb2
 from google.rpc import status_pb2, code_pb2
 
-from sidecar.envoy.message_parser import A2AMessageParser, A2AMessage
-from sidecar.envoy.logger import log_a2a_message
-from sidecar.envoy.config import ProxyConfig
+from sidecar.shared.message_parser import A2AMessageParser, A2AMessage
+from sidecar.shared.logger import log_a2a_message
+from sidecar.shared.config import ProxyConfig
 from ioc_cfn_mas_client import Client
 
 logging.basicConfig(level=logging.INFO)

@@ -1,24 +1,20 @@
-"""A2A Sidecar - Envoy-based transparent proxy (ZTA Pattern).
+"""A2A Sidecar - Transparent A2A message interception.
 
-This package provides a production-ready sidecar that intercepts A2A traffic
-using Envoy proxy + ext_authz + iptables for truly transparent operation.
+This package provides production-ready sidecar deployment patterns for intercepting
+A2A protocol messages using Envoy's ext_authz filter.
 
 The sidecar runs as a separate container alongside your agent with zero
 configuration changes needed in the agent application.
 
 Architecture:
-    Agent (unchanged) → iptables → Envoy → ext_authz → Parse & Log → CFN
+    Agent (unchanged) → Envoy (Istio or standalone) → ext_authz → CFN
 
-Components:
-    - Envoy proxy: Traffic interception and routing
-    - ext_authz: gRPC service for A2A message parsing and CFN integration
-    - iptables: Transparent traffic redirection
-    - Shared utilities: Message parser, logger, config (in envoy/ folder)
+Deployment Options:
+    - istio/: Recommended for production - uses Istio EnvoyFilter (no port conflicts)
+    - standalone/: For non-Istio environments - custom Envoy + ext_authz
+    - shared/: Common Python code (ext_authz service, message parser, config)
 
-For implementation details, see: sidecar/envoy/README.md
+For implementation details, see: sidecar/README.md
 """
 
 __version__ = "1.0.0"
-
-# All implementation is in sidecar/envoy/
-# No exports from this package - use the ext_authz service directly

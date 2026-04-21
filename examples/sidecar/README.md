@@ -23,11 +23,20 @@ Both agents act as **server + client**, sending messages back and forth every 5-
 
 ## Important Setup Notes
 
+### Architecture
+
+This demo uses the **Istio EnvoyFilter approach**:
+- Istio's Envoy proxy is configured via `EnvoyFilter` CRD
+- Only the **ext-authz** Python service runs as a sidecar container
+- No custom Envoy binary needed
+- No port conflicts
+
 ### Istio Injection Configuration
 
 **Agent Pods** (Agent A & Agent B):
 - Have Istio sidecar injection **enabled** via namespace label: `istio-injection: enabled`
-- Each pod has the **a2a-sidecar** container for A2A interception
+- Have label `cfn/a2a-sidecar: enabled` (matched by EnvoyFilter)
+- Each pod has the **ext-authz** container for A2A interception
 - Traffic between agents is intercepted transparently
 
 **Mock CFN API**:
@@ -74,9 +83,9 @@ kubectl logs -f -n a2a-demo deployment/agent-a -c agent-a
 # See Agent B (sends to A every 7s, receives from A)
 kubectl logs -f -n a2a-demo deployment/agent-b -c agent-b
 
-# See sidecars intercepting traffic
-kubectl logs -f -n a2a-demo deployment/agent-a -c a2a-sidecar
-kubectl logs -f -n a2a-demo deployment/agent-b -c a2a-sidecar
+# See ext-authz sidecars intercepting traffic
+kubectl logs -f -n a2a-demo deployment/agent-a -c ext-authz
+kubectl logs -f -n a2a-demo deployment/agent-b -c ext-authz
 ```
 
 ## Verify Zero Code Changes

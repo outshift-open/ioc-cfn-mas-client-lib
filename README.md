@@ -205,14 +205,16 @@ For production deployments, use the **Envoy-based sidecar** following the **ZTA 
 **Quick Start:**
 
 ```bash
-# 1. Build sidecar image
-docker build -t a2a-sidecar:latest -f sidecar/envoy/Dockerfile .
+# 1. Build ext-authz image (Istio approach)
+docker build -t ext-authz-only:latest -f sidecar/istio/Dockerfile .
 
-# 2. Deploy to Kubernetes (requires Istio)
-kubectl apply -f sidecar/envoy/kubernetes/agent-with-sidecar.yaml
+# 2. Apply EnvoyFilter to Kubernetes (requires Istio)
+kubectl apply -f sidecar/istio/envoy-filter.yaml
 
-# 3. That's it! Agent is completely agnostic - no changes needed!
-# Istio automatically injects the sidecar and sets up iptables
+# 3. Deploy your agent with ext-authz sidecar container
+# See examples/sidecar/k8s/ for complete manifests
+
+# 4. That's it! Agent is completely agnostic - no changes needed!
 ```
 
 **Key Features:**
@@ -232,7 +234,8 @@ kubectl apply -f sidecar/envoy/kubernetes/agent-with-sidecar.yaml
 
 **Documentation:**
 
-- [Envoy Sidecar README](sidecar/envoy/README.md) - Complete implementation guide
+- [Sidecar README](sidecar/README.md) - Complete implementation guide
+- [Working Demo](examples/sidecar/) - End-to-end example with Istio
 - [ZTA Implementation Summary](docs/ZTA_IMPLEMENTATION_SUMMARY.md) - Architecture details
 - [Transparent Interception Guide](docs/TRANSPARENT_INTERCEPTION.md) - How iptables works
 

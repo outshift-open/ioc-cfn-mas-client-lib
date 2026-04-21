@@ -28,9 +28,12 @@ COPY pyproject.toml ./
 # Install MAS client library
 RUN pip install --no-cache-dir -e .
 
-# Copy sidecar code
-COPY sidecar/envoy/ ./sidecar/envoy/
-WORKDIR /app/sidecar/envoy
+# Copy shared Python code
+COPY sidecar/shared/ ./sidecar/shared/
+
+# Copy standalone-specific files (envoy.yaml, entrypoint.sh)
+COPY sidecar/standalone/ ./sidecar/standalone/
+WORKDIR /app/sidecar/standalone
 
 # Set PYTHONPATH so absolute imports work
 ENV PYTHONPATH=/app
