@@ -182,6 +182,77 @@ uv run python examples/instrumentation/a2a/multi_agent_example.py --client
 
 See [examples/instrumentation/a2a/multi_agent_example.py](examples/instrumentation/a2a/multi_agent_example.py) for the complete code, and [examples/instrumentation/README.md](examples/instrumentation/README.md) for more details.
 
+### A2A Sidecar Proxy Pattern (Production - ZTA Approach with Istio)
+
+For production deployments, use the **Envoy-based sidecar** following the **ZTA (Zero Trust Architecture)** pattern with **Istio service mesh**. This provides **truly transparent** interception with zero agent configuration.
+
+**Prerequisites:** Istio must be installed in your Kubernetes cluster.
+
+```
+┌──────────────────────────────────────┐
+│        Kubernetes Pod                │
+│                                      │
+│  Agent (UNCHANGED) → Istio/iptables  │
+│         ↓                            │
+│      Envoy Proxy                     │
+│         ↓                            │
+│   ext_authz (A2A Parser)             │
+│         ↓                            │
+│   Logs/CFN API                       │
+└──────────────────────────────────────┘
+```
+
+**Quick Start:**
+
+```bash
+# 1. Build ext-authz image (Istio approach)
+docker build -t ext-authz-only:latest -f sidecar/istio/Dockerfile .
+
+# 2. Apply EnvoyFilter to Kubernetes (requires Istio)
+kubectl apply -f sidecar/istio/envoy-filter.yaml
+
+# 3. Deploy your agent with ext-authz sidecar container
+# See examples/sidecar/k8s/ for complete manifests
+
+# 4. That's it! Agent is completely agnostic - no changes needed!
+```
+
+**Key Features:**
+
+- **✅ Truly agnostic** - zero code changes, zero configuration changes
+- **✅ Istio-based** - automatic sidecar injection and iptables setup
+- **✅ Production-ready** - uses Istio service mesh
+- **✅ Language agnostic** - works with any HTTP client (Python, Go, Node.js, Java, Rust, etc.)
+- **✅ High performance** - Envoy proxy (50K+ req/s)
+- **✅ Protocol-aware** - parses A2A messages (JSON-RPC 2.0)
+
+**Architecture:**
+
+- **Istio**: Automatic sidecar injection and traffic interception
+- **Envoy Proxy**: C++ high-performance proxy for traffic interception
+- **ext_authz Service**: Python gRPC service for A2A message parsing
+
+**Documentation:**
+
+- [Sidecar README](sidecar/README.md) - Complete implementation guide
+- [Working Demo](examples/sidecar/) - End-to-end example with Istio
+- [ZTA Implementation Summary](docs/ZTA_IMPLEMENTATION_SUMMARY.md) - Architecture details
+- [Transparent Interception Guide](docs/TRANSPARENT_INTERCEPTION.md) - How iptables works
+
+**Comparison with Monkey-Patching:**
+
+| Feature | Envoy Sidecar (ZTA) | Monkey-Patching |
+|---------|---------------------|-----------------|
+| **Agent Code** | ✅ Unchanged | ⚠️ One instrumentation call |
+| **Agent Config** | ✅ Unchanged | ✅ Unchanged |
+| **Languages** | Any (Python, Go, Node.js, Java, etc.) | Python only |
+| **Performance** | 50K+ req/s | Minimal overhead |
+| **Production** | ✅ Recommended | Development only |
+| **Platform** | Kubernetes | Any |
+| **Isolation** | Strong (separate process) | Weak (same process) |
+
+**Recommendation:** Use **Envoy sidecar for production** (truly agnostic, language-independent), **monkey-patching for development/testing** (quick setup, Python-only).
+
 ### Advanced Usage
 
 For power users who need direct access to the generated OpenAPI clients:

@@ -172,6 +172,7 @@ src/.openapi-generator-ignore
 src/.openapi-generator/
 src/generated_README.md
 
-# Claude Code project files (keep .claude folder but ignore docs)
-CLAUDE.md
-docs/claude/
+.claude/
+
+# Istio downloads
+istio-*/

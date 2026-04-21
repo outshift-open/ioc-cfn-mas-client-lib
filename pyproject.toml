@@ -19,6 +19,9 @@ dependencies = [
   "typing-extensions>=4.7",
   "a2a-sdk[http-server]==0.3.26",
   "uvicorn>=0.44.0",
+  "grpcio>=1.60",
+  "grpcio-tools>=1.60",
+  "xds-protos>=1.60",
 ]
 
 [project.optional-dependencies]
