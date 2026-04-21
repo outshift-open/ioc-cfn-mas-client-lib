@@ -34,18 +34,18 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 8001
-      - name: ext-authz
-        image: ext-authz-only:latest
+      - name: cfn-sidecar
+        image: cfn-sidecar:latest
         imagePullPolicy: Never
         env:
         - name: CFN_URL
-          value: "http://mock-cfn.a2a-demo.svc.cluster.local:9002"
+          value: "http://cfn.a2a-demo.svc.cluster.local:9002"
         - name: WORKSPACE_ID
           value: "demo-workspace"
         - name: MAS_ID
           value: "demo-mas"
         ports:
-        - name: ext-authz
+        - name: cfn-sidecar
           containerPort: 9001
           protocol: TCP
         livenessProbe:
