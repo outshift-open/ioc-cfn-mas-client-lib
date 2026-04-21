@@ -160,6 +160,8 @@ class MyA2AAgent(AgentExecutor):
         pass
 ```
 
+
+
 **Key Features:**
 
 - **Zero code changes** - works with any A2A agent
@@ -181,6 +183,61 @@ uv run python examples/instrumentation/a2a/multi_agent_example.py --client
 ```
 
 See [examples/instrumentation/a2a/multi_agent_example.py](examples/instrumentation/a2a/multi_agent_example.py) for the complete code, and [examples/instrumentation/README.md](examples/instrumentation/README.md) for more details.
+
+### MCP Client Integration
+
+Use the MCP (Model Context Protocol) client methods integrated into the main Client class:
+
+```python
+from ioc_cfn_mas_client import Client
+
+# Initialize client with MCP server URL
+client = Client(cfn_url="http://localhost:9001")
+
+# Retain shared memories using MCP-style interface
+result = await client.retain(
+    workspace_id="my-workspace",
+    mas_id="my-mas",
+    payload={
+        "metadata": {"format": "openclaw"},
+        "data": [{"example": "conversation data"}]
+    },
+    agent_id="my-agent"
+)
+print(f"Retain result: {result['status']}")
+
+# Recall shared memories using natural language intent
+result = await client.recall(
+    workspace_id="my-workspace",
+    mas_id="my-mas",
+    intent="Find information about user preferences",
+    search_strategy="semantic_graph_traversal",
+    agent_id="my-agent"
+)
+print(f"Recall result: {result['message']}")
+```
+
+**Key Features:**
+
+- **Integrated MCP Methods** - `retain()` and `recall()` methods built into the main Client class
+- **Mock Responses** - Returns structured mock data for testing without live MCP server
+- **OpenClaw Format** - Supports conversation data for retain operations
+- **Natural Language Queries** - Use intent-based queries for recall operations
+- **Semantic Search** - Built-in semantic graph traversal for memory retrieval
+
+**Examples:**
+
+```bash
+# Run the MCP client example demonstrating retain/recall methods
+uv run python examples/mcp/client_example.py
+
+# For direct MCP protocol testing (advanced users):
+uv run python -m src.ioc_cfn_mas_client.mcp.mcp_client_sample --operation list_tools
+uv run python -m src.ioc_cfn_mas_client.mcp.mcp_client_sample --operation retain
+uv run python -m src.ioc_cfn_mas_client.mcp.mcp_client_sample --operation recall
+```
+
+For complete examples and implementation details, see [examples/mcp/client_example.py](examples/mcp/client_example.py) and [src/ioc_cfn_mas_client/mcp/](src/ioc_cfn_mas_client/mcp/).
 
 ### Advanced Usage
 
