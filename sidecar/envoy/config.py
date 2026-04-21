@@ -2,7 +2,6 @@
 
 import os
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -10,14 +9,14 @@ class ProxyConfig:
     """Configuration for the A2A ext_authz service.
 
     Attributes:
-        cfn_url: CFN API endpoint URL (optional)
-        workspace_id: CFN workspace ID (optional)
-        mas_id: CFN MAS ID (optional)
+        cfn_url: CFN API endpoint URL (required)
+        workspace_id: CFN workspace ID (required)
+        mas_id: CFN MAS ID (required)
     """
 
-    cfn_url: Optional[str] = None
-    workspace_id: Optional[str] = None
-    mas_id: Optional[str] = None
+    cfn_url: str
+    workspace_id: str
+    mas_id: str
 
     @classmethod
     def from_env(cls) -> "ProxyConfig":
@@ -27,9 +26,23 @@ class ProxyConfig:
             CFN_URL: CFN API endpoint
             WORKSPACE_ID: CFN workspace ID
             MAS_ID: CFN MAS ID
+
+        Raises:
+            ValueError: If any required environment variable is missing
         """
+        cfn_url = os.getenv("CFN_URL")
+        workspace_id = os.getenv("WORKSPACE_ID")
+        mas_id = os.getenv("MAS_ID")
+
+        if not cfn_url:
+            raise ValueError("CFN_URL environment variable is required")
+        if not workspace_id:
+            raise ValueError("WORKSPACE_ID environment variable is required")
+        if not mas_id:
+            raise ValueError("MAS_ID environment variable is required")
+
         return cls(
-            cfn_url=os.getenv("CFN_URL"),
-            workspace_id=os.getenv("WORKSPACE_ID"),
-            mas_id=os.getenv("MAS_ID"),
+            cfn_url=cfn_url,
+            workspace_id=workspace_id,
+            mas_id=mas_id,
         )

@@ -27,15 +27,8 @@ logger = logging.getLogger(__name__)
 class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
     def __init__(self, config: ProxyConfig):
         self.config = config
-        self.cfn_client: Optional[Client] = None
-
-        if config.cfn_url and config.workspace_id and config.mas_id:
-            try:
-                self.cfn_client = Client(cfn_url=config.cfn_url)
-                logger.info(f"CFN client initialized: {config.cfn_url}")
-            except Exception as e:
-                logger.error(f"Failed to initialize CFN client: {e}")
-
+        self.cfn_client = Client(cfn_url=config.cfn_url)
+        logger.info(f"CFN client initialized: {config.cfn_url}")
         logger.info("A2A ext_authz service initialized")
 
     async def Check(
@@ -59,8 +52,7 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
 
                 if msg:
                     log_a2a_message(msg, source, http_req.host or "unknown")
-                    if self.cfn_client:
-                        await self._send_to_cfn(msg)
+                    await self._send_to_cfn(msg)
 
             return external_auth_pb2.CheckResponse(
                 status=status_pb2.Status(code=code_pb2.OK),
@@ -77,9 +69,6 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
             )
 
     async def _send_to_cfn(self, message: A2AMessage):
-        if not self.cfn_client:
-            return
-
         try:
             self.cfn_client.create_shared_memories(
                 workspace_id=self.config.workspace_id,
@@ -126,9 +115,9 @@ async def serve(config: Optional[ProxyConfig] = None):
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cfn-url")
-    parser.add_argument("--workspace-id")
-    parser.add_argument("--mas-id")
+    parser.add_argument("--cfn-url", required=True, help="CFN API endpoint URL")
+    parser.add_argument("--workspace-id", required=True, help="CFN workspace ID")
+    parser.add_argument("--mas-id", required=True, help="CFN MAS ID")
     args = parser.parse_args()
 
     config = ProxyConfig(
