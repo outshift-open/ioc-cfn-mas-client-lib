@@ -2,9 +2,8 @@
 """Envoy ext_authz service for A2A traffic interception."""
 
 import asyncio
+import json
 import logging
-import sys
-import os
 from typing import Optional
 
 import grpc
@@ -13,11 +12,9 @@ from envoy.service.auth.v3 import external_auth_pb2, external_auth_pb2_grpc
 from envoy.type.v3 import http_status_pb2
 from google.rpc import status_pb2, code_pb2
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
-
-from message_parser import A2AMessageParser, A2AMessage
-from logger import log_a2a_message
-from config import ProxyConfig
+from sidecar.envoy.message_parser import A2AMessageParser, A2AMessage
+from sidecar.envoy.logger import log_a2a_message
+from sidecar.envoy.config import ProxyConfig
 from ioc_cfn_mas_client import Client
 
 logging.basicConfig(level=logging.INFO)
@@ -41,7 +38,15 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
             source_addr = request.attributes.source.address.socket_address
             source = f"{source_addr.address}:{source_addr.port_value}"
 
-            if A2AMessageParser.is_a2a_message(http_req.method, http_req.path, dict(http_req.headers)):
+            # Parse body first for accurate A2A detection
+            parsed_body = None
+            if http_req.body:
+                try:
+                    parsed_body = json.loads(http_req.body)
+                except (json.JSONDecodeError, ValueError):
+                    pass
+
+            if A2AMessageParser.is_a2a_message(http_req.method, http_req.path, dict(http_req.headers), parsed_body):
                 msg = A2AMessageParser.parse_message(
                     method=http_req.method,
                     path=http_req.path,
@@ -77,7 +82,7 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
         try:
             # TODO: Using "openclaw" format for now until Cognition Engines
             # can digest "a2a-protocol" message format
-            self.cfn_client.create_shared_memories(
+            await self.cfn_client.create_shared_memories_async(
                 workspace_id=self.config.workspace_id,
                 mas_id=self.config.mas_id,
                 data={

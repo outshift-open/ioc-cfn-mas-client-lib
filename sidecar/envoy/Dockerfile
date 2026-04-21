@@ -27,6 +27,9 @@ RUN pip install --no-cache-dir -e .
 COPY sidecar/envoy/ ./sidecar/envoy/
 WORKDIR /app/sidecar/envoy
 
+# Set PYTHONPATH so absolute imports work
+ENV PYTHONPATH=/app
+
 # Copy Envoy config to standard location
 RUN mkdir -p /etc/envoy && \
     cp envoy.yaml /etc/envoy/envoy.yaml

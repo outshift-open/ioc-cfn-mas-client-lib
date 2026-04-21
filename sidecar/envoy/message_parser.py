@@ -45,11 +45,32 @@ class A2AMessageParser:
     AGENT_CARD_PATH = "/.well-known/agent.json"
 
     @classmethod
-    def is_a2a_message(cls, method: str, path: str, headers: Dict[str, str]) -> bool:
+    def is_a2a_message(cls, method: str, path: str, headers: Dict[str, str], body: Optional[dict] = None) -> bool:
+        """Check if request is an A2A protocol message.
+
+        Args:
+            method: HTTP method
+            path: Request path
+            headers: HTTP headers
+            body: Optional parsed JSON body for more accurate detection
+
+        Returns:
+            True if this is an A2A message
+        """
+        # Check agent card endpoint
         if path == cls.AGENT_CARD_PATH or path.endswith("/agent.json"):
             return True
+
+        if method != "POST":
+            return False
+
+        # If body is already parsed, check jsonrpc field to avoid false positives
+        if body and isinstance(body, dict):
+            return body.get("jsonrpc") == "2.0" and body.get("method") in cls.A2A_JSONRPC_METHODS
+
+        # Fall back to content-type only if body not yet parsed
         content_type = headers.get("content-type", "").lower()
-        return method == "POST" and "application/json" in content_type
+        return "application/json" in content_type
 
     @classmethod
     def parse_message(cls, method: str, path: str, headers: Dict[str, str], body: bytes, direction: str = "request") -> Optional[A2AMessage]:
