@@ -4,6 +4,6 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir fastapi uvicorn
 
-COPY mock_cfn_api.py .
+COPY cfn_api.py .
 
-CMD ["python", "mock_cfn_api.py"]
+CMD ["python", "cfn_api.py"]

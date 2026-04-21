@@ -7,13 +7,13 @@ End-to-end demo showing **zero-code-change** A2A message interception.
 ```
 Agent A ←─ A2A ─→ Agent B
    │                 │
-[ext-authz]     [ext-authz]
+[cfn-sidecar]     [cfn-sidecar]
    │                 │
-   └──→ Mock CFN ←──┘
+   └──→ CFN ←──┘
 ```
 
 - Two agents exchange A2A messages every 5-7 seconds
-- Sidecars intercept and forward to Mock CFN API
+- Sidecars intercept and forward to CFN API
 - **Agents have zero awareness of sidecars** (check `agent_a.py` and `agent_b.py`)
 
 ## Run Demo
@@ -30,25 +30,25 @@ brew install kind
 
 ```bash
 # See intercepted messages
-kubectl logs -f -n a2a-demo deployment/mock-cfn
+kubectl logs -f -n a2a-demo deployment/cfn
 
 # See agents (unaware of interception)
 kubectl logs -f -n a2a-demo deployment/agent-a -c agent-a
 kubectl logs -f -n a2a-demo deployment/agent-b -c agent-b
 
 # See sidecars doing the work
-kubectl logs -f -n a2a-demo deployment/agent-a -c ext-authz
+kubectl logs -f -n a2a-demo deployment/agent-a -c cfn-sidecar
 ```
 
 ## How It Works
 
 **Istio EnvoyFilter Approach:**
 - Istio injects Envoy proxy into each pod automatically
-- `EnvoyFilter` CRD configures Envoy to call ext-authz service
-- ext-authz container (Python) detects A2A messages and sends to CFN
+- `EnvoyFilter` CRD configures Envoy to call cfn-sidecar service
+- cfn-sidecar container (Python) detects A2A messages and sends to CFN
 - Only pods with label `cfn/a2a-sidecar: enabled` are affected
 
-**Why Mock CFN has no Istio injection:**
+**Why CFN has no Istio injection:**
 - Annotation `sidecar.istio.io/inject: "false"` prevents sidecar injection
 - Avoids interception loop (sidecar → CFN would be intercepted again)
 
@@ -59,13 +59,13 @@ examples/sidecar/
 ├── setup.sh                   # One-command demo setup
 ├── agent_a.py                 # Agent A (no sidecar code!)
 ├── agent_b.py                 # Agent B (no sidecar code!)
-├── mock_cfn_api.py            # Mock CFN API
+├── mock_cfn_api.py            # CFN API
 └── k8s/
     ├── namespace.yaml         # Creates a2a-demo namespace
     ├── envoy-filter.yaml      # Configures Istio's Envoy
-    ├── agent-a.yaml           # Agent A + ext-authz sidecar
-    ├── agent-b.yaml           # Agent B + ext-authz sidecar
-    └── mock-cfn.yaml          # Mock CFN (no sidecar)
+    ├── agent-a.yaml           # Agent A + cfn-sidecar sidecar
+    ├── agent-b.yaml           # Agent B + cfn-sidecar sidecar
+    └── cfn.yaml          # CFN (no sidecar)
 ```
 
 ## Cleanup

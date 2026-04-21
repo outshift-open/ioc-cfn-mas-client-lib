@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mock-cfn
+  name: cfn
   namespace: a2a-demo
 spec:
   selector:
-    app: mock-cfn
+    app: cfn
   ports:
   - port: 9002
     targetPort: 9002
@@ -13,23 +13,23 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mock-cfn
+  name: cfn
   namespace: a2a-demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mock-cfn
+      app: cfn
   template:
     metadata:
       labels:
-        app: mock-cfn
+        app: cfn
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
       containers:
-      - name: mock-cfn
-        image: mock-cfn:latest
+      - name: cfn
+        image: cfn:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 9002

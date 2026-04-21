@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: a2a-ext-authz
+  name: cfn-a2a-sidecar
   namespace: a2a-demo
 spec:
   workloadSelector:
