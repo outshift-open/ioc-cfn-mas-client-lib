@@ -490,3 +490,113 @@ class Client:
             "interaction_type": interaction_type,
             "data_size": len(str(data)),
         }
+
+    async def retain(
+        self,
+        workspace_id: str,
+        mas_id: str,
+        payload: Dict[str, Any],
+        request_id: Optional[str] = None,
+        agent_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Retain shared memories using MCP client logic with mock response.
+        In production, this could call a real CFN endpoint.
+
+        Args:
+            workspace_id: Workspace identifier
+            mas_id: Multi-agent system identifier  
+            payload: Data payload to retain (OpenClaw conversation format)
+            request_id: Optional request identifier
+            agent_id: Optional agent identifier
+            
+        Returns:
+            Dict with retain operation result
+            
+        Example:
+            >>> await client.retain(
+            ...     workspace_id="my-workspace",
+            ...     mas_id="my-mas",
+            ...     payload={"data": "example"}
+            ... )
+            {'response_id': 'mock-retain-123', 'status': 'success', ...}
+        """
+        # Build tool arguments using same logic as MCP client sample
+        tool_args = {
+            "workspace_id": workspace_id,
+            "mas_id": mas_id,
+            "request_id": request_id or f"retain-{workspace_id}-{mas_id}",
+            "payload": payload,
+        }
+        
+        if agent_id:
+            tool_args["header"] = {"agent_id": agent_id}
+        
+        # Return mock response in expected format
+        return {
+            "response_id": tool_args["request_id"],
+            "status": "success", 
+            "message": f"Successfully saved mock data to graph 'graph_{mas_id.replace('-', '_')}'",
+            "workspace_id": workspace_id,
+            "mas_id": mas_id,
+            "nodes_saved": 6,
+            "edges_saved": 8,
+        }
+
+    async def recall(
+        self,
+        workspace_id: str,
+        mas_id: str,
+        intent: str,
+        search_strategy: Optional[str] = None,
+        request_id: Optional[str] = None,
+        agent_id: Optional[str] = None,
+        additional_context: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
+        """Recall shared memories using MCP client logic with mock response.
+        In production, this could call a real CFN endpoint.
+        
+        Args:
+            workspace_id: Workspace identifier
+            mas_id: Multi-agent system identifier
+            intent: User intent or natural-language query
+            search_strategy: Search strategy (defaults to "semantic_graph_traversal")
+            request_id: Optional request identifier
+            agent_id: Optional agent identifier
+            additional_context: Optional contextual information
+            
+        Returns:
+            Dict with recall operation result
+            
+        Example:
+            >>> await client.recall(
+            ...     workspace_id="my-workspace",
+            ...     mas_id="my-mas", 
+            ...     intent="Find user preferences"
+            ... )
+            {'response_id': 'mock-recall-123', 'message': '...', ...}
+        """
+        # Build tool arguments using same logic as MCP client sample
+        tool_args = {
+            "workspace_id": workspace_id,
+            "mas_id": mas_id,
+            "intent": intent,
+            "search_strategy": search_strategy or "semantic_graph_traversal",
+            "request_id": request_id or f"recall-{workspace_id}-{mas_id}",
+        }
+        
+        if agent_id:
+            tool_args["header"] = {"agent_id": agent_id}
+            
+        if additional_context:
+            tool_args["additional_context"] = additional_context
+        
+        # Return mock response in expected format
+        return {
+            "response_id": tool_args["request_id"],
+            "message": f"Mock recall result for intent: '{intent}'. Found relevant information about the requested topic from shared memory graph.",
+            "workspace_id": workspace_id,
+            "mas_id": mas_id,
+            "search_strategy": tool_args["search_strategy"],
+            "results_found": 3,
+            "confidence_score": 0.85,
+        }
