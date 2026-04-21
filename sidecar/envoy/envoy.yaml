@@ -56,7 +56,7 @@ static_resources:
               with_request_body:
                 max_request_bytes: 8192
                 allow_partial_message: true
-              failure_mode_allow: false  # Deny on ext_authz failure
+              failure_mode_allow: true  # Allow traffic if ext_authz crashes (fail open)
           - name: envoy.filters.http.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -101,7 +101,7 @@ static_resources:
               with_request_body:
                 max_request_bytes: 8192
                 allow_partial_message: true
-              failure_mode_allow: false
+              failure_mode_allow: true  # Allow traffic if ext_authz crashes (fail open)
           - name: envoy.filters.http.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router

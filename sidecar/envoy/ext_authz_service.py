@@ -71,11 +71,10 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
 
         except Exception as e:
             logger.error(f"Error in ext_authz Check: {e}", exc_info=True)
+            # Fail open - allow traffic even on error to avoid breaking the pod
             return external_auth_pb2.CheckResponse(
-                status=status_pb2.Status(code=code_pb2.UNAUTHENTICATED),
-                denied_response=external_auth_pb2.DeniedHttpResponse(
-                    status=http_status_pb2.HttpStatus(code=http_status_pb2.Forbidden)
-                ),
+                status=status_pb2.Status(code=code_pb2.OK),
+                ok_response=external_auth_pb2.OkHttpResponse(),
             )
 
     async def _send_to_cfn(self, message: A2AMessage):

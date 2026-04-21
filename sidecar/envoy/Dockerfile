@@ -8,6 +8,11 @@ COPY --from=envoy /usr/local/bin/envoy /usr/local/bin/envoy
 # Create envoy user (UID 1337)
 RUN useradd -u 1337 -m envoy
 
+# Install system dependencies (netcat for health checks)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install Python dependencies
 RUN pip install --no-cache-dir \
     grpcio \
