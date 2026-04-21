@@ -52,8 +52,13 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
 
                 if msg:
                     log_a2a_message(msg, source, http_req.host or "unknown")
-                    await self._send_to_cfn(msg)
+                    # Send to CFN in background - don't block proxy decision
+                    try:
+                        await self._send_to_cfn(msg)
+                    except Exception as e:
+                        logger.error(f"Failed to send to CFN (non-blocking): {e}")
 
+            # Always allow traffic through - interception is transparent
             return external_auth_pb2.CheckResponse(
                 status=status_pb2.Status(code=code_pb2.OK),
                 ok_response=external_auth_pb2.OkHttpResponse(),
@@ -70,10 +75,12 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
 
     async def _send_to_cfn(self, message: A2AMessage):
         try:
+            # TODO: Using "openclaw" format for now until Cognition Engines
+            # can digest "a2a-protocol" message format
             self.cfn_client.create_shared_memories(
                 workspace_id=self.config.workspace_id,
                 mas_id=self.config.mas_id,
-                data=[{
+                data={
                     "protocol": message.protocol_type.value,
                     "method": message.method,
                     "path": message.path,
@@ -82,8 +89,8 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
                     "message_id": message.message_id,
                     "agent_card_url": message.agent_card_url,
                     "body": message.body,
-                }],
-                format="a2a-protocol",
+                },
+                format="openclaw",
                 agent_id=message.agent_card_url or "unknown",
             )
             logger.info(f"Sent to CFN: task={message.task_id}, msg={message.message_id}")

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 
-@app.post("/workspaces/{workspace_id}/mas/{mas_id}/shared-memories")
+@app.post("/api/workspaces/{workspace_id}/multi-agentic-systems/{mas_id}/shared-memories")
 async def create_shared_memories(workspace_id: str, mas_id: str, request: Request):
     """Mock CFN shared memory creation endpoint."""
     body = await request.json()

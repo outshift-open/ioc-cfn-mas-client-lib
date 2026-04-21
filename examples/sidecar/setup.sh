@@ -26,15 +26,27 @@ EOF
 # Step 2: Install Istio
 echo ""
 echo "Step 2: Installing Istio..."
-if ! command -v istioctl &> /dev/null; then
-    echo "ERROR: istioctl not found. Please install Istio CLI first:"
-    echo "  curl -L https://istio.io/downloadIstio | sh -"
-    echo "  cd istio-*/bin && export PATH=\$PWD:\$PATH"
+
+# Download latest Istio
+ISTIO_VERSION="${ISTIO_VERSION:-1.29.0}"
+ISTIO_DIR="istio-${ISTIO_VERSION}"
+
+if [ ! -d "${ISTIO_DIR}" ]; then
+    echo "Downloading Istio ${ISTIO_VERSION}..."
+    curl -L https://istio.io/downloadIstio | ISTIO_VERSION=${ISTIO_VERSION} sh -
+else
+    echo "Using existing Istio ${ISTIO_VERSION} in ${ISTIO_DIR}"
+fi
+
+ISTIOCTL="${ISTIO_DIR}/bin/istioctl"
+
+if [ ! -x "${ISTIOCTL}" ]; then
+    echo "ERROR: istioctl not found at ${ISTIOCTL}"
     exit 1
 fi
 
-istioctl install --set profile=demo -y
-kubectl label namespace default istio-injection=enabled
+${ISTIOCTL} install --set profile=demo -y
+kubectl label namespace default istio-injection=enabled --overwrite
 
 # Step 3: Build Docker images
 echo ""
@@ -68,13 +80,13 @@ echo ""
 echo "Step 5: Deploying to Kubernetes..."
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/mock-cfn.yaml
+kubectl apply -f k8s/agent-a.yaml
 kubectl apply -f k8s/agent-b.yaml
 
-echo "Waiting for Agent B to be ready..."
-kubectl wait --for=condition=ready pod -l app=agent-b -n a2a-demo --timeout=120s
-
-echo "Deploying Agent A..."
-kubectl apply -f k8s/agent-a.yaml
+echo "Waiting for deployments to be ready..."
+kubectl rollout status deployment/mock-cfn -n a2a-demo --timeout=120s
+kubectl rollout status deployment/agent-a -n a2a-demo --timeout=120s
+kubectl rollout status deployment/agent-b -n a2a-demo --timeout=120s
 
 # Step 6: Show logs
 echo ""
@@ -82,12 +94,14 @@ echo "=========================================="
 echo "Setup Complete!"
 echo "=========================================="
 echo ""
+echo "Agents are now sending messages back and forth every ~5-7 seconds."
+echo ""
 echo "Watch logs:"
-echo "  Mock CFN API:  kubectl logs -f -n a2a-demo deployment/mock-cfn"
-echo "  Agent B:       kubectl logs -f -n a2a-demo deployment/agent-b -c agent-b"
+echo "  Mock CFN API:    kubectl logs -f -n a2a-demo deployment/mock-cfn"
+echo "  Agent A:         kubectl logs -f -n a2a-demo deployment/agent-a -c agent-a"
+echo "  Agent A Sidecar: kubectl logs -f -n a2a-demo deployment/agent-a -c a2a-sidecar"
+echo "  Agent B:         kubectl logs -f -n a2a-demo deployment/agent-b -c agent-b"
 echo "  Agent B Sidecar: kubectl logs -f -n a2a-demo deployment/agent-b -c a2a-sidecar"
-echo "  Agent A:       kubectl logs -f -n a2a-demo pod/agent-a -c agent-a"
-echo "  Agent A Sidecar: kubectl logs -f -n a2a-demo pod/agent-a -c a2a-sidecar"
 echo ""
 echo "Cleanup:"
 echo "  kind delete cluster --name ${CLUSTER_NAME}"

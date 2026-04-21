@@ -175,3 +175,6 @@ src/generated_README.md
 # Claude Code project files (keep .claude folder but ignore docs)
 CLAUDE.md
 docs/claude/
+
+# Istio downloads
+istio-*/

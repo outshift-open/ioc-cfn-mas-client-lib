@@ -1,63 +1,101 @@
 #!/usr/bin/env python3
-"""Agent A - Simple A2A client (NO sidecar awareness)."""
+"""Agent A - A2A server + client (NO sidecar awareness)."""
 
+import asyncio
 import logging
-import time
 import httpx
+from fastapi import FastAPI
+import uvicorn
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+app = FastAPI()
+
 AGENT_B_URL = "http://agent-b:8000"
+MESSAGE_INTERVAL = 5  # seconds
 
 
-def send_a2a_request(message: str):
-    """Send A2A JSON-RPC request to Agent B."""
-    request = {
-        "jsonrpc": "2.0",
-        "id": "1",
-        "method": "tasks/send",
-        "params": {
-            "message": message,
-        },
+@app.post("/")
+async def handle_a2a_request(request: dict):
+    """Handle incoming A2A JSON-RPC request."""
+    logger.info(f"Agent A received request: {request.get('params', {}).get('message', 'N/A')}")
+
+    if request.get("jsonrpc") == "2.0":
+        return {
+            "jsonrpc": "2.0",
+            "id": request.get("id"),
+            "result": {
+                "status": "completed",
+                "message": "Agent A processed your request",
+            },
+        }
+
+    return {"error": "Invalid A2A request"}
+
+
+@app.get("/.well-known/agent.json")
+async def agent_card():
+    """Agent card (A2A protocol)."""
+    return {
+        "name": "Agent A",
+        "description": "Simple A2A agent",
+        "url": "http://agent-a:8001",
     }
 
-    logger.info(f"Agent A sending request to Agent B: {message}")
 
-    try:
-        response = httpx.post(
-            AGENT_B_URL,
-            json=request,
-            headers={"Content-Type": "application/json"},
-            timeout=10.0,
-        )
-        response.raise_for_status()
-        result = response.json()
-        logger.info(f"Agent A received response: {result}")
-        return result
-    except Exception as e:
-        logger.error(f"Request failed: {e}")
-        return None
+async def send_periodic_messages():
+    """Periodically send messages to Agent B."""
+    await asyncio.sleep(10)  # Wait for services to be ready
+
+    counter = 0
+    while True:
+        try:
+            counter += 1
+            message = f"Message #{counter} from Agent A"
+
+            request = {
+                "jsonrpc": "2.0",
+                "id": str(counter),
+                "method": "tasks/send",
+                "params": {"message": message},
+            }
+
+            logger.info(f"Agent A sending to Agent B: {message}")
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    AGENT_B_URL,
+                    json=request,
+                    headers={"Content-Type": "application/json"},
+                    timeout=10.0,
+                )
+                result = response.json()
+                logger.info(f"Agent A received response from Agent B: {result.get('result', {}).get('message', 'N/A')}")
+
+        except Exception as e:
+            logger.error(f"Agent A failed to send message: {e}")
+
+        await asyncio.sleep(MESSAGE_INTERVAL)
+
+
+async def run_server():
+    """Run FastAPI server."""
+    config = uvicorn.Config(app, host="0.0.0.0", port=8001, log_level="info")
+    server = uvicorn.Server(config)
+    await server.serve()
+
+
+async def main():
+    """Run both server and periodic client."""
+    logger.info("Starting Agent A (server + client) - NO sidecar awareness!")
+
+    # Run server and periodic sender concurrently
+    await asyncio.gather(
+        run_server(),
+        send_periodic_messages(),
+    )
 
 
 if __name__ == "__main__":
-    logger.info("Starting Agent A (A2A client) - NO sidecar awareness!")
-
-    # Wait for Agent B to be ready
-    logger.info("Waiting for Agent B to be ready...")
-    time.sleep(5)
-
-    # Send test messages
-    messages = [
-        "Hello from Agent A",
-        "Process this task please",
-        "Final test message",
-    ]
-
-    for msg in messages:
-        logger.info(f"\n{'='*60}")
-        send_a2a_request(msg)
-        logger.info(f"{'='*60}\n")
-        time.sleep(2)
-
-    logger.info("Agent A finished sending requests")
+    asyncio.run(main())

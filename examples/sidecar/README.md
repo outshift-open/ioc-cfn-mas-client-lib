@@ -5,29 +5,49 @@ Demonstrates transparent A2A protocol interception with **zero agent code change
 ## Architecture
 
 ```
-Agent A ──A2A──> Agent B
-   │               │
- [Sidecar]     [Sidecar]
-   │               │
-   └──> Mock CFN API <──┘
+Agent A ←──A2A──→ Agent B
+   │                 │
+ [Sidecar]       [Sidecar]
+   │                 │
+   └──> Mock CFN API <─┘
 ```
+
+Both agents act as **server + client**, sending messages back and forth every 5-7 seconds.
 
 ## What Gets Intercepted
 
-- A2A JSON-RPC requests (tasks/send)
+- **Bidirectional** A2A JSON-RPC requests (tasks/send)
 - Transparent via Envoy + iptables + Istio
 - Agents have ZERO awareness of sidecar
+- Continuous message exchange for realistic demo
+
+## Important Setup Notes
+
+### Istio Injection Configuration
+
+**Agent Pods** (Agent A & Agent B):
+- Have Istio sidecar injection **enabled** via namespace label: `istio-injection: enabled`
+- Each pod has the **a2a-sidecar** container for A2A interception
+- Traffic between agents is intercepted transparently
+
+**Mock CFN API**:
+- Has Istio sidecar injection **disabled**: `sidecar.istio.io/inject: "false"`
+- This prevents interception loops (sidecar → CFN would be intercepted again)
+- Receives data directly from agent sidecars without additional proxying
+
+This configuration ensures:
+1. A2A traffic between agents is intercepted
+2. Sidecar → CFN API traffic is NOT intercepted (avoids 403 Forbidden)
+3. Backend services remain accessible without interference
 
 ## Prerequisites
 
 ```bash
 # Install kind
 brew install kind
-
-# Install Istio CLI
-curl -L https://istio.io/downloadIstio | sh -
-cd istio-*/bin && export PATH=$PWD:$PATH
 ```
+
+Note: Istio will be automatically downloaded by the setup script.
 
 ## Run E2E Test
 
@@ -48,13 +68,14 @@ This will:
 # See intercepted messages in Mock CFN API
 kubectl logs -f -n a2a-demo deployment/mock-cfn
 
-# See Agent A sending requests
-kubectl logs -f -n a2a-demo pod/agent-a -c agent-a
+# See Agent A (sends to B every 5s, receives from B)
+kubectl logs -f -n a2a-demo deployment/agent-a -c agent-a
 
-# See Agent B receiving requests
+# See Agent B (sends to A every 7s, receives from A)
 kubectl logs -f -n a2a-demo deployment/agent-b -c agent-b
 
-# See sidecar intercepting traffic
+# See sidecars intercepting traffic
+kubectl logs -f -n a2a-demo deployment/agent-a -c a2a-sidecar
 kubectl logs -f -n a2a-demo deployment/agent-b -c a2a-sidecar
 ```
 
