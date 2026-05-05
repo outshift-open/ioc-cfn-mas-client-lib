@@ -27,7 +27,7 @@ spec:
           transport_api_version: V3
           grpc_service:
             envoy_grpc:
-              cluster_name: ext_authz_cluster
+              cluster_name: ioc_cfn_cluster
             timeout: 5s
           with_request_body:
             max_request_bytes: 8192
@@ -53,7 +53,7 @@ spec:
           transport_api_version: V3
           grpc_service:
             envoy_grpc:
-              cluster_name: ext_authz_cluster
+              cluster_name: ioc_cfn_cluster
             timeout: 5s
           with_request_body:
             max_request_bytes: 8192
@@ -65,12 +65,12 @@ spec:
     patch:
       operation: ADD
       value:
-        name: ext_authz_cluster
+        name: ioc_cfn_cluster
         connect_timeout: 1s
         type: STATIC
         http2_protocol_options: {}
         load_assignment:
-          cluster_name: ext_authz_cluster
+          cluster_name: ioc_cfn_cluster
           endpoints:
           - lb_endpoints:
             - endpoint:
