@@ -5,7 +5,8 @@ RUN pip install --no-cache-dir \
     grpcio \
     grpcio-tools \
     xds-protos \
-    protobuf
+    protobuf \
+    httpx
 
 # Copy MAS client library (for CFN integration)
 WORKDIR /app

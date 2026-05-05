@@ -15,7 +15,8 @@ from google.rpc import status_pb2, code_pb2
 from sidecar.shared.message_parser import A2AMessageParser, A2AMessage
 from sidecar.shared.logger import log_a2a_message
 from sidecar.shared.config import ProxyConfig
-from ioc_cfn_mas_client import Client
+from sidecar.shared.l9_converter import a2a_to_l9
+import httpx
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,9 +25,8 @@ logger = logging.getLogger(__name__)
 class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
     def __init__(self, config: ProxyConfig):
         self.config = config
-        self.cfn_client = Client(cfn_url=config.cfn_url)
-        logger.info(f"CFN client initialized: {config.cfn_url}")
-        logger.info("A2A ext_authz service initialized")
+        logger.info(f"CFN L9 validation endpoint: {config.cfn_url}/v1/l9/validate")
+        logger.info("A2A ext_authz service initialized (L9 mode)")
 
     async def Check(
         self,
@@ -36,7 +36,16 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
         try:
             http_req = request.attributes.request.http
             source_addr = request.attributes.source.address.socket_address
+            dest_addr = request.attributes.destination.address.socket_address
             source = f"{source_addr.address}:{source_addr.port_value}"
+            dest = f"{dest_addr.address}:{dest_addr.port_value}"
+
+            # Detect direction: inbound (dest is agent) vs outbound (source is agent)
+            # Heuristic: if destination port is agent port (8000/8001), it's inbound
+            is_inbound = dest_addr.port_value in [8000, 8001]
+            direction = "inbound" if is_inbound else "outbound"
+
+            logger.debug(f"Intercepted: {source} → {dest}, direction={direction}")
 
             # Parse body first for accurate A2A detection
             parsed_body = None
@@ -52,14 +61,14 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
                     path=http_req.path,
                     headers=dict(http_req.headers),
                     body=http_req.body.encode() if http_req.body else b"",
-                    direction="request",
+                    direction=direction,  # Use detected direction
                 )
 
                 if msg:
                     log_a2a_message(msg, source, http_req.host or "unknown")
                     # Send to CFN in background - don't block proxy decision
                     try:
-                        await self._send_to_cfn(msg)
+                        await self._send_to_cfn(msg, direction)
                     except Exception as e:
                         logger.error(f"Failed to send to CFN (non-blocking): {e}")
 
@@ -77,29 +86,37 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
                 ok_response=external_auth_pb2.OkHttpResponse(),
             )
 
-    async def _send_to_cfn(self, message: A2AMessage):
+    async def _send_to_cfn(self, message: A2AMessage, direction: str):
+        """Convert A2A to L9 and validate with CFN."""
         try:
-            # TODO: Using "openclaw" format for now until Cognition Engines
-            # can digest "a2a-protocol" message format
-            await self.cfn_client.create_shared_memories_async(
-                workspace_id=self.config.workspace_id,
-                mas_id=self.config.mas_id,
-                data={
-                    "protocol": message.protocol_type.value,
-                    "method": message.method,
-                    "path": message.path,
-                    "direction": message.direction,
-                    "task_id": message.task_id,
-                    "message_id": message.message_id,
-                    "agent_card_url": message.agent_card_url,
-                    "body": message.body,
-                },
-                format="openclaw",
-                agent_id=message.agent_card_url or "unknown",
+            # Convert A2A → L9
+            l9_message = a2a_to_l9(
+                a2a_body=message.body or {},
+                direction=direction,  # Use detected direction (inbound/outbound)
+                actor_id=message.agent_card_url or "unknown"
             )
-            logger.info(f"Sent to CFN: task={message.task_id}, msg={message.message_id}")
+
+            logger.info(f"🔄 Converted to L9: direction={direction}, task={message.task_id}")
+
+            # Call CFN L9 validation endpoint
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.config.cfn_url}/v1/l9/validate",
+                    json=l9_message,
+                    headers={"Content-Type": "application/json"},
+                    timeout=1.0
+                )
+
+                if response.status_code == 200:
+                    result = response.json()
+                    logger.info(f"✅ CFN allowed: direction={direction}, task={message.task_id}, allow={result.get('allow')}")
+                else:
+                    logger.warning(f"❌ CFN denied: direction={direction}, status={response.status_code}, body={response.text}")
+
+        except httpx.TimeoutException:
+            logger.error(f"CFN timeout after 1s")
         except Exception as e:
-            logger.error(f"Failed to send to CFN: {e}")
+            logger.error(f"Failed to validate with CFN: {e}")
 
 
 async def serve(config: Optional[ProxyConfig] = None):
