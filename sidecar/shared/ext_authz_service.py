@@ -28,6 +28,60 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
         logger.info(f"CFN L9 validation endpoint: {config.cfn_url}/v1/l9/validate")
         logger.info("A2A ext_authz service initialized (L9 mode)")
 
+    def _detect_direction_from_metadata(self, request: external_auth_pb2.CheckRequest) -> str:
+        """
+        Detect traffic direction from Envoy metadata and headers.
+
+        Strategy:
+        1. Check for source IP: if it's localhost/127.x.x.x, it's OUTBOUND (app → sidecar → external)
+        2. Check Istio/Envoy metadata for direction hints
+        3. Check destination: if local pod, it's INBOUND
+        4. Fallback to port-based heuristic
+        """
+        source_addr = request.attributes.source.address.socket_address
+        dest_addr = request.attributes.destination.address.socket_address
+        source_ip = source_addr.address
+        dest_ip = dest_addr.address
+
+        # Strategy 1: Source IP detection
+        # - Outbound: app (127.0.0.1) → envoy sidecar → external service
+        # - Inbound: external → envoy sidecar → app (127.0.0.1)
+        if source_ip.startswith("127.") or source_ip == "::1":
+            # Traffic originated from localhost = app making outbound call
+            logger.debug(f"OUTBOUND detected: source={source_ip} (localhost)")
+            return "outbound"
+
+        if dest_ip.startswith("127.") or dest_ip == "::1":
+            # Traffic destined to localhost = external call arriving at app
+            logger.debug(f"INBOUND detected: dest={dest_ip} (localhost)")
+            return "inbound"
+
+        # Strategy 2: Check Istio metadata
+        try:
+            metadata_context = request.attributes.metadata_context
+            if metadata_context and metadata_context.filter_metadata:
+                # Istio sets 'istio_authn' metadata with source principal for inbound
+                if "istio_authn" in metadata_context.filter_metadata:
+                    return "inbound"
+
+                # Check for listener metadata
+                if "envoy.filters.network.http_connection_manager" in metadata_context.filter_metadata:
+                    listener_metadata = metadata_context.filter_metadata[
+                        "envoy.filters.network.http_connection_manager"
+                    ]
+                    if listener_metadata and "direction" in listener_metadata.fields:
+                        direction_value = listener_metadata.fields["direction"].string_value
+                        if direction_value in ["INBOUND", "OUTBOUND"]:
+                            return direction_value.lower()
+        except Exception as e:
+            logger.debug(f"Could not extract direction from metadata: {e}")
+
+        # Fallback: Use port-based heuristic
+        is_inbound = dest_addr.port_value in [8000, 8001]
+        direction = "inbound" if is_inbound else "outbound"
+        logger.debug(f"Using port-based fallback: dest_port={dest_addr.port_value} → {direction}")
+        return direction
+
     async def Check(
         self,
         request: external_auth_pb2.CheckRequest,
@@ -40,10 +94,8 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
             source = f"{source_addr.address}:{source_addr.port_value}"
             dest = f"{dest_addr.address}:{dest_addr.port_value}"
 
-            # Detect direction: inbound (dest is agent) vs outbound (source is agent)
-            # Heuristic: if destination port is agent port (8000/8001), it's inbound
-            is_inbound = dest_addr.port_value in [8000, 8001]
-            direction = "inbound" if is_inbound else "outbound"
+            # Detect direction from Envoy's filter metadata (set by EnvoyFilter context)
+            direction = self._detect_direction_from_metadata(request)
 
             logger.debug(f"Intercepted: {source} → {dest}, direction={direction}")
 
