@@ -97,7 +97,7 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
             # Detect direction from Envoy's filter metadata (set by EnvoyFilter context)
             direction = self._detect_direction_from_metadata(request)
 
-            logger.debug(f"Intercepted: {source} → {dest}, direction={direction}")
+            logger.info(f"Intercepted: {source} → {dest}, direction={direction}")
 
             # Parse body first for accurate A2A detection
             parsed_body = None
