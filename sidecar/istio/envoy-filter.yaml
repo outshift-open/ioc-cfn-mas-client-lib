@@ -32,7 +32,7 @@ spec:
           with_request_body:
             max_request_bytes: 8192
             allow_partial_message: true
-          failure_mode_allow: true
+          failure_mode_allow: true  # Demo: fail-open for easy testing. Production: set to false for security.
 
   # INBOUND: Receiver-side interception (Agent B receives from Agent A)
   - applyTo: HTTP_FILTER
@@ -58,7 +58,7 @@ spec:
           with_request_body:
             max_request_bytes: 8192
             allow_partial_message: true
-          failure_mode_allow: true
+          failure_mode_allow: true  # Demo: fail-open for easy testing. Production: set to false for security.
 
   # Add ext_authz cluster (shared by both OUTBOUND and INBOUND)
   - applyTo: CLUSTER
