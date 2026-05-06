@@ -12,11 +12,18 @@ class ProxyConfig:
         cfn_url: CFN API endpoint URL (required)
         workspace_id: CFN workspace ID (required)
         mas_id: CFN MAS ID (required)
+        sidecar_id: Sidecar identifier (optional, defaults to mas_id)
     """
 
     cfn_url: str
     workspace_id: str
     mas_id: str
+    sidecar_id: str = None
+
+    def __post_init__(self):
+        """Set default sidecar_id if not provided."""
+        if self.sidecar_id is None:
+            self.sidecar_id = self.mas_id
 
     @classmethod
     def from_env(cls) -> "ProxyConfig":

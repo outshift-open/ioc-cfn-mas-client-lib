@@ -3,23 +3,43 @@ from typing import Dict, Any
 from datetime import datetime, timezone
 
 
-def a2a_to_l9(a2a_body: Dict[str, Any], direction: str, actor_id: str) -> Dict[str, Any]:
+def a2a_to_l9(
+    a2a_body: Dict[str, Any],
+    direction: str,
+    actor_id: str,
+    source: str = None,
+    destination: str = None,
+    sidecar_id: str = None
+) -> Dict[str, Any]:
     """Convert A2A message to L9 format.
 
     Args:
         a2a_body: Original A2A message body
         direction: "outbound" or "inbound"
         actor_id: Agent identifier
+        source: Source IP:port (optional)
+        destination: Destination IP:port (optional)
+        sidecar_id: Sidecar identifier (optional)
 
     Returns:
         L9-formatted message
     """
+    header = {
+        "direction": direction,
+        "actor_id": actor_id,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+    # Add optional metadata
+    if source:
+        header["source"] = source
+    if destination:
+        header["destination"] = destination
+    if sidecar_id:
+        header["sidecar_id"] = sidecar_id
+
     return {
-        "header": {
-            "direction": direction,
-            "actor_id": actor_id,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        },
+        "header": header,
         "payload": {
             "a2a": a2a_body
         }

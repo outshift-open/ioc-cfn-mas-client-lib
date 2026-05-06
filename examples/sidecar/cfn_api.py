@@ -23,16 +23,31 @@ async def validate_l9(request: Request):
     header = l9_message.get("header", {})
     payload = l9_message.get("payload", {})
 
+    # Extract direction and format symbols
+    direction = header.get('direction', 'unknown')
+    direction_symbol = "→" if direction == "outbound" else "←" if direction == "inbound" else "?"
+
+    # Extract source and destination
+    source = header.get('source', 'unknown')
+    dest = header.get('destination', 'unknown')
+    sidecar_id = header.get('sidecar_id', 'unknown')
+
     logger.info("=" * 80)
-    logger.info("🎯 CFN RECEIVED L9 MESSAGE")
-    logger.info(f"Direction: {header.get('direction')}")
+    logger.info(f"🎯 CFN RECEIVED L9 MESSAGE")
+    logger.info(f"Direction: {direction.upper()} {direction_symbol}")
+    logger.info(f"Intercepted by: {sidecar_id}")
+    logger.info(f"Source: {source} {direction_symbol} Dest: {dest}")
     logger.info(f"Actor ID: {header.get('actor_id')}")
     logger.info(f"Timestamp: {header.get('timestamp')}")
-    logger.info(f"Payload keys: {list(payload.keys())}")
 
     # Log protocol-specific payload
     if "a2a" in payload:
-        logger.info(f"A2A payload: {payload['a2a']}")
+        a2a_payload = payload['a2a']
+        msg_id = a2a_payload.get('id', 'N/A')
+        method = a2a_payload.get('method', 'N/A')
+        params = a2a_payload.get('params', {})
+        message = params.get('message', 'N/A') if isinstance(params, dict) else 'N/A'
+        logger.info(f"A2A Message: [{msg_id}] {method} - {message}")
     elif "mcp" in payload:
         logger.info(f"MCP payload: {payload['mcp']}")
 

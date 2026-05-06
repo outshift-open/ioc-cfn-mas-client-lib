@@ -43,17 +43,24 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
         source_ip = source_addr.address
         dest_ip = dest_addr.address
 
-        # Strategy 1: Source IP detection
-        # - Outbound: app (127.0.0.1) → envoy sidecar → external service
-        # - Inbound: external → envoy sidecar → app (127.0.0.1)
+        # Strategy 1: Service IP detection (most reliable for Kubernetes)
+        # - Outbound: destination is a Kubernetes service ClusterIP (10.96.x.x range)
+        #   App calls service name → resolves to ClusterIP → Envoy intercepts outbound
+        # - Inbound: destination is pod IP (10.244.x.x range) or localhost
+        #   External → Envoy intercepts inbound → forwards to local app
+
+        # Check if destination is a service ClusterIP (typically 10.96.x.x in default k8s)
+        if dest_ip.startswith("10.96."):
+            logger.info(f"OUTBOUND detected: dest={dest_ip} (service ClusterIP)")
+            return "outbound"
+
+        # Check localhost patterns
         if source_ip.startswith("127.") or source_ip == "::1":
-            # Traffic originated from localhost = app making outbound call
-            logger.debug(f"OUTBOUND detected: source={source_ip} (localhost)")
+            logger.info(f"OUTBOUND detected: source={source_ip} (localhost)")
             return "outbound"
 
         if dest_ip.startswith("127.") or dest_ip == "::1":
-            # Traffic destined to localhost = external call arriving at app
-            logger.debug(f"INBOUND detected: dest={dest_ip} (localhost)")
+            logger.info(f"INBOUND detected: dest={dest_ip} (localhost)")
             return "inbound"
 
         # Strategy 2: Check Istio metadata
@@ -120,7 +127,7 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
                     log_a2a_message(msg, source, http_req.host or "unknown")
                     # Send to CFN in background - don't block proxy decision
                     try:
-                        await self._send_to_cfn(msg, direction)
+                        await self._send_to_cfn(msg, direction, source=source, dest=dest)
                     except Exception as e:
                         logger.error(f"Failed to send to CFN (non-blocking): {e}")
 
@@ -138,14 +145,17 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
                 ok_response=external_auth_pb2.OkHttpResponse(),
             )
 
-    async def _send_to_cfn(self, message: A2AMessage, direction: str):
+    async def _send_to_cfn(self, message: A2AMessage, direction: str, source: str = None, dest: str = None):
         """Convert A2A to L9 and validate with CFN."""
         try:
             # Convert A2A → L9
             l9_message = a2a_to_l9(
                 a2a_body=message.body or {},
                 direction=direction,  # Use detected direction (inbound/outbound)
-                actor_id=message.agent_card_url or "unknown"
+                actor_id=message.agent_card_url or "unknown",
+                source=source,
+                destination=dest,
+                sidecar_id=self.config.sidecar_id
             )
 
             logger.info(f"🔄 Converted to L9: direction={direction}, task={message.task_id}")
