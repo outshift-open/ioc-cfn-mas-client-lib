@@ -8,9 +8,10 @@ COPY --from=envoy /usr/local/bin/envoy /usr/local/bin/envoy
 # Create envoy user (UID 1337)
 RUN useradd -u 1337 -m envoy
 
-# Install system dependencies (netcat for health checks)
+# Install system dependencies (netcat for health checks, iptables for traffic interception)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     netcat-openbsd \
+    iptables \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -42,7 +43,11 @@ ENV PYTHONPATH=/app
 RUN mkdir -p /etc/envoy && \
     cp envoy.yaml /etc/envoy/envoy.yaml
 
-# Make entrypoint executable
-RUN chmod +x entrypoint.sh
+# Make scripts executable
+RUN chmod +x entrypoint.sh init-iptables.sh
 
-ENTRYPOINT ["./entrypoint.sh"]
+# Copy scripts to root for init container and sidecar
+RUN cp init-iptables.sh /init-iptables.sh && chmod +x /init-iptables.sh && \
+    cp entrypoint.sh /sidecar-entrypoint.sh && chmod +x /sidecar-entrypoint.sh
+
+ENTRYPOINT ["/sidecar-entrypoint.sh"]

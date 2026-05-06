@@ -1,0 +1,51 @@
+FROM envoyproxy/envoy:v1.29-latest AS envoy
+
+FROM python:3.10-slim
+
+# Copy Envoy binary from official image
+COPY --from=envoy /usr/local/bin/envoy /usr/local/bin/envoy
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    iptables \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    grpcio \
+    grpcio-tools \
+    xds-protos \
+    protobuf \
+    httpx
+
+# Copy MAS client library
+WORKDIR /app
+COPY src/ ./src/
+COPY pyproject.toml ./
+
+# Install MAS client library
+RUN pip install --no-cache-dir -e .
+
+# Copy shared Python code
+COPY sidecar/shared/ ./sidecar/shared/
+
+# Copy standalone Envoy config
+COPY sidecar/standalone/envoy.yaml /etc/envoy/envoy.yaml
+
+# Copy init script for iptables setup (used by init container)
+COPY examples/sidecar-standalone/init-iptables.sh /init-iptables.sh
+RUN chmod +x /init-iptables.sh
+
+# Copy sidecar entrypoint (used by main sidecar container)
+COPY examples/sidecar-standalone/sidecar-entrypoint.sh /sidecar-entrypoint.sh
+RUN chmod +x /sidecar-entrypoint.sh
+
+# Create envoy user with UID 1337
+RUN useradd -u 1337 -m -s /bin/bash envoy
+
+# Set PYTHONPATH
+ENV PYTHONPATH=/app
+
+# Default entrypoint (can be overridden in K8s manifests)
+ENTRYPOINT ["/sidecar-entrypoint.sh"]

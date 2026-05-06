@@ -2,7 +2,8 @@
 set -e
 
 CLUSTER_NAME="a2a-demo"
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+EXAMPLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "=========================================="
 echo "A2A Sidecar Demo Setup"
@@ -46,6 +47,11 @@ if [ ! -x "${ISTIOCTL}" ]; then
 fi
 
 ${ISTIOCTL} install --set profile=demo -y
+
+# Wait for Istio to be ready
+echo "Waiting for Istio to be ready..."
+kubectl wait --for=condition=available --timeout=120s deployment/istiod -n istio-system
+
 kubectl label namespace default istio-injection=enabled --overwrite
 
 # Step 3: Build Docker images
@@ -59,7 +65,7 @@ echo "Building cfn-sidecar..."
 docker build -t cfn-sidecar:latest -f sidecar/istio/Dockerfile .
 
 # Build demo images
-cd examples/sidecar
+cd "${EXAMPLE_DIR}"
 echo "Building cfn..."
 docker build -t cfn:latest -f Dockerfile.cfn .
 echo "Building agent-b..."
@@ -79,7 +85,14 @@ kind load docker-image agent-a:latest --name ${CLUSTER_NAME}
 echo ""
 echo "Step 5: Deploying to Kubernetes..."
 kubectl apply -f k8s/namespace.yaml
+
+# Wait a moment for namespace to be ready
+sleep 2
+
+# Apply EnvoyFilter (requires Istio CRDs)
 kubectl apply -f k8s/envoy-filter.yaml
+
+# Deploy applications
 kubectl apply -f k8s/cfn.yaml
 kubectl apply -f k8s/agent-a.yaml
 kubectl apply -f k8s/agent-b.yaml

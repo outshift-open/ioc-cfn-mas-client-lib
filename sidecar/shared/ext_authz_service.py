@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Envoy ext_authz service for A2A traffic interception."""
+"""Envoy ext_authz service for A2A traffic interception.
+
+This service integrates with Envoy's external authorization API to intercept
+HTTP traffic, parse A2A messages, convert them to L9 format, and send them to
+CFN for validation. The service operates in fail-open mode to ensure traffic
+continues flowing even if errors occur.
+"""
 
 import asyncio
 import json
@@ -7,16 +13,15 @@ import logging
 from typing import Optional
 
 import grpc
+import httpx
 from grpc import aio
 from envoy.service.auth.v3 import external_auth_pb2, external_auth_pb2_grpc
-from envoy.type.v3 import http_status_pb2
-from google.rpc import status_pb2, code_pb2
+from google.rpc import code_pb2, status_pb2
 
-from sidecar.shared.message_parser import A2AMessageParser, A2AMessage
-from sidecar.shared.logger import log_a2a_message
 from sidecar.shared.config import ProxyConfig
 from sidecar.shared.l9_converter import a2a_to_l9
-import httpx
+from sidecar.shared.logger import log_a2a_message
+from sidecar.shared.message_parser import A2AMessage, A2AMessageParser
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -106,15 +111,25 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
 
             logger.info(f"Intercepted: {source} → {dest}, direction={direction}")
 
+            # Debug: Log request details
+            logger.info(f"  Method: {http_req.method}, Path: {http_req.path}")
+            logger.info(f"  Body length: {len(http_req.body) if http_req.body else 0}")
+
             # Parse body first for accurate A2A detection
             parsed_body = None
             if http_req.body:
                 try:
                     parsed_body = json.loads(http_req.body)
+                    logger.info(f"  Parsed body keys: {list(parsed_body.keys()) if parsed_body else 'none'}")
+                    if 'method' in parsed_body:
+                        logger.info(f"  JSON-RPC method: {parsed_body.get('method')}")
                 except (json.JSONDecodeError, ValueError):
-                    pass
+                    logger.info(f"  Body parse failed (not JSON)")
 
-            if A2AMessageParser.is_a2a_message(http_req.method, http_req.path, dict(http_req.headers), parsed_body):
+            is_a2a = A2AMessageParser.is_a2a_message(http_req.method, http_req.path, dict(http_req.headers), parsed_body)
+            logger.info(f"  Is A2A: {is_a2a}")
+
+            if is_a2a:
                 msg = A2AMessageParser.parse_message(
                     method=http_req.method,
                     path=http_req.path,

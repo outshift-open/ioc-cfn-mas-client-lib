@@ -1,12 +1,13 @@
 """A2A Protocol Message Parser (JSON-RPC 2.0).
 
+Parses and validates A2A messages according to the official specification.
 Official spec: https://github.com/google/a2a
 """
 
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, List
 from enum import Enum
+from typing import Any, Dict, Optional
 
 
 class A2AProtocolType(Enum):
@@ -30,7 +31,7 @@ class A2AMessage:
 
 
 class A2AMessageParser:
-    # Official A2A JSON-RPC methods (v0.3.0)
+    # Official A2A JSON-RPC methods (v0.3.0+)
     A2A_JSONRPC_METHODS = [
         "tasks/send",              # Send a task to an agent
         "tasks/sendSubscribe",     # Send task with streaming
@@ -39,6 +40,7 @@ class A2AMessageParser:
         "tasks/resubscribe",       # Resubscribe to task updates
         "tasks/pushNotification/set",   # Set push notification endpoint
         "tasks/pushNotification/get",   # Get push notification settings
+        "message/send",            # Send message (used by A2A SDK 0.3.26)
     ]
 
     # Official A2A REST endpoint
@@ -66,7 +68,16 @@ class A2AMessageParser:
 
         # If body is already parsed, check jsonrpc field to avoid false positives
         if body and isinstance(body, dict):
-            return body.get("jsonrpc") == "2.0" and body.get("method") in cls.A2A_JSONRPC_METHODS
+            # JSON-RPC 2.0 request (has method) - be flexible with method matching
+            if body.get("jsonrpc") == "2.0" and "method" in body:
+                method_name = body.get("method", "")
+                # Check if it's a known A2A method or starts with "tasks"
+                if method_name in cls.A2A_JSONRPC_METHODS or method_name.startswith("tasks"):
+                    return True
+            # JSON-RPC 2.0 response (has result or error, and id)
+            if body.get("jsonrpc") == "2.0" and ("result" in body or "error" in body) and "id" in body:
+                return True
+            return False
 
         # Fall back to content-type only if body not yet parsed
         content_type = headers.get("content-type", "").lower()

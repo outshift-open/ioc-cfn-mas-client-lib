@@ -1,6 +1,10 @@
-"""L8 (A2A/MCP) to L9 converter."""
-from typing import Dict, Any
+"""L8 (A2A/MCP) to L9 converter.
+
+Converts L8 protocol messages (A2A, MCP) to L9 format for CFN validation.
+L9 format includes a header with metadata and a payload with the original protocol message.
+"""
 from datetime import datetime, timezone
+from typing import Any, Dict
 
 
 def a2a_to_l9(

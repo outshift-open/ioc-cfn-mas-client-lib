@@ -1,19 +1,19 @@
 #!/bin/bash
-# Entrypoint script for A2A sidecar container
+# Entrypoint script for A2A sidecar container (standalone mode)
 # Starts both Envoy proxy and ext_authz service
-# Note: iptables setup is handled by Istio
+# Note: iptables setup is handled by init container
 
 set -e
 
 echo "========================================="
-echo "A2A Sidecar (ZTA Pattern with Istio)"
+echo "A2A Sidecar (Standalone - No Istio)"
 echo "========================================="
 
 # Start ext_authz gRPC service in background
 # This service handles A2A message interception and CFN integration
 # Envoy calls this service via gRPC for authorization decisions on each request
 echo "Starting ext_authz gRPC service..."
-python ../shared/ext_authz_service.py \
+python -m sidecar.shared.ext_authz_service \
     --cfn-url="${CFN_URL}" \
     --workspace-id="${WORKSPACE_ID}" \
     --mas-id="${MAS_ID}" &
@@ -35,9 +35,9 @@ for i in $(seq 1 30); do
     sleep 1
 done
 
-# Start Envoy proxy (as envoy user)
+# Start Envoy proxy (running as envoy user UID 1337 via securityContext)
 echo "Starting Envoy proxy..."
-su envoy -c "envoy -c /etc/envoy/envoy.yaml"
+exec envoy -c /etc/envoy/envoy.yaml
 
 # If Envoy exits, kill ext_authz
 kill $EXT_AUTHZ_PID 2>/dev/null || true
