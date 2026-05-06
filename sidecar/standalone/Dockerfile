@@ -43,11 +43,9 @@ ENV PYTHONPATH=/app
 RUN mkdir -p /etc/envoy && \
     cp envoy.yaml /etc/envoy/envoy.yaml
 
-# Make scripts executable
-RUN chmod +x entrypoint.sh init-iptables.sh
+# Make scripts executable and copy to root for init container and sidecar
+RUN chmod +x entrypoint.sh init-iptables.sh && \
+    cp init-iptables.sh /init-iptables.sh && \
+    cp entrypoint.sh /entrypoint.sh
 
-# Copy scripts to root for init container and sidecar
-RUN cp init-iptables.sh /init-iptables.sh && chmod +x /init-iptables.sh && \
-    cp entrypoint.sh /sidecar-entrypoint.sh && chmod +x /sidecar-entrypoint.sh
-
-ENTRYPOINT ["/sidecar-entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

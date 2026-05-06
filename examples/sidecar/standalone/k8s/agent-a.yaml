@@ -57,7 +57,7 @@ spec:
       - name: sidecar
         image: sidecar-standalone-sidecar:latest
         imagePullPolicy: Never
-        command: ["/sidecar-entrypoint.sh"]
+        command: ["/entrypoint.sh"]
         env:
         - name: CFN_URL
           value: "http://cfn:9002"

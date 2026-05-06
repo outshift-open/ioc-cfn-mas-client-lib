@@ -20,10 +20,13 @@ python -m sidecar.shared.ext_authz_service \
 
 EXT_AUTHZ_PID=$!
 
-# Wait for ext_authz to be ready (check gRPC port 9001)
-echo "Waiting for ext_authz service to be ready..."
+# Configuration (can be overridden via environment variables)
+EXT_AUTHZ_PORT="${EXT_AUTHZ_PORT:-9001}"
+
+# Wait for ext_authz to be ready (check gRPC port)
+echo "Waiting for ext_authz service to be ready on port ${EXT_AUTHZ_PORT}..."
 for i in $(seq 1 30); do
-    if nc -z 127.0.0.1 9001 2>/dev/null; then
+    if nc -z 127.0.0.1 ${EXT_AUTHZ_PORT} 2>/dev/null; then
         echo "ext_authz service is ready!"
         break
     fi

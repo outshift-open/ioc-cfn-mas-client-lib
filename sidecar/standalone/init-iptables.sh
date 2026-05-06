@@ -6,11 +6,11 @@ set -e
 
 echo "Setting up iptables for A2A traffic interception..."
 
-# Constants
-ENVOY_UID="1337"
-INBOUND_INTERCEPT_PORT="15001"
-OUTBOUND_INTERCEPT_PORT="15002"
-APP_PORTS="8000,8001"  # Ports the agent apps listen on
+# Configuration (can be overridden via environment variables)
+ENVOY_UID="${ENVOY_UID:-1337}"
+INBOUND_INTERCEPT_PORT="${INBOUND_INTERCEPT_PORT:-15001}"
+OUTBOUND_INTERCEPT_PORT="${OUTBOUND_INTERCEPT_PORT:-15002}"
+APP_PORTS="${APP_PORTS:-8000,8001}"  # Ports the agent apps listen on
 
 # Create custom chains for organization
 iptables -t nat -N ENVOY_INBOUND 2>/dev/null || true

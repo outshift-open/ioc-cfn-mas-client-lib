@@ -33,66 +33,64 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
         logger.info(f"CFN L9 validation endpoint: {config.cfn_url}/v1/l9/validate")
         logger.info("A2A ext_authz service initialized (L9 mode)")
 
-    def _detect_direction_from_metadata(self, request: external_auth_pb2.CheckRequest) -> str:
+    def _detect_direction(self, request: external_auth_pb2.CheckRequest) -> str:
         """
-        Detect traffic direction from Envoy metadata and headers.
+        Detect traffic direction using a clear priority order.
 
-        Strategy:
-        1. Check for source IP: if it's localhost/127.x.x.x, it's OUTBOUND (app → sidecar → external)
-        2. Check Istio/Envoy metadata for direction hints
-        3. Check destination: if local pod, it's INBOUND
-        4. Fallback to port-based heuristic
+        Returns:
+            "outbound" if traffic is app → external service
+            "inbound" if traffic is external → app
+
+        Detection strategy (in order):
+        1. Localhost source = OUTBOUND (app making request)
+        2. Service IP destination = OUTBOUND (calling another service)
+        3. Istio metadata = use explicitly set direction
+        4. App port destination = INBOUND (receiving on app port)
+        5. Default = OUTBOUND
         """
         source_addr = request.attributes.source.address.socket_address
         dest_addr = request.attributes.destination.address.socket_address
         source_ip = source_addr.address
         dest_ip = dest_addr.address
+        dest_port = dest_addr.port_value
 
-        # Strategy 1: Service IP detection (most reliable for Kubernetes)
-        # - Outbound: destination is a Kubernetes service ClusterIP (10.96.x.x range)
-        #   App calls service name → resolves to ClusterIP → Envoy intercepts outbound
-        # - Inbound: destination is pod IP (10.244.x.x range) or localhost
-        #   External → Envoy intercepts inbound → forwards to local app
-
-        # Check if destination is a service ClusterIP (typically 10.96.x.x in default k8s)
-        if dest_ip.startswith("10.96."):
-            logger.info(f"OUTBOUND detected: dest={dest_ip} (service ClusterIP)")
-            return "outbound"
-
-        # Check localhost patterns
+        # 1. Localhost source → app is making the request (OUTBOUND)
         if source_ip.startswith("127.") or source_ip == "::1":
-            logger.info(f"OUTBOUND detected: source={source_ip} (localhost)")
+            logger.debug(f"OUTBOUND: source={source_ip} (localhost)")
             return "outbound"
 
-        if dest_ip.startswith("127.") or dest_ip == "::1":
-            logger.info(f"INBOUND detected: dest={dest_ip} (localhost)")
-            return "inbound"
+        # 2. Service IP destination → calling another service (OUTBOUND)
+        if self.config.network.is_service_ip(dest_ip):
+            logger.debug(f"OUTBOUND: dest={dest_ip} (service IP)")
+            return "outbound"
 
-        # Strategy 2: Check Istio metadata
+        # 3. Check Istio/Envoy metadata for explicit direction
         try:
             metadata_context = request.attributes.metadata_context
             if metadata_context and metadata_context.filter_metadata:
-                # Istio sets 'istio_authn' metadata with source principal for inbound
                 if "istio_authn" in metadata_context.filter_metadata:
+                    logger.debug("INBOUND: istio_authn metadata present")
                     return "inbound"
 
-                # Check for listener metadata
-                if "envoy.filters.network.http_connection_manager" in metadata_context.filter_metadata:
-                    listener_metadata = metadata_context.filter_metadata[
-                        "envoy.filters.network.http_connection_manager"
-                    ]
-                    if listener_metadata and "direction" in listener_metadata.fields:
-                        direction_value = listener_metadata.fields["direction"].string_value
-                        if direction_value in ["INBOUND", "OUTBOUND"]:
-                            return direction_value.lower()
+                conn_mgr_metadata = metadata_context.filter_metadata.get(
+                    "envoy.filters.network.http_connection_manager"
+                )
+                if conn_mgr_metadata and "direction" in conn_mgr_metadata.fields:
+                    direction = conn_mgr_metadata.fields["direction"].string_value
+                    if direction in ["INBOUND", "OUTBOUND"]:
+                        logger.debug(f"{direction}: from Envoy metadata")
+                        return direction.lower()
         except Exception as e:
-            logger.debug(f"Could not extract direction from metadata: {e}")
+            logger.debug(f"No metadata available: {e}")
 
-        # Fallback: Use port-based heuristic
-        is_inbound = dest_addr.port_value in [8000, 8001]
-        direction = "inbound" if is_inbound else "outbound"
-        logger.debug(f"Using port-based fallback: dest_port={dest_addr.port_value} → {direction}")
-        return direction
+        # 4. App port destination → receiving request on app (INBOUND)
+        if dest_port in self.config.network.app_ports:
+            logger.debug(f"INBOUND: dest_port={dest_port} (app port)")
+            return "inbound"
+
+        # 5. Default to OUTBOUND (safer for fail-open)
+        logger.debug(f"OUTBOUND: default fallback (source={source_ip}, dest={dest_ip}:{dest_port})")
+        return "outbound"
 
     async def Check(
         self,
@@ -107,7 +105,7 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
             dest = f"{dest_addr.address}:{dest_addr.port_value}"
 
             # Detect direction from Envoy's filter metadata (set by EnvoyFilter context)
-            direction = self._detect_direction_from_metadata(request)
+            direction = self._detect_direction(request)
 
             logger.info(f"Intercepted: {source} → {dest}, direction={direction}")
 
@@ -181,7 +179,7 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
                     f"{self.config.cfn_url}/v1/l9/validate",
                     json=l9_message,
                     headers={"Content-Type": "application/json"},
-                    timeout=1.0
+                    timeout=self.config.cfn_timeout_seconds
                 )
 
                 if response.status_code == 200:
@@ -191,7 +189,7 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
                     logger.warning(f"❌ CFN denied: direction={direction}, status={response.status_code}, body={response.text}")
 
         except httpx.TimeoutException:
-            logger.error(f"CFN timeout after 1s")
+            logger.error(f"CFN timeout after {self.config.cfn_timeout_seconds}s")
         except Exception as e:
             logger.error(f"Failed to validate with CFN: {e}")
 
@@ -205,7 +203,7 @@ async def serve(config: Optional[ProxyConfig] = None):
         A2AExtAuthZService(config), server
     )
 
-    listen_addr = "0.0.0.0:9001"
+    listen_addr = f"0.0.0.0:{config.network.ext_authz_port}"
     server.add_insecure_port(listen_addr)
     logger.info(f"Starting ext_authz service on {listen_addr}")
     await server.start()
