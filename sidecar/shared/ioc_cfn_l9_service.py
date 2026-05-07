@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Envoy ext_authz service for A2A traffic interception.
+"""IOC CFN L9 service for A2A traffic interception.
 
 This service integrates with Envoy's external authorization API to intercept
-HTTP traffic, parse A2A messages, convert them to L9 format, and send them to
-CFN for validation. The service operates in fail-open mode to ensure traffic
-continues flowing even if errors occur.
+HTTP traffic at the L8 (A2A) layer, parse A2A messages, convert them to L9
+format, and send them to CFN for semantic negotiation and validation.
+
+The service operates in fail-open mode to ensure traffic continues flowing
+even if errors occur.
 """
 
 import asyncio
@@ -27,11 +29,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
+class IocCfnL9Service(external_auth_pb2_grpc.AuthorizationServicer):
+    """IOC CFN L9 service: intercepts L8 (A2A) messages, converts to L9, and sends to CFN."""
+
     def __init__(self, config: ProxyConfig):
         self.config = config
         logger.info(f"CFN L9 validation endpoint: {config.cfn_url}/v1/l9/validate")
-        logger.info("A2A ext_authz service initialized (L9 mode)")
+        logger.info("IOC CFN L9 service initialized (A2A → L9 conversion mode)")
 
     def _detect_direction(self, request: external_auth_pb2.CheckRequest) -> str:
         """
@@ -151,7 +155,7 @@ class A2AExtAuthZService(external_auth_pb2_grpc.AuthorizationServicer):
             )
 
         except Exception as e:
-            logger.error(f"Error in ext_authz Check: {e}", exc_info=True)
+            logger.error(f"Error in L9 service Check: {e}", exc_info=True)
             # Fail open - allow traffic even on error to avoid breaking the pod
             return external_auth_pb2.CheckResponse(
                 status=status_pb2.Status(code=code_pb2.OK),
@@ -200,12 +204,12 @@ async def serve(config: Optional[ProxyConfig] = None):
 
     server = aio.server()
     external_auth_pb2_grpc.add_AuthorizationServicer_to_server(
-        A2AExtAuthZService(config), server
+        IocCfnL9Service(config), server
     )
 
     listen_addr = f"0.0.0.0:{config.network.ext_authz_port}"
     server.add_insecure_port(listen_addr)
-    logger.info(f"Starting ext_authz service on {listen_addr}")
+    logger.info(f"Starting IOC CFN L9 service on {listen_addr}")
     await server.start()
 
     try:

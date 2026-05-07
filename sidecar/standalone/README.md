@@ -18,7 +18,7 @@ The sidecar consists of three main components:
 │  └─ Your agent application                          │
 ├─────────────────────────────────────────────────────┤
 │  Sidecar Container (UID 1337)                       │
-│  ├─ ext_authz_service.py (gRPC service on :9001)    │
+│  ├─ ioc_cfn_l9_service.py (gRPC service on :9001)    │
 │  ├─ Envoy Proxy                                     │
 │  │  ├─ Inbound listener (:15001)                    │
 │  │  └─ Outbound listener (:15002)                   │
@@ -31,18 +31,18 @@ The sidecar consists of three main components:
 #### Outbound Requests (Agent → External Service)
 1. Agent makes HTTP request (e.g., `http://agent-b:8000`)
 2. **iptables** redirects TCP traffic → Envoy outbound listener (`:15002`)
-3. **Envoy** intercepts request, calls ext_authz via gRPC
-4. **ext_authz** sends message to CFN, gets direction
+3. **Envoy** intercepts request, calls CFN L9 service via gRPC
+4. **CFN L9 service** sends message to CFN, gets direction
 5. Envoy forwards request to actual destination
-6. Response flows back through Envoy → ext_authz → agent
+6. Response flows back through Envoy → CFN L9 service → agent
 
 #### Inbound Requests (External Service → Agent)
 1. External request arrives on app port (e.g., `:8001`)
 2. **iptables** redirects to Envoy inbound listener (`:15001`)
-3. **Envoy** intercepts request, calls ext_authz via gRPC
-4. **ext_authz** sends message to CFN, gets direction
+3. **Envoy** intercepts request, calls CFN L9 service via gRPC
+4. **CFN L9 service** sends message to CFN, gets direction
 5. Envoy forwards to agent application
-6. Response flows back through Envoy → ext_authz → caller
+6. Response flows back through Envoy → CFN L9 service → caller
 
 ## Components
 
@@ -59,11 +59,11 @@ The sidecar consists of three main components:
 **Security**: Requires `NET_ADMIN` capability, runs before main containers
 
 ### 2. entrypoint.sh
-**Purpose**: Start both ext_authz service and Envoy proxy
+**Purpose**: Start both CFN L9 service service and Envoy proxy
 **Runs**: As main entrypoint for sidecar container (UID 1337)
 **What it does**:
-- Starts ext_authz gRPC service in background
-- Waits for ext_authz to be ready (health check on `:9001`)
+- Starts CFN L9 service gRPC service in background
+- Waits for CFN L9 service to be ready (health check on `:9001`)
 - Starts Envoy proxy as foreground process
 - Uses `exec` so Envoy receives signals properly
 
@@ -77,13 +77,13 @@ The sidecar consists of three main components:
 **What it configures**:
 - **Inbound Listener** (`:15001`): Handles incoming traffic to agent
 - **Outbound Listener** (`:15002`): Handles outgoing traffic from agent
-- **ext_authz Filter**: gRPC connection to ext_authz service (`:9001`)
+- **CFN L9 service Filter**: gRPC connection to CFN L9 service service (`:9001`)
 - **Admin Interface** (`:9000`): Envoy admin/metrics endpoint
 
-### 4. ext_authz_service.py (in sidecar/shared/)
+### 4. ioc_cfn_l9_service.py (in sidecar/shared/)
 **Purpose**: gRPC service that handles authorization and CFN integration
 **What it does**:
-- Implements Envoy's ext_authz gRPC protocol
+- Implements Envoy's CFN L9 service gRPC protocol
 - Intercepts HTTP requests/responses
 - Sends messages to CFN for semantic negotiation
 - Applies direction from CFN to the traffic
@@ -154,9 +154,9 @@ Each agent pod requires:
 
 ## Troubleshooting
 
-### Check ext_authz logs:
+### Check CFN L9 service logs:
 ```bash
-kubectl logs <pod-name> -c sidecar | grep ext_authz
+kubectl logs <pod-name> -c sidecar | grep CFN L9 service
 ```
 
 ### Check Envoy logs:
@@ -186,12 +186,12 @@ To modify the sidecar:
 
 1. **Edit scripts**: [entrypoint.sh](entrypoint.sh), [init-iptables.sh](init-iptables.sh)
 2. **Update Envoy config**: [envoy.yaml](envoy.yaml)
-3. **Modify ext_authz**: [../shared/ext_authz_service.py](../shared/ext_authz_service.py)
+3. **Modify CFN L9 service**: [../shared/ioc_cfn_l9_service.py](../shared/ioc_cfn_l9_service.py)
 4. **Rebuild image**: `docker build -f Dockerfile -t sidecar-standalone-sidecar:latest ../../..`
 5. **Test locally**: `cd ../../../examples/sidecar/standalone && ./setup.sh`
 
 ## Related Documentation
 
 - [Standalone Example](../../../examples/sidecar/standalone/README.md) - Complete demo setup
-- [ext_authz_service.py](../shared/ext_authz_service.py) - Authorization service implementation
+- [ioc_cfn_l9_service.py](../shared/ioc_cfn_l9_service.py) - Authorization service implementation
 - [MAS Client Library](../../../README.md) - Main project documentation

@@ -9,30 +9,30 @@ echo "========================================="
 echo "A2A Sidecar (Standalone - No Istio)"
 echo "========================================="
 
-# Start ext_authz gRPC service in background
-# This service handles A2A message interception and CFN integration
+# Start IOC CFN L9 gRPC service in background
+# This service intercepts L8 (A2A) messages, converts to L9, and sends to CFN
 # Envoy calls this service via gRPC for authorization decisions on each request
-echo "Starting ext_authz gRPC service..."
-python -m sidecar.shared.ext_authz_service \
+echo "Starting IOC CFN L9 gRPC service..."
+python -m sidecar.shared.ioc_cfn_l9_service \
     --cfn-url="${CFN_URL}" \
     --workspace-id="${WORKSPACE_ID}" \
     --mas-id="${MAS_ID}" &
 
-EXT_AUTHZ_PID=$!
+CFN_L9_PID=$!
 
 # Configuration (can be overridden via environment variables)
-EXT_AUTHZ_PORT="${EXT_AUTHZ_PORT:-9001}"
+CFN_L9_PORT="${CFN_L9_PORT:-9001}"
 
-# Wait for ext_authz to be ready (check gRPC port)
-echo "Waiting for ext_authz service to be ready on port ${EXT_AUTHZ_PORT}..."
+# Wait for CFN L9 service to be ready (check gRPC port)
+echo "Waiting for CFN L9 service to be ready on port ${CFN_L9_PORT}..."
 for i in $(seq 1 30); do
-    if nc -z 127.0.0.1 ${EXT_AUTHZ_PORT} 2>/dev/null; then
-        echo "ext_authz service is ready!"
+    if nc -z 127.0.0.1 ${CFN_L9_PORT} 2>/dev/null; then
+        echo "CFN L9 service is ready!"
         break
     fi
     if [ $i -eq 30 ]; then
-        echo "ERROR: ext_authz service failed to start within 30 seconds"
-        kill $EXT_AUTHZ_PID 2>/dev/null || true
+        echo "ERROR: CFN L9 service failed to start within 30 seconds"
+        kill $CFN_L9_PID 2>/dev/null || true
         exit 1
     fi
     sleep 1
@@ -42,5 +42,5 @@ done
 echo "Starting Envoy proxy..."
 exec envoy -c /etc/envoy/envoy.yaml
 
-# If Envoy exits, kill ext_authz
-kill $EXT_AUTHZ_PID 2>/dev/null || true
+# If Envoy exits, kill CFN L9 service
+kill $CFN_L9_PID 2>/dev/null || true
