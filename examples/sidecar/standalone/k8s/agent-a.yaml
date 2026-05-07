@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-a
+  labels:
+    app: agent-a
+spec:
+  ports:
+  - port: 8001
+    name: http
+  selector:
+    app: agent-a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-a
+  template:
+    metadata:
+      labels:
+        app: agent-a
+    spec:
+      # Init container to set up iptables before main containers start
+      initContainers:
+      - name: init-iptables
+        image: sidecar-standalone-sidecar:latest
+        imagePullPolicy: Never
+        command: ["/init-iptables.sh"]
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN  # Required for iptables
+          privileged: false
+          runAsUser: 0  # Init container needs root for iptables
+
+      containers:
+      # Application container - runs as UID 1000
+      - name: agent
+        image: sidecar-standalone-agent-a:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8001
+        env:
+        - name: AGENT_B_URL
+          value: "http://agent-b:8000"
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+
+      # Sidecar container - runs as UID 1337 (Envoy)
+      - name: sidecar
+        image: sidecar-standalone-sidecar:latest
+        imagePullPolicy: Never
+        command: ["/entrypoint.sh"]
+        env:
+        - name: CFN_URL
+          value: "http://cfn:9002"
+        - name: WORKSPACE_ID
+          value: "demo-workspace"
+        - name: MAS_ID
+          value: "agent-a-sidecar"
+        ports:
+        - containerPort: 9001
+          name: ext-authz
+        - containerPort: 15001
+          name: envoy-inbound
+        - containerPort: 15002
+          name: envoy-outbound
+        securityContext:
+          runAsUser: 1337  # Envoy UID
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false

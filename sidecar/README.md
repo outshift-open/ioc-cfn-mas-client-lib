@@ -4,12 +4,19 @@ Transparently intercepts A2A protocol messages and forwards them to CFN Shared M
 
 ## Quick Start
 
+### Istio Approach
 ```bash
-cd examples/sidecar
-./setup.sh  # Creates k8s cluster with working demo
+cd examples/sidecar/istio
+./setup.sh  # Creates k8s cluster with Istio and working demo
 ```
 
-See working agents exchange messages: `kubectl logs -f -n a2a-demo deployment/mock-cfn`
+### Standalone Approach (No Istio)
+```bash
+cd examples/sidecar/standalone
+./setup.sh  # Creates k8s cluster with iptables-based interception
+```
+
+See working agents exchange messages: `kubectl logs -f deployment/mock-cfn` (or check namespace with `-n a2a-demo` for istio)
 
 ## What It Does
 
@@ -135,4 +142,5 @@ kubectl exec -n a2a-demo deployment/agent-a -c agent-a -- curl -v $CFN_URL/healt
 - [A2A Protocol Spec](https://www.a2aprotocol.org)
 - [Envoy ext_authz Docs](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/ext_authz_filter)
 - [Istio EnvoyFilter](https://istio.io/latest/docs/reference/config/networking/envoy-filter/)
-- [Working Demo](../examples/sidecar/)
+- [Istio Demo](../examples/sidecar/istio/)
+- [Standalone Demo](../examples/sidecar/standalone/)

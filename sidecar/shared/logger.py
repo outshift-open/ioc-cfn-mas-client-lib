@@ -1,10 +1,13 @@
-"""A2A message logging."""
+"""A2A message logging utilities.
+
+Provides formatted logging for A2A messages with relevant metadata.
+"""
 
 import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from message_parser import A2AMessage
+    from sidecar.shared.message_parser import A2AMessage
 
 logger = logging.getLogger("a2a_sidecar")
 

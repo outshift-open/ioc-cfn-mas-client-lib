@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 AGENT_A_URL = "http://agent-a:8001"
-MESSAGE_INTERVAL = 7  # seconds (different from Agent A to avoid collision)
+MESSAGE_INTERVAL = 20  # seconds (longer for easier demo observation, offset from Agent A)
 
 
 @app.post("/")

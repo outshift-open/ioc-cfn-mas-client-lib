@@ -43,7 +43,7 @@ spec:
         - name: WORKSPACE_ID
           value: "demo-workspace"
         - name: MAS_ID
-          value: "demo-mas"
+          value: "agent-a-sidecar"
         ports:
         - name: cfn-sidecar
           containerPort: 9001

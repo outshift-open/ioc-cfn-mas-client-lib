@@ -1,0 +1,16 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install dependencies (A2A SDK with HTTP server support)
+RUN pip install --no-cache-dir a2a-sdk[http-server]==0.3.26 httpx uvicorn
+
+# Copy agent app
+COPY demo-apps/agent_a.py /app/agent_a.py
+
+# Create non-root user with UID 1000 (matches K8s securityContext)
+RUN useradd -u 1000 -m appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+CMD ["python", "agent_a.py"]

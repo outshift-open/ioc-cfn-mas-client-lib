@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 AGENT_B_URL = "http://agent-b:8000"
-MESSAGE_INTERVAL = 5  # seconds
+MESSAGE_INTERVAL = 15  # seconds (longer for easier demo observation)
 
 
 @app.post("/")
