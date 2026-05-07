@@ -34,11 +34,11 @@ COPY sidecar/shared/ ./sidecar/shared/
 COPY sidecar/standalone/envoy.yaml /etc/envoy/envoy.yaml
 
 # Copy init script for iptables setup (used by init container)
-COPY examples/sidecar-standalone/init-iptables.sh /init-iptables.sh
+COPY sidecar/standalone/init-iptables.sh /init-iptables.sh
 RUN chmod +x /init-iptables.sh
 
 # Copy sidecar entrypoint (used by main sidecar container)
-COPY examples/sidecar-standalone/sidecar-entrypoint.sh /sidecar-entrypoint.sh
+COPY examples/sidecar/standalone/sidecar-entrypoint.sh /sidecar-entrypoint.sh
 RUN chmod +x /sidecar-entrypoint.sh
 
 # Create envoy user with UID 1337
