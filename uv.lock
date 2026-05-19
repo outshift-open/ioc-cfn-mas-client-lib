@@ -978,11 +978,11 @@ wheels = [
 
 [[package]]
 name = "idna"
-version = "3.11"
+version = "3.15"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6f/6d/0703ccc57f3a7233505399edb88de3cbd678da106337b9fcde432b65ed60/idna-3.11.tar.gz", hash = "sha256:795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902", size = 194582, upload-time = "2025-10-12T14:55:20.501Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/77/7b3966d0b9d1d31a36ddf1746926a11dface89a83409bf1483f0237aa758/idna-3.15.tar.gz", hash = "sha256:ca962446ea538f7092a95e057da437618e886f4d349216d2b1e294abfdb65fdc", size = 199245, upload-time = "2026-05-12T22:45:57.011Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0e/61/66938bbb5fc52dbdf84594873d5b51fb1f7c7794e9c0f5bd885f30bc507b/idna-3.11-py3-none-any.whl", hash = "sha256:771a87f49d9defaf64091e6e6fe9c18d4833f140bd19464795bc32d966ca37ea", size = 71008, upload-time = "2025-10-12T14:55:18.883Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/23/408243171aa9aaba178d3e2559159c24c1171a641aa83b67bdd3394ead8e/idna-3.15-py3-none-any.whl", hash = "sha256:048adeaf8c2d788c40fee287673ccaa74c24ffd8dcf09ffa555a2fbb59f10ac8", size = 72340, upload-time = "2026-05-12T22:45:55.733Z" },
 ]
 
 [[package]]
@@ -1883,6 +1883,19 @@ wheels = [
 ]
 
 [[package]]
+name = "xds-protos"
+version = "1.80.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "grpcio" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/de/be/2e7beb0887bb3c975bbae06c34076bda9b33f3e38ccd1bbc0886819612a9/xds_protos-1.80.0.tar.gz", hash = "sha256:5b57f3aa5d10f29bd7f84f6e73706ff4c8f7d02732f358bb9bfb56712f02f88f", size = 564082, upload-time = "2026-03-30T08:54:38.847Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/25/dd/707cec5754216590646364d1205c9406867f2d877215cd76c3b49abd5685/xds_protos-1.80.0-py3-none-any.whl", hash = "sha256:8ea3a208a79e3a5c700a412f38e8e525e018911f2da423b039a2b103e44b321d", size = 1468228, upload-time = "2026-03-30T08:54:24.003Z" },
+]
+
+[[package]]
 name = "yarl"
 version = "1.23.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2020,17 +2033,4 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/19/3774d162f6732d1cfb0b47b4140a942a35ca82bb19b6db1f80e9e7bdc8f8/yarl-1.23.0-cp314-cp314t-win_amd64.whl", hash = "sha256:4503053d296bc6e4cbd1fad61cf3b6e33b939886c4f249ba7c78b602214fabe2", size = 97610, upload-time = "2026-03-01T22:07:45.773Z" },
     { url = "https://files.pythonhosted.org/packages/51/47/3fa2286c3cb162c71cdb34c4224d5745a1ceceb391b2bd9b19b668a8d724/yarl-1.23.0-cp314-cp314t-win_arm64.whl", hash = "sha256:44bb7bef4ea409384e3f8bc36c063d77ea1b8d4a5b2706956c0d6695f07dcc25", size = 86041, upload-time = "2026-03-01T22:07:49.026Z" },
     { url = "https://files.pythonhosted.org/packages/69/68/c8739671f5699c7dc470580a4f821ef37c32c4cb0b047ce223a7f115757f/yarl-1.23.0-py3-none-any.whl", hash = "sha256:a2df6afe50dea8ae15fa34c9f824a3ee958d785fd5d089063d960bae1daa0a3f", size = 48288, upload-time = "2026-03-01T22:07:51.388Z" },
-]
-
-[[package]]
-name = "xds-protos"
-version = "1.80.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "grpcio" },
-    { name = "protobuf" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/de/be/2e7beb0887bb3c975bbae06c34076bda9b33f3e38ccd1bbc0886819612a9/xds_protos-1.80.0.tar.gz", hash = "sha256:5b57f3aa5d10f29bd7f84f6e73706ff4c8f7d02732f358bb9bfb56712f02f88f", size = 564082, upload-time = "2026-03-30T08:54:38.847Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/25/dd/707cec5754216590646364d1205c9406867f2d877215cd76c3b49abd5685/xds_protos-1.80.0-py3-none-any.whl", hash = "sha256:8ea3a208a79e3a5c700a412f38e8e525e018911f2da423b039a2b103e44b321d", size = 1468228, upload-time = "2026-03-30T08:54:24.003Z" },
 ]
