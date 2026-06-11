@@ -17,20 +17,26 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
-from typing import Any, ClassVar, Dict, List
-from typing_extensions import Annotated
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
+from typing import Any, ClassVar, Dict, List, Union
+from uuid import UUID
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class Agent(BaseModel):
+class MetricRecord(BaseModel):
     """
-    Agent
+    MetricRecord
     """ # noqa: E501
-    id: Annotated[str, Field(min_length=1, strict=True)] = Field(description="ID is the unique agent identifier.")
-    name: StrictStr = Field(description="Name is the human-readable agent name.")
-    __properties: ClassVar[List[str]] = ["id", "name"]
+    timestamp: datetime = Field(description="When the metric was recorded", json_schema_extra={"examples": ["2026-05-19T10:30:00.123Z"]})
+    workspace_id: UUID = Field(description="Workspace identifier", json_schema_extra={"examples": ["550e8400-e29b-41d4-a716-446655440000"]})
+    mas_id: UUID = Field(description="MAS instance identifier", json_schema_extra={"examples": ["660e8400-e29b-41d4-a716-446655440000"]})
+    agent_id: StrictStr = Field(description="Agent identifier", json_schema_extra={"examples": ["semantic-agent-1"]})
+    metric_name: StrictStr = Field(description="Metric name (dot-notation)", json_schema_extra={"examples": ["llm.token.input"]})
+    value: Union[StrictFloat, StrictInt] = Field(description="Numeric metric value", json_schema_extra={"examples": [1500.0]})
+    attributes: Dict[str, Any] = Field(description="Flexible metadata stored as JSON", json_schema_extra={"examples": [{"model": "gpt-4o", "session_id": "770e8400-e29b-41d4-a716-446655440000", "operation_type": "semantic_negotiation"}]})
+    __properties: ClassVar[List[str]] = ["timestamp", "workspace_id", "mas_id", "agent_id", "metric_name", "value", "attributes"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -50,7 +56,7 @@ class Agent(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of Agent from a JSON string"""
+        """Create an instance of MetricRecord from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -75,7 +81,7 @@ class Agent(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of Agent from a dict"""
+        """Create an instance of MetricRecord from a dict"""
         if obj is None:
             return None
 
@@ -83,8 +89,13 @@ class Agent(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "name": obj.get("name")
+            "timestamp": obj.get("timestamp"),
+            "workspace_id": obj.get("workspace_id"),
+            "mas_id": obj.get("mas_id"),
+            "agent_id": obj.get("agent_id"),
+            "metric_name": obj.get("metric_name"),
+            "value": obj.get("value"),
+            "attributes": obj.get("attributes")
         })
         return _obj
 

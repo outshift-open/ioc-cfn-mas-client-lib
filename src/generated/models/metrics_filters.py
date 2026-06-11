@@ -18,19 +18,21 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr
-from typing import Any, ClassVar, Dict, List
-from typing_extensions import Annotated
+from typing import Any, ClassVar, Dict, List, Optional
+from uuid import UUID
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class Agent(BaseModel):
+class MetricsFilters(BaseModel):
     """
-    Agent
+    MetricsFilters
     """ # noqa: E501
-    id: Annotated[str, Field(min_length=1, strict=True)] = Field(description="ID is the unique agent identifier.")
-    name: StrictStr = Field(description="Name is the human-readable agent name.")
-    __properties: ClassVar[List[str]] = ["id", "name"]
+    workspace_id: Optional[UUID] = Field(default=None, description="Workspace filter (if applied)")
+    mas_id: Optional[UUID] = Field(default=None, description="MAS filter (if applied)")
+    agent_id: Optional[StrictStr] = Field(default=None, description="Agent filter (if applied)")
+    metric_name: Optional[StrictStr] = Field(default=None, description="Metric name filter (if applied, may include wildcards)")
+    __properties: ClassVar[List[str]] = ["workspace_id", "mas_id", "agent_id", "metric_name"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -50,7 +52,7 @@ class Agent(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of Agent from a JSON string"""
+        """Create an instance of MetricsFilters from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -75,7 +77,7 @@ class Agent(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of Agent from a dict"""
+        """Create an instance of MetricsFilters from a dict"""
         if obj is None:
             return None
 
@@ -83,8 +85,10 @@ class Agent(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "name": obj.get("name")
+            "workspace_id": obj.get("workspace_id"),
+            "mas_id": obj.get("mas_id"),
+            "agent_id": obj.get("agent_id"),
+            "metric_name": obj.get("metric_name")
         })
         return _obj
 
