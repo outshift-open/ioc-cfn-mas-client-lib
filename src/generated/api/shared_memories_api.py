@@ -18,6 +18,7 @@ from typing_extensions import Annotated
 from pydantic import Field
 from typing import Optional
 from typing_extensions import Annotated
+from generated.models.create_or_update_accepted_response import CreateOrUpdateAcceptedResponse
 from generated.models.create_or_update_request import CreateOrUpdateRequest
 from generated.models.create_or_update_response import CreateOrUpdateResponse
 from generated.models.onboard_vector_store_request import OnboardVectorStoreRequest
@@ -61,10 +62,10 @@ class SharedMemoriesApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> CreateOrUpdateResponse:
-        """Create or update shared memories
+    ) -> CreateOrUpdateAcceptedResponse:
+        """Create or update shared memories (async)
 
-        Creates or updates shared memories with entries (concepts and relations) extracted from the provided trace or OpenClaw output for a given workspace and multi-agentic system.
+        Accepts a request to create or update shared memories and processes it asynchronously. Returns 202 Accepted immediately. The extraction and storage operations run in the background.
 
         :param workspace_id: Workspace ID (required)
         :type workspace_id: str
@@ -105,9 +106,8 @@ class SharedMemoriesApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '201': "CreateOrUpdateResponse",
+            '202': "CreateOrUpdateAcceptedResponse",
             '400': "Dict[str, str]",
-            '500': "Dict[str, str]",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -138,10 +138,10 @@ class SharedMemoriesApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[CreateOrUpdateResponse]:
-        """Create or update shared memories
+    ) -> ApiResponse[CreateOrUpdateAcceptedResponse]:
+        """Create or update shared memories (async)
 
-        Creates or updates shared memories with entries (concepts and relations) extracted from the provided trace or OpenClaw output for a given workspace and multi-agentic system.
+        Accepts a request to create or update shared memories and processes it asynchronously. Returns 202 Accepted immediately. The extraction and storage operations run in the background.
 
         :param workspace_id: Workspace ID (required)
         :type workspace_id: str
@@ -182,9 +182,8 @@ class SharedMemoriesApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '201': "CreateOrUpdateResponse",
+            '202': "CreateOrUpdateAcceptedResponse",
             '400': "Dict[str, str]",
-            '500': "Dict[str, str]",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -216,9 +215,9 @@ class SharedMemoriesApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Create or update shared memories
+        """Create or update shared memories (async)
 
-        Creates or updates shared memories with entries (concepts and relations) extracted from the provided trace or OpenClaw output for a given workspace and multi-agentic system.
+        Accepts a request to create or update shared memories and processes it asynchronously. Returns 202 Accepted immediately. The extraction and storage operations run in the background.
 
         :param workspace_id: Workspace ID (required)
         :type workspace_id: str
@@ -259,9 +258,8 @@ class SharedMemoriesApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '201': "CreateOrUpdateResponse",
+            '202': "CreateOrUpdateAcceptedResponse",
             '400': "Dict[str, str]",
-            '500': "Dict[str, str]",
         }
         response_data = self.api_client.call_api(
             *_param,
