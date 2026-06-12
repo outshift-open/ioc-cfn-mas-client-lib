@@ -17,20 +17,20 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List
-from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class Agent(BaseModel):
+class MetricsPeriod(BaseModel):
     """
-    Agent
+    MetricsPeriod
     """ # noqa: E501
-    id: Annotated[str, Field(min_length=1, strict=True)] = Field(description="ID is the unique agent identifier.")
-    name: StrictStr = Field(description="Name is the human-readable agent name.")
-    __properties: ClassVar[List[str]] = ["id", "name"]
+    start: datetime = Field(description="Start of time range", json_schema_extra={"examples": ["2026-05-19T00:00:00Z"]})
+    end: datetime = Field(description="End of time range", json_schema_extra={"examples": ["2026-05-20T00:00:00Z"]})
+    __properties: ClassVar[List[str]] = ["start", "end"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -50,7 +50,7 @@ class Agent(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of Agent from a JSON string"""
+        """Create an instance of MetricsPeriod from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -75,7 +75,7 @@ class Agent(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of Agent from a dict"""
+        """Create an instance of MetricsPeriod from a dict"""
         if obj is None:
             return None
 
@@ -83,8 +83,8 @@ class Agent(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "name": obj.get("name")
+            "start": obj.get("start"),
+            "end": obj.get("end")
         })
         return _obj
 

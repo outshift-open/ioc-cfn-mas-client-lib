@@ -17,20 +17,25 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
-from typing import Any, ClassVar, Dict, List
-from typing_extensions import Annotated
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Any, ClassVar, Dict, List, Optional
+from generated.models.metric_record import MetricRecord
+from generated.models.metrics_filters import MetricsFilters
+from generated.models.metrics_pagination import MetricsPagination
+from generated.models.metrics_period import MetricsPeriod
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class Agent(BaseModel):
+class MetricsQueryResponse(BaseModel):
     """
-    Agent
+    MetricsQueryResponse
     """ # noqa: E501
-    id: Annotated[str, Field(min_length=1, strict=True)] = Field(description="ID is the unique agent identifier.")
-    name: StrictStr = Field(description="Name is the human-readable agent name.")
-    __properties: ClassVar[List[str]] = ["id", "name"]
+    period: MetricsPeriod
+    filters: Optional[MetricsFilters] = None
+    pagination: MetricsPagination
+    metrics: List[MetricRecord] = Field(description="Array of metric data points")
+    __properties: ClassVar[List[str]] = ["period", "filters", "pagination", "metrics"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -50,7 +55,7 @@ class Agent(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of Agent from a JSON string"""
+        """Create an instance of MetricsQueryResponse from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -71,11 +76,27 @@ class Agent(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of period
+        if self.period:
+            _dict['period'] = self.period.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of filters
+        if self.filters:
+            _dict['filters'] = self.filters.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of pagination
+        if self.pagination:
+            _dict['pagination'] = self.pagination.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of each item in metrics (list)
+        _items = []
+        if self.metrics:
+            for _item_metrics in self.metrics:
+                if _item_metrics:
+                    _items.append(_item_metrics.to_dict())
+            _dict['metrics'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of Agent from a dict"""
+        """Create an instance of MetricsQueryResponse from a dict"""
         if obj is None:
             return None
 
@@ -83,8 +104,10 @@ class Agent(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "name": obj.get("name")
+            "period": MetricsPeriod.from_dict(obj["period"]) if obj.get("period") is not None else None,
+            "filters": MetricsFilters.from_dict(obj["filters"]) if obj.get("filters") is not None else None,
+            "pagination": MetricsPagination.from_dict(obj["pagination"]) if obj.get("pagination") is not None else None,
+            "metrics": [MetricRecord.from_dict(_item) for _item in obj["metrics"]] if obj.get("metrics") is not None else None
         })
         return _obj
 

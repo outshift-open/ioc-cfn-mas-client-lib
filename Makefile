@@ -1,5 +1,5 @@
 # OpenAPI spec from ioc-cfn-svc public API
-OPENAPI_SPEC ?= openapi/public-api-v1.0.yaml
+OPENAPI_SPEC ?= openapi/public-api-v1.1.yaml
 
 GEN_PKG ?= generated
 GEN_OUT ?= src

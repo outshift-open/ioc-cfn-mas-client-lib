@@ -17,20 +17,20 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List
-from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class Agent(BaseModel):
+class MetricsPagination(BaseModel):
     """
-    Agent
+    MetricsPagination
     """ # noqa: E501
-    id: Annotated[str, Field(min_length=1, strict=True)] = Field(description="ID is the unique agent identifier.")
-    name: StrictStr = Field(description="Name is the human-readable agent name.")
-    __properties: ClassVar[List[str]] = ["id", "name"]
+    limit: StrictInt = Field(description="Maximum results returned", json_schema_extra={"examples": [1000]})
+    offset: StrictInt = Field(description="Pagination offset", json_schema_extra={"examples": [0]})
+    total: StrictInt = Field(description="Total matching records", json_schema_extra={"examples": [3]})
+    __properties: ClassVar[List[str]] = ["limit", "offset", "total"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -50,7 +50,7 @@ class Agent(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of Agent from a JSON string"""
+        """Create an instance of MetricsPagination from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -75,7 +75,7 @@ class Agent(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of Agent from a dict"""
+        """Create an instance of MetricsPagination from a dict"""
         if obj is None:
             return None
 
@@ -83,8 +83,9 @@ class Agent(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
-            "name": obj.get("name")
+            "limit": obj.get("limit"),
+            "offset": obj.get("offset"),
+            "total": obj.get("total")
         })
         return _obj
 

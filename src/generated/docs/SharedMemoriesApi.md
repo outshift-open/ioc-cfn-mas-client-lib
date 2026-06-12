@@ -4,27 +4,27 @@ All URIs are relative to *http://localhost:9002*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**create_or_update_shared_memories**](SharedMemoriesApi.md#create_or_update_shared_memories) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories | Create or update shared memories
+[**create_or_update_shared_memories**](SharedMemoriesApi.md#create_or_update_shared_memories) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories | Create or update shared memories (async)
 [**fetch_shared_memories**](SharedMemoriesApi.md#fetch_shared_memories) | **POST** /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories/query | Fetch shared memories
 [**onboard_vector_store**](SharedMemoriesApi.md#onboard_vector_store) | **POST** /api/workspaces/{workspaceId}/shared-memories/vector-store | Onboard shared memory vector store
 
 
 # **create_or_update_shared_memories**
-> CreateOrUpdateResponse create_or_update_shared_memories(workspace_id, mas_id, create_or_update_request)
+> CreateOrUpdateAcceptedResponse create_or_update_shared_memories(workspace_id, mas_id, create_or_update_request)
 
-Create or update shared memories
+Create or update shared memories (async)
 
-Creates or updates shared memories with entries (concepts and relations)
-extracted from the provided trace or OpenClaw output for a given workspace
-and multi-agentic system.
+Accepts a request to create or update shared memories and processes it asynchronously.
+Returns 202 Accepted immediately. The extraction and storage operations run in the background.
+The response_id in the response can be used for log correlation.
 
 ### Example
 
 
 ```python
 import generated
+from generated.models.create_or_update_accepted_response import CreateOrUpdateAcceptedResponse
 from generated.models.create_or_update_request import CreateOrUpdateRequest
-from generated.models.create_or_update_response import CreateOrUpdateResponse
 from generated.rest import ApiException
 from pprint import pprint
 
@@ -44,7 +44,7 @@ with generated.ApiClient(configuration) as api_client:
     create_or_update_request = generated.CreateOrUpdateRequest() # CreateOrUpdateRequest | Create or update shared memories request
 
     try:
-        # Create or update shared memories
+        # Create or update shared memories (async)
         api_response = api_instance.create_or_update_shared_memories(workspace_id, mas_id, create_or_update_request)
         print("The response of SharedMemoriesApi->create_or_update_shared_memories:\n")
         pprint(api_response)
@@ -65,7 +65,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**CreateOrUpdateResponse**](CreateOrUpdateResponse.md)
+[**CreateOrUpdateAcceptedResponse**](CreateOrUpdateAcceptedResponse.md)
 
 ### Authorization
 
@@ -80,9 +80,8 @@ No authorization required
 
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**201** | Shared memories successfully created or updated |  -  |
+**202** | Request accepted for asynchronous processing |  -  |
 **400** | Invalid request |  -  |
-**500** | Internal server error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

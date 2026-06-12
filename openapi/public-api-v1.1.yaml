@@ -1,14 +1,17 @@
 openapi: 3.0.3
 info:
   title: CFN Service Public API
-  version: "1.0.0"
+  version: "1.1.0"
   description: |-
     Public API contract for IoC Cognition Fabric Node service.
 
     This specification is used for external SDK generation (Python, TypeScript, Go clients).
 
-    **Note:** This is a snapshot of the public API at version 1.0.0.
+    **Note:** This is a snapshot of the public API at version 1.1.0.
     The implementation may include additional internal endpoints not documented here.
+
+    **Changes in v1.1.0:**
+    - `POST /shared-memories` now returns 202 Accepted (async processing)
   contact: {}
 
 servers:
@@ -24,6 +27,8 @@ tags:
     description: Multi-agent semantic negotiation sessions
   - name: memory-operations
     description: Proxy for remote memory provider operations
+  - name: metrics
+    description: Token usage and operational metrics for MAS agents
 
 paths:
   /api/workspaces/{workspaceId}/shared-memories/vector-store:
@@ -72,11 +77,11 @@ paths:
 
   /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/shared-memories:
     post:
-      summary: Create or update shared memories
+      summary: Create or update shared memories (async)
       description: |-
-        Creates or updates shared memories with entries (concepts and relations)
-        extracted from the provided trace or OpenClaw output for a given workspace
-        and multi-agentic system.
+        Accepts a request to create or update shared memories and processes it asynchronously.
+        Returns 202 Accepted immediately. The extraction and storage operations run in the background.
+        The response_id in the response can be used for log correlation.
       operationId: createOrUpdateSharedMemories
       tags:
         - shared-memories
@@ -103,20 +108,14 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateOrUpdateRequest'
       responses:
-        '201':
-          description: Shared memories successfully created or updated
+        '202':
+          description: Request accepted for asynchronous processing
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateOrUpdateResponse'
+                $ref: '#/components/schemas/CreateOrUpdateAcceptedResponse'
         '400':
           description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal server error
           content:
             application/json:
               schema:
@@ -377,6 +376,105 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/cognition-engine/metrics:
+    get:
+      summary: Query metrics within time range
+      description: |-
+        Returns raw metric data points filtered by time and optional dimensions.
+        Supports filtering by workspace, MAS, agent, and metric name with wildcard support.
+        Use pagination for large result sets.
+      operationId: getMetrics
+      tags:
+        - metrics
+      parameters:
+        - name: start_time
+          in: query
+          required: true
+          description: |
+            Start time (inclusive). Supports multiple formats:
+            - Unix timestamp (seconds): `1716076800`
+            - Unix timestamp (milliseconds): `1716076800000`
+            - RFC3339: `2026-05-19T00:00:00Z`
+            - Date-only: `2026-05-19` (assumes UTC midnight)
+          schema:
+            type: string
+            example: "2026-05-19"
+        - name: end_time
+          in: query
+          required: true
+          description: |
+            End time (exclusive). Supports multiple formats:
+            - Unix timestamp (seconds): `1716163200`
+            - Unix timestamp (milliseconds): `1716163200000`
+            - RFC3339: `2026-05-20T00:00:00Z`
+            - Date-only: `2026-05-20` (assumes UTC midnight)
+          schema:
+            type: string
+            example: "2026-05-20"
+        - name: workspace_id
+          in: query
+          required: false
+          description: Filter by workspace UUID
+          schema:
+            type: string
+            format: uuid
+        - name: mas_id
+          in: query
+          required: false
+          description: Filter by MAS UUID
+          schema:
+            type: string
+            format: uuid
+        - name: agent_id
+          in: query
+          required: false
+          description: Filter by agent ID
+          schema:
+            type: string
+        - name: metric_name
+          in: query
+          required: false
+          description: Filter by metric name (supports * wildcard, e.g., llm.token.*)
+          schema:
+            type: string
+            example: "llm.token.*"
+        - name: limit
+          in: query
+          required: false
+          description: Maximum results per page (default 1000, max 10000)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10000
+            default: 1000
+        - name: offset
+          in: query
+          required: false
+          description: Pagination offset (default 0)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Query successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsQueryResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     # Common schemas
@@ -485,6 +583,26 @@ components:
             The structure of the payload data is defined by Payload.Metadata.Format
       required:
         - payload
+
+    CreateOrUpdateAcceptedResponse:
+      type: object
+      description: Response returned when an async upsert request is accepted (202 Accepted)
+      properties:
+        response_id:
+          type: string
+          description: ID of the request, can be used for correlation in logs
+        status:
+          type: string
+          description: Status indicating the request was accepted for processing
+          example: accepted
+        message:
+          type: string
+          description: Message providing additional information
+          example: Request accepted for asynchronous processing
+      required:
+        - response_id
+        - status
+        - message
 
     CreateOrUpdateResponse:
       type: object
@@ -721,3 +839,126 @@ components:
           description: |-
             Result contains the pipeline execution result.
             The structure depends on the semantic negotiation library implementation.
+
+    # Metrics schemas (query responses only - ingestion is internal)
+    MetricsQueryResponse:
+      type: object
+      properties:
+        period:
+          $ref: '#/components/schemas/MetricsPeriod'
+        filters:
+          $ref: '#/components/schemas/MetricsFilters'
+        pagination:
+          $ref: '#/components/schemas/MetricsPagination'
+        metrics:
+          type: array
+          description: Array of metric data points
+          items:
+            $ref: '#/components/schemas/MetricRecord'
+      required:
+        - period
+        - pagination
+        - metrics
+
+    MetricsPeriod:
+      type: object
+      properties:
+        start:
+          type: string
+          format: date-time
+          description: Start of time range
+          example: "2026-05-19T00:00:00Z"
+        end:
+          type: string
+          format: date-time
+          description: End of time range
+          example: "2026-05-20T00:00:00Z"
+      required:
+        - start
+        - end
+
+    MetricsFilters:
+      type: object
+      properties:
+        workspace_id:
+          type: string
+          format: uuid
+          description: Workspace filter (if applied)
+        mas_id:
+          type: string
+          format: uuid
+          description: MAS filter (if applied)
+        agent_id:
+          type: string
+          description: Agent filter (if applied)
+        metric_name:
+          type: string
+          description: Metric name filter (if applied, may include wildcards)
+
+    MetricsPagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+          description: Maximum results returned
+          example: 1000
+        offset:
+          type: integer
+          description: Pagination offset
+          example: 0
+        total:
+          type: integer
+          description: Total matching records
+          example: 3
+      required:
+        - limit
+        - offset
+        - total
+
+    MetricRecord:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: When the metric was recorded
+          example: "2026-05-19T10:30:00.123Z"
+        workspace_id:
+          type: string
+          format: uuid
+          description: Workspace identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        mas_id:
+          type: string
+          format: uuid
+          description: MAS instance identifier
+          example: "660e8400-e29b-41d4-a716-446655440000"
+        agent_id:
+          type: string
+          description: Agent identifier
+          example: "semantic-agent-1"
+        metric_name:
+          type: string
+          description: Metric name (dot-notation)
+          example: "llm.token.input"
+        value:
+          type: number
+          format: double
+          description: Numeric metric value
+          example: 1500.0
+        attributes:
+          type: object
+          additionalProperties: true
+          description: Flexible metadata stored as JSON
+          example:
+            model: "gpt-4o"
+            session_id: "770e8400-e29b-41d4-a716-446655440000"
+            operation_type: "semantic_negotiation"
+      required:
+        - timestamp
+        - workspace_id
+        - mas_id
+        - agent_id
+        - metric_name
+        - value
+        - attributes
