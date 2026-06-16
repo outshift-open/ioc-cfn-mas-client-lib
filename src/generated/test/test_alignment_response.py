@@ -14,10 +14,10 @@
 
 import unittest
 
-from generated.models.negotiation_response import NegotiationResponse
+from generated.models.alignment_response import AlignmentResponse
 
-class TestNegotiationResponse(unittest.TestCase):
-    """NegotiationResponse unit test stubs"""
+class TestAlignmentResponse(unittest.TestCase):
+    """AlignmentResponse unit test stubs"""
 
     def setUp(self):
         pass
@@ -25,27 +25,27 @@ class TestNegotiationResponse(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def make_instance(self, include_optional) -> NegotiationResponse:
-        """Test NegotiationResponse
+    def make_instance(self, include_optional) -> AlignmentResponse:
+        """Test AlignmentResponse
             include_optional is a boolean, when False only required
             params are included, when True both required and
             optional params are included """
-        # uncomment below to create an instance of `NegotiationResponse`
+        # uncomment below to create an instance of `AlignmentResponse`
         """
-        model = NegotiationResponse()
+        model = AlignmentResponse()
         if include_optional:
-            return NegotiationResponse(
+            return AlignmentResponse(
                 status = '',
                 message = '',
                 result = { }
             )
         else:
-            return NegotiationResponse(
+            return AlignmentResponse(
         )
         """
 
-    def testNegotiationResponse(self):
-        """Test NegotiationResponse"""
+    def testAlignmentResponse(self):
+        """Test AlignmentResponse"""
         # inst_req_only = self.make_instance(include_optional=False)
         # inst_req_and_optional = self.make_instance(include_optional=True)
 

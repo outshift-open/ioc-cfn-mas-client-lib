@@ -85,7 +85,7 @@ The sidecar consists of three main components:
 **What it does**:
 - Implements Envoy's CFN L9 service gRPC protocol
 - Intercepts HTTP requests/responses
-- Sends messages to CFN for semantic negotiation
+- Sends messages to CFN for semantic alignment
 - Applies direction from CFN to the traffic
 - Returns authorization decision to Envoy
 

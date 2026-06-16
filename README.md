@@ -94,13 +94,13 @@ response = client.memory_operation(
 )
 ```
 
-### Semantic Negotiation API
+### Semantic Alignment API
 
-Run multi\-agent negotiation sessions:
+Run multi\-agent alignment sessions:
 
 ```python
-# Start a negotiation session
-response = client.start_negotiation(
+# Start a alignment session
+response = client.start_alignment(
     workspace_id="your_workspace_id",
     mas_id="your_mas_id",
     session_id="session-123",
@@ -112,8 +112,8 @@ response = client.start_negotiation(
     n_steps=10,  # Optional, defaults to 20
 )
 
-# Advance negotiation with agent replies
-response = client.advance_negotiation(
+# Advance alignment with agent replies
+response = client.advance_alignment(
     workspace_id="your_workspace_id",
     mas_id="your_mas_id",
     session_id="session-123",
@@ -318,7 +318,7 @@ For power users who need direct access to the generated OpenAPI clients:
 # Access the underlying API clients
 shared_memories_api = client.shared_memories_api
 memory_operations_api = client.memory_operations_api
-semantic_negotiation_api = client.semantic_negotiation_api
+semantic_alignment_api = client.semantic_alignment_api
 
 # Use generated methods directly
 response = shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post_with_http_info(...)

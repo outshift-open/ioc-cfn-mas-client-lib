@@ -41,7 +41,7 @@ class TestMetricRecord(unittest.TestCase):
                 agent_id = 'semantic-agent-1',
                 metric_name = 'llm.token.input',
                 value = 1500.0,
-                attributes = {"model":"gpt-4o","session_id":"770e8400-e29b-41d4-a716-446655440000","operation_type":"semantic_negotiation"}
+                attributes = {"model":"gpt-4o","session_id":"770e8400-e29b-41d4-a716-446655440000","operation_type":"semantic_alignment"}
             )
         else:
             return MetricRecord(
@@ -51,7 +51,7 @@ class TestMetricRecord(unittest.TestCase):
                 agent_id = 'semantic-agent-1',
                 metric_name = 'llm.token.input',
                 value = 1500.0,
-                attributes = {"model":"gpt-4o","session_id":"770e8400-e29b-41d4-a716-446655440000","operation_type":"semantic_negotiation"},
+                attributes = {"model":"gpt-4o","session_id":"770e8400-e29b-41d4-a716-446655440000","operation_type":"semantic_alignment"},
         )
         """
 

@@ -6,7 +6,7 @@ import asyncio
 from typing import Any, Dict, List, Optional
 
 from generated.api.memory_operations_api import MemoryOperationsApi
-from generated.api.semantic_negotiation_api import SemanticNegotiationApi
+from generated.api.semantic_alignment_api import SemanticAlignmentApi
 from generated.api.shared_memories_api import SharedMemoriesApi
 from generated.api_client import ApiClient
 from generated.configuration import Configuration
@@ -64,7 +64,7 @@ class Client:
         self._timeout = timeout
         self._shared_memories_api = SharedMemoriesApi(api_client=self._api_client)
         self._memory_operations_api = MemoryOperationsApi(api_client=self._api_client)
-        self._semantic_negotiation_api = SemanticNegotiationApi(api_client=self._api_client)
+        self._semantic_alignment_api = SemanticAlignmentApi(api_client=self._api_client)
 
     # ============================================================================
     # Shared Memories Operations
@@ -274,10 +274,10 @@ class Client:
         )
 
     # ============================================================================
-    # Semantic Negotiation
+    # Semantic Alignment
     # ============================================================================
 
-    def start_negotiation(
+    def start_alignment(
         self,
         workspace_id: str,
         mas_id: str,
@@ -286,21 +286,21 @@ class Client:
         content_text: str,
         n_steps: Optional[int] = None,
     ) -> Any:
-        """Start a semantic negotiation session with multiple agents.
+        """Start a semantic alignment session with multiple agents.
 
         Args:
             workspace_id: The workspace identifier
             mas_id: The multi-agent system identifier
             session_id: Client-provided session identifier (globally unique)
             agents: List of agents with 'id' and 'name' fields
-            content_text: Negotiation prompt/context
-            n_steps: Maximum negotiation steps (default: 20)
+            content_text: Alignment prompt/context
+            n_steps: Maximum alignment steps (default: 20)
 
         Returns:
-            Negotiation response with status, message, and result
+            Alignment response with status, message, and result
 
         Example:
-            >>> response = client.start_negotiation(
+            >>> response = client.start_alignment(
             ...     workspace_id="ws1",
             ...     mas_id="sys1",
             ...     session_id="session-123",
@@ -324,34 +324,34 @@ class Client:
             n_steps=n_steps
         )
 
-        return self._semantic_negotiation_api.start_semantic_negotiation(
+        return self._semantic_alignment_api.start_semantic_alignment(
             workspace_id=workspace_id,
             mas_id=mas_id,
             start_request=request,
         )
 
-    def advance_negotiation(
+    def advance_alignment(
         self,
         workspace_id: str,
         mas_id: str,
         session_id: str,
         agent_replies: List[Dict[str, Any]],
     ) -> Any:
-        """Advance semantic negotiation session with agent replies.
+        """Advance semantic alignment session with agent replies.
 
         Args:
             workspace_id: The workspace identifier
             mas_id: The multi-agent system identifier
-            session_id: Session identifier from start_negotiation
+            session_id: Session identifier from start_alignment
             agent_replies: List of agent replies with 'agent_id', 'action', and optional 'offer'
                 - action: "accept", "reject", or "counter_offer"
                 - offer: Required when action is "counter_offer"
 
         Returns:
-            Negotiation response with status, message, and result
+            Alignment response with status, message, and result
 
         Example:
-            >>> response = client.advance_negotiation(
+            >>> response = client.advance_alignment(
             ...     workspace_id="ws1",
             ...     mas_id="sys1",
             ...     session_id="session-123",
@@ -375,7 +375,7 @@ class Client:
             agent_replies=reply_objects
         )
 
-        return self._semantic_negotiation_api.decide_semantic_negotiation(
+        return self._semantic_alignment_api.decide_semantic_alignment(
             workspace_id=workspace_id,
             mas_id=mas_id,
             decide_request=request,
@@ -406,9 +406,9 @@ class Client:
         return self._memory_operations_api
 
     @property
-    def semantic_negotiation_api(self) -> SemanticNegotiationApi:
-        """Direct access to the generated SemanticNegotiationApi for advanced usage."""
-        return self._semantic_negotiation_api
+    def semantic_alignment_api(self) -> SemanticAlignmentApi:
+        """Direct access to the generated SemanticAlignmentApi for advanced usage."""
+        return self._semantic_alignment_api
 
     def request(
         self,
