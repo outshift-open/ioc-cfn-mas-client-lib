@@ -14,29 +14,29 @@
 
 import unittest
 
-from generated.api.semantic_negotiation_api import SemanticNegotiationApi
+from generated.api.semantic_alignment_api import SemanticAlignmentApi
 
 
-class TestSemanticNegotiationApi(unittest.TestCase):
-    """SemanticNegotiationApi unit test stubs"""
+class TestSemanticAlignmentApi(unittest.TestCase):
+    """SemanticAlignmentApi unit test stubs"""
 
     def setUp(self) -> None:
-        self.api = SemanticNegotiationApi()
+        self.api = SemanticAlignmentApi()
 
     def tearDown(self) -> None:
         pass
 
-    def test_decide_semantic_negotiation(self) -> None:
-        """Test case for decide_semantic_negotiation
+    def test_decide_semantic_alignment(self) -> None:
+        """Test case for decide_semantic_alignment
 
-        Advance semantic negotiation session
+        Advance semantic alignment session
         """
         pass
 
-    def test_start_semantic_negotiation(self) -> None:
-        """Test case for start_semantic_negotiation
+    def test_start_semantic_alignment(self) -> None:
+        """Test case for start_semantic_alignment
 
-        Start semantic negotiation session
+        Start semantic alignment session
         """
         pass
 

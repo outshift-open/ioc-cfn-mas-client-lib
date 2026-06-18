@@ -23,13 +23,13 @@ from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
-class NegotiationResponse(BaseModel):
+class AlignmentResponse(BaseModel):
     """
-    NegotiationResponse
+    AlignmentResponse
     """ # noqa: E501
-    status: Optional[StrictStr] = Field(default=None, description="Status indicates the result of the negotiation step.")
-    message: Optional[StrictStr] = Field(default=None, description="Message provides additional information about the negotiation state.")
-    result: Optional[Dict[str, Any]] = Field(default=None, description="Result contains the pipeline execution result. The structure depends on the semantic negotiation library implementation.")
+    status: Optional[StrictStr] = Field(default=None, description="Status indicates the result of the alignment step.")
+    message: Optional[StrictStr] = Field(default=None, description="Message provides additional information about the alignment state.")
+    result: Optional[Dict[str, Any]] = Field(default=None, description="Result contains the pipeline execution result. The structure depends on the semantic alignment library implementation.")
     __properties: ClassVar[List[str]] = ["status", "message", "result"]
 
     model_config = ConfigDict(
@@ -50,7 +50,7 @@ class NegotiationResponse(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of NegotiationResponse from a JSON string"""
+        """Create an instance of AlignmentResponse from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -75,7 +75,7 @@ class NegotiationResponse(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of NegotiationResponse from a dict"""
+        """Create an instance of AlignmentResponse from a dict"""
         if obj is None:
             return None
 

@@ -23,8 +23,8 @@ servers:
 tags:
   - name: shared-memories
     description: Shared memory operations for knowledge extraction and querying
-  - name: semantic-negotiation
-    description: Multi-agent semantic negotiation sessions
+  - name: semantic-alignment
+    description: Multi-agent semantic alignment sessions
   - name: memory-operations
     description: Proxy for remote memory provider operations
   - name: metrics
@@ -272,13 +272,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/semantic-negotiation/start:
+  /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/semantic-alignment/start:
     post:
-      summary: Start semantic negotiation session
-      description: Initiates a new semantic negotiation session with multiple agents.
-      operationId: startSemanticNegotiation
+      summary: Start semantic alignment session
+      description: Initiates a new semantic alignment session with multiple agents.
+      operationId: startSemanticAlignment
       tags:
-        - semantic-negotiation
+        - semantic-alignment
       parameters:
         - name: workspaceId
           in: path
@@ -296,18 +296,18 @@ paths:
             minLength: 1
       requestBody:
         required: true
-        description: Semantic negotiation start request
+        description: Semantic alignment start request
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/StartRequest'
       responses:
         '200':
-          description: Negotiation session started successfully
+          description: Alignment session started successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NegotiationResponse'
+                $ref: '#/components/schemas/AlignmentResponse'
         '400':
           description: Invalid request
           content:
@@ -321,13 +321,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/semantic-negotiation/decide:
+  /api/workspaces/{workspaceId}/multi-agentic-systems/{masId}/semantic-alignment/decide:
     post:
-      summary: Advance semantic negotiation session
-      description: Advances an existing semantic negotiation session with agent replies.
-      operationId: decideSemanticNegotiation
+      summary: Advance semantic alignment session
+      description: Advances an existing semantic alignment session with agent replies.
+      operationId: decideSemanticAlignment
       tags:
-        - semantic-negotiation
+        - semantic-alignment
       parameters:
         - name: workspaceId
           in: path
@@ -345,18 +345,18 @@ paths:
             minLength: 1
       requestBody:
         required: true
-        description: Semantic negotiation decide request
+        description: Semantic alignment decide request
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/DecideRequest'
       responses:
         '200':
-          description: Negotiation step executed successfully
+          description: Alignment step executed successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NegotiationResponse'
+                $ref: '#/components/schemas/AlignmentResponse'
         '400':
           description: Invalid request
           content:
@@ -727,7 +727,7 @@ components:
       required:
         - http-status
 
-    # Semantic Negotiation schemas
+    # Semantic Alignment schemas
     Agent:
       type: object
       properties:
@@ -787,14 +787,14 @@ components:
           type: string
           minLength: 1
           description: |-
-            ContentText is the negotiation prompt/context used to initialize
+            ContentText is the alignment prompt/context used to initialize
             the session.
         n_steps:
           type: integer
           minimum: 1
           default: 20
           description: |-
-            NSteps is the maximum number of negotiation steps.
+            NSteps is the maximum number of alignment steps.
             If omitted, defaults to 20.
       required:
         - session_id
@@ -822,23 +822,23 @@ components:
         - session_id
         - agent_replies
 
-    NegotiationResponse:
+    AlignmentResponse:
       type: object
       properties:
         status:
           type: string
-          description: Status indicates the result of the negotiation step.
+          description: Status indicates the result of the alignment step.
         message:
           type: string
           description: |-
-            Message provides additional information about the negotiation
+            Message provides additional information about the alignment
             state.
         result:
           type: object
           additionalProperties: true
           description: |-
             Result contains the pipeline execution result.
-            The structure depends on the semantic negotiation library implementation.
+            The structure depends on the semantic alignment library implementation.
 
     # Metrics schemas (query responses only - ingestion is internal)
     MetricsQueryResponse:
@@ -953,7 +953,7 @@ components:
           example:
             model: "gpt-4o"
             session_id: "770e8400-e29b-41d4-a716-446655440000"
-            operation_type: "semantic_negotiation"
+            operation_type: "semantic_alignment"
       required:
         - timestamp
         - workspace_id

@@ -30,7 +30,7 @@ from generated.models.metrics_filters import MetricsFilters
 from generated.models.metrics_pagination import MetricsPagination
 from generated.models.metrics_period import MetricsPeriod
 from generated.models.metrics_query_response import MetricsQueryResponse
-from generated.models.negotiation_response import NegotiationResponse
+from generated.models.alignment_response import AlignmentResponse
 from generated.models.onboard_vector_store_request import OnboardVectorStoreRequest
 from generated.models.onboard_vector_store_response import OnboardVectorStoreResponse
 from generated.models.query_request import QueryRequest

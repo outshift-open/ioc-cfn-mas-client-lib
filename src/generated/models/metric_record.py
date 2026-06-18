@@ -35,7 +35,7 @@ class MetricRecord(BaseModel):
     agent_id: StrictStr = Field(description="Agent identifier", json_schema_extra={"examples": ["semantic-agent-1"]})
     metric_name: StrictStr = Field(description="Metric name (dot-notation)", json_schema_extra={"examples": ["llm.token.input"]})
     value: Union[StrictFloat, StrictInt] = Field(description="Numeric metric value", json_schema_extra={"examples": [1500.0]})
-    attributes: Dict[str, Any] = Field(description="Flexible metadata stored as JSON", json_schema_extra={"examples": [{"model": "gpt-4o", "session_id": "770e8400-e29b-41d4-a716-446655440000", "operation_type": "semantic_negotiation"}]})
+    attributes: Dict[str, Any] = Field(description="Flexible metadata stored as JSON", json_schema_extra={"examples": [{"model": "gpt-4o", "session_id": "770e8400-e29b-41d4-a716-446655440000", "operation_type": "semantic_alignment"}]})
     __properties: ClassVar[List[str]] = ["timestamp", "workspace_id", "mas_id", "agent_id", "metric_name", "value", "attributes"]
 
     model_config = ConfigDict(

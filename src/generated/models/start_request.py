@@ -31,8 +31,8 @@ class StartRequest(BaseModel):
     """ # noqa: E501
     session_id: Annotated[str, Field(min_length=1, strict=True)] = Field(description="SessionID is the client-provided session identifier. Currently assumed globally unique (not scoped by workspace/mas).")
     agents: Annotated[List[Agent], Field(min_length=1)] = Field(description="Agents is the list of participating agents.")
-    content_text: Annotated[str, Field(min_length=1, strict=True)] = Field(description="ContentText is the negotiation prompt/context used to initialize the session.")
-    n_steps: Optional[Annotated[int, Field(strict=True, ge=1)]] = Field(default=20, description="NSteps is the maximum number of negotiation steps. If omitted, defaults to 20.")
+    content_text: Annotated[str, Field(min_length=1, strict=True)] = Field(description="ContentText is the alignment prompt/context used to initialize the session.")
+    n_steps: Optional[Annotated[int, Field(strict=True, ge=1)]] = Field(default=20, description="NSteps is the maximum number of alignment steps. If omitted, defaults to 20.")
     __properties: ClassVar[List[str]] = ["session_id", "agents", "content_text", "n_steps"]
 
     model_config = ConfigDict(

@@ -6,7 +6,7 @@ This script demonstrates how to:
 2. Create/update shared memories from trace data
 3. Query shared memories using natural language intent
 4. Proxy memory operations to remote providers
-5. Start and advance semantic negotiation sessions
+5. Start and advance semantic alignment sessions
 """
 
 import os
@@ -140,16 +140,16 @@ def main() -> None:
         print(f"  ✗ Error with POST request: {e}")
 
     # ========================================================================
-    # Example 4: Semantic Negotiation
+    # Example 4: Semantic Alignment
     # ========================================================================
-    print("\n[4] Semantic negotiation...")
+    print("\n[4] Semantic alignment...")
 
     session_id = "demo-session-001"
 
-    # Example 4a: Start negotiation
-    print("\n  [4a] Starting negotiation session...")
+    # Example 4a: Start alignment
+    print("\n  [4a] Starting alignment session...")
     try:
-        start_response = client.start_negotiation(
+        start_response = client.start_alignment(
             workspace_id=workspace_id,
             mas_id=mas_id,
             session_id=session_id,
@@ -160,18 +160,18 @@ def main() -> None:
             content_text="Plan a deployment strategy for the new microservice",
             n_steps=5,
         )
-        print(f"  ✓ Negotiation started")
+        print(f"  ✓ Alignment started")
         print(f"    Status: {start_response.status}")
         print(f"    Message: {start_response.message}")
         if start_response.result:
             print(f"    Result: {start_response.result}")
     except Exception as e:
-        print(f"  ✗ Error starting negotiation: {e}")
+        print(f"  ✗ Error starting alignment: {e}")
 
-    # Example 4b: Advance negotiation
-    print("\n  [4b] Advancing negotiation with agent replies...")
+    # Example 4b: Advance alignment
+    print("\n  [4b] Advancing alignment with agent replies...")
     try:
-        advance_response = client.advance_negotiation(
+        advance_response = client.advance_alignment(
             workspace_id=workspace_id,
             mas_id=mas_id,
             session_id=session_id,
@@ -187,13 +187,13 @@ def main() -> None:
                 },
             ],
         )
-        print(f"  ✓ Negotiation advanced")
+        print(f"  ✓ Alignment advanced")
         print(f"    Status: {advance_response.status}")
         print(f"    Message: {advance_response.message}")
         if advance_response.result:
             print(f"    Result: {advance_response.result}")
     except Exception as e:
-        print(f"  ✗ Error advancing negotiation: {e}")
+        print(f"  ✗ Error advancing alignment: {e}")
 
     # ========================================================================
     # Example 5: Advanced Usage - Direct API Access
@@ -202,7 +202,7 @@ def main() -> None:
     print("  Note: You can access the underlying OpenAPI clients via:")
     print("  - client.shared_memories_api      (SharedMemoriesApi)")
     print("  - client.memory_operations_api    (MemoryOperationsApi)")
-    print("  - client.semantic_negotiation_api (SemanticNegotiationApi)")
+    print("  - client.semantic_alignment_api (SemanticAlignmentApi)")
     print("  - client.api_client               (ApiClient)")
     print("  - client.configuration            (Configuration)")
 

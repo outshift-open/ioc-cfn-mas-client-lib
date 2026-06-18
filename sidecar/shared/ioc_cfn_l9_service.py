@@ -3,7 +3,7 @@
 
 This service integrates with Envoy's external authorization API to intercept
 HTTP traffic at the L8 (A2A) layer, parse A2A messages, convert them to L9
-format, and send them to CFN for semantic negotiation and validation.
+format, and send them to CFN for semantic alignment and validation.
 
 The service operates in fail-open mode to ensure traffic continues flowing
 even if errors occur.

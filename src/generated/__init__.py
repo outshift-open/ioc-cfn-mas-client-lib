@@ -20,7 +20,7 @@ __version__ = "1.0.0"
 __all__ = [
     "MemoryOperationsApi",
     "MetricsApi",
-    "SemanticNegotiationApi",
+    "SemanticAlignmentApi",
     "SharedMemoriesApi",
     "ApiResponse",
     "ApiClient",
@@ -48,7 +48,7 @@ __all__ = [
     "MetricsPagination",
     "MetricsPeriod",
     "MetricsQueryResponse",
-    "NegotiationResponse",
+    "AlignmentResponse",
     "OnboardVectorStoreRequest",
     "OnboardVectorStoreResponse",
     "QueryRequest",
@@ -59,7 +59,7 @@ __all__ = [
 # import apis into sdk package
 from generated.api.memory_operations_api import MemoryOperationsApi as MemoryOperationsApi
 from generated.api.metrics_api import MetricsApi as MetricsApi
-from generated.api.semantic_negotiation_api import SemanticNegotiationApi as SemanticNegotiationApi
+from generated.api.semantic_alignment_api import SemanticAlignmentApi as SemanticAlignmentApi
 from generated.api.shared_memories_api import SharedMemoriesApi as SharedMemoriesApi
 
 # import ApiClient
@@ -91,7 +91,7 @@ from generated.models.metrics_filters import MetricsFilters as MetricsFilters
 from generated.models.metrics_pagination import MetricsPagination as MetricsPagination
 from generated.models.metrics_period import MetricsPeriod as MetricsPeriod
 from generated.models.metrics_query_response import MetricsQueryResponse as MetricsQueryResponse
-from generated.models.negotiation_response import NegotiationResponse as NegotiationResponse
+from generated.models.alignment_response import AlignmentResponse as AlignmentResponse
 from generated.models.onboard_vector_store_request import OnboardVectorStoreRequest as OnboardVectorStoreRequest
 from generated.models.onboard_vector_store_response import OnboardVectorStoreResponse as OnboardVectorStoreResponse
 from generated.models.query_request import QueryRequest as QueryRequest
