@@ -4,13 +4,13 @@ This directory contains the OpenAPI specification for the IoC CFN MAS API.
 
 ## Files
 
-- **`public-api-v1.0.yaml`**: Official OpenAPI 3.0 spec from [ioc-cfn-svc](https://github.com/cisco-eti/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
+- **`public-api-v1.0.yaml`**: Official OpenAPI 3.0 spec from [ioc-cfn-svc](https://github.com/outshift-open/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
 
 ## Source of Truth
 
 **The spec in ioc-cfn-svc is the authoritative source.** This copy is used for local SDK generation.
 
-- **Upstream source**: https://github.com/cisco-eti/ioc-cfn-svc/tree/main/docs/public-api
+- **Upstream source**: https://github.com/outshift-open/ioc-cfn-svc/tree/main/docs/public-api
 - **Local copy**: `public-api-v1.0.yaml`
 
 ## Generating SDK Client
@@ -39,7 +39,7 @@ make pull-openapi-generator
 
 ## Updating the Spec
 
-**DO NOT edit `public-api-v1.0.yaml` directly.** Changes must be made in the [ioc-cfn-svc repository](https://github.com/cisco-eti/ioc-cfn-svc).
+**DO NOT edit `public-api-v1.0.yaml` directly.** Changes must be made in the [ioc-cfn-svc repository](https://github.com/outshift-open/ioc-cfn-svc).
 
 To update to a newer version:
 

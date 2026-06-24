@@ -316,5 +316,5 @@ python examples/instrumentation/a2a/multi_agent_example.py --client
 ## Support
 
 For issues or questions:
-- SDK Issues: [ioc-cfn-mas-client-lib GitHub Issues](https://github.com/cisco-eti/ioc-cfn-mas-client-lib/issues)
+- SDK Issues: [ioc-cfn-mas-client-lib GitHub Issues](https://github.com/outshift-open/ioc-cfn-mas-client-lib/issues)
 - A2A Protocol: [A2A Project Discussions](https://github.com/a2aproject/A2A/discussions)
