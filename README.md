@@ -1,6 +1,6 @@
-# ioc-cfn-mas-client-lib
+# Internet of Cognition (IOC) - Cognition Fabric Node (CFN) MAS Client Library
 
-Python SDK client library for IoC CFN MAS\.
+Python SDK client library for IOC CFN MAS\.
 
 ## Overview
 
@@ -404,3 +404,7 @@ To update to a newer version:
    ```
 
 3. Update `client.py` if the API surface changed\.
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE.md](LICENSE.md) file for details.

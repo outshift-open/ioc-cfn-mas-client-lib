@@ -1,3 +1,7 @@
+# Copyright 2026 Cisco Systems, Inc. and its affiliates
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # src/ioc_cfn_mas_client/instrumentation.py
 """Auto-instrumentation for A2A agents using monkey patching.
 

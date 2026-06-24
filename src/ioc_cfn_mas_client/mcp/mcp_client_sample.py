@@ -1,3 +1,7 @@
+# Copyright 2026 Cisco Systems, Inc. and its affiliates
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """Sample MCP client usage demonstrating connection, tool listing, and tool calling."""
 
 import asyncio
