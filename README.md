@@ -359,7 +359,7 @@ uv run python examples/example.py
 
 ## OpenAPI SDK generation
 
-- **OpenAPI spec source**: [ioc-cfn-svc public-api-v1.0.yaml](https://github.com/cisco-eti/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
+- **OpenAPI spec source**: [ioc-cfn-svc public-api-v1.0.yaml](https://github.com/outshift-open/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
 - **Local spec**: `openapi/public-api-v1.0.yaml` (copied from source)
 - **Generated output**: `src/generated/`
 
@@ -385,7 +385,7 @@ make gen-openapi
 
 This regenerates `src/generated/` from `openapi/public-api-v1.0.yaml` using Docker.
 
-**Note**: The spec follows Python naming conventions (snake_case for methods/fields, PascalCase for classes). See [ioc-cfn-svc public API docs](https://github.com/cisco-eti/ioc-cfn-svc/tree/main/docs/public-api) for details.
+**Note**: The spec follows Python naming conventions (snake_case for methods/fields, PascalCase for classes). See [ioc-cfn-svc public API docs](https://github.com/outshift-open/ioc-cfn-svc/tree/main/docs/public-api) for details.
 
 ### Updating the spec
 
