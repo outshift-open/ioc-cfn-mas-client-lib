@@ -4,13 +4,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Python SDK client library for IoC Cognition Fabric Node Multi-Agent System.
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
-Python SDK client library for IoC Cognition Fabric Node Multi-Agent System.
-
-Python SDK client library for IOC CFN MAS\.
+Python SDK client library for the Internet of Cognition (IoC) Cognition Fabric Node Multi-Agent System.
 
 ## Overview
 
