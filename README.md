@@ -1,5 +1,15 @@
 # Internet of Cognition (IOC) - Cognition Fabric Node (CFN) MAS Client Library
 
+[![PyPI version](https://badge.fury.io/py/ioc-cfn-mas-client-lib.svg)](https://badge.fury.io/py/ioc-cfn-mas-client-lib)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+Python SDK client library for IoC Cognition Fabric Node Multi-Agent System.
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+Python SDK client library for IoC Cognition Fabric Node Multi-Agent System.
+
 Python SDK client library for IOC CFN MAS\.
 
 ## Overview
@@ -14,7 +24,7 @@ This repository contains:
 **Requires Python >= 3.10**
 
 ```bash
-pip install ioc_cfn_mas_client_lib
+pip install ioc-cfn-mas-client-lib
 ```
 
 ## Quick start

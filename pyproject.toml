@@ -5,13 +5,27 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ioc_cfn_mas_client_lib"
+name = "ioc-cfn-mas-client-lib"
 version = "0.1.0"
-description = "Python SDK client library for IoC CFN MAS."
+description = "Python SDK client library for IoC Cognition Fabric Node Multi-Agent System"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
-authors = [{ name = "samuyang_cisco" }]
+authors = [
+  { name = "Outshift Open", email = "oss@cisco.com" }
+]
+keywords = ["ioc", "cognition-fabric", "mas", "multi-agent-system", "sdk", "cfn"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
   "pydantic>=2.5",
   "urllib3>=1.26",
@@ -31,15 +45,24 @@ dev = [
   "pytest-cov>=4.1",
   "ruff>=0.4",
   "mypy>=1.8",
+  "build>=1.0",
+  "twine>=4.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/outshift-open/ioc-cfn-mas-client-lib"
+Documentation = "https://github.com/outshift-open/ioc-cfn-mas-client-lib/blob/main/README.md"
+Repository = "https://github.com/outshift-open/ioc-cfn-mas-client-lib"
+Issues = "https://github.com/outshift-open/ioc-cfn-mas-client-lib/issues"
+Changelog = "https://github.com/outshift-open/ioc-cfn-mas-client-lib/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["ioc_cfn_mas_client*"]
-exclude = ["tests*"]
+include = ["ioc_cfn_mas_client*", "generated*"]
+exclude = ["tests*", "*.egg-info"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
