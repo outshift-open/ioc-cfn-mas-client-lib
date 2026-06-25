@@ -1,3 +1,7 @@
+# Copyright 2026 Cisco Systems, Inc. and its affiliates
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """A2A Sidecar - Transparent A2A message interception.
 
 This package provides production-ready sidecar deployment patterns for intercepting

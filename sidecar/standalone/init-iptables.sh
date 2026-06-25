@@ -1,3 +1,7 @@
+# Copyright 2026 Cisco Systems, Inc. and its affiliates
+#
+# SPDX-License-Identifier: Apache-2.0
+
 #!/bin/bash
 # Init container script to set up iptables for transparent traffic interception
 # This must run before the main containers start

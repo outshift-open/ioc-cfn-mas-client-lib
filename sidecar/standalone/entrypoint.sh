@@ -1,3 +1,7 @@
+# Copyright 2026 Cisco Systems, Inc. and its affiliates
+#
+# SPDX-License-Identifier: Apache-2.0
+
 #!/bin/bash
 # Entrypoint script for A2A sidecar container (standalone mode)
 # Starts both Envoy proxy and ext_authz service

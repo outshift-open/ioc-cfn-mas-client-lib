@@ -1,3 +1,7 @@
+# Copyright 2026 Cisco Systems, Inc. and its affiliates
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """A2A Protocol Message Parser (JSON-RPC 2.0).
 
 Parses and validates A2A messages according to the official specification.
