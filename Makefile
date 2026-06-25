@@ -28,3 +28,25 @@ pull-openapi-generator:
 	@echo "Pulling OpenAPI Generator Docker image"
 	@docker pull openapitools/openapi-generator-cli
 	@echo "✓ Docker image ready"
+
+.PHONY: add-headers
+add-headers:
+	@echo "Adding copyright/license headers to all Python files"
+	@docker run --rm --volume "$${PWD}:/data" fsfe/reuse annotate \
+		--copyright-prefix string \
+		--copyright "Cisco Systems, Inc. and its affiliates" \
+		-l "Apache-2.0" \
+		--skip-existing \
+		**/*.py
+	@echo "✓ Headers added successfully"
+
+.PHONY: add-headers-generated
+add-headers-generated:
+	@echo "Adding copyright/license headers to generated Python files"
+	@docker run --rm --volume "$${PWD}:/data" fsfe/reuse annotate \
+		--copyright-prefix string \
+		--copyright "Cisco Systems, Inc. and its affiliates" \
+		-l "Apache-2.0" \
+		--skip-existing \
+		src/generated/**/*.py
+	@echo "✓ Headers added to generated files"
