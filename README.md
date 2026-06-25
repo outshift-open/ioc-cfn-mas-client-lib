@@ -359,8 +359,8 @@ uv run python examples/example.py
 
 ## OpenAPI SDK generation
 
-- **OpenAPI spec source**: [ioc-cfn-svc public-api-v1.0.yaml](https://github.com/outshift-open/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.0.yaml)
-- **Local spec**: `openapi/public-api-v1.0.yaml` (copied from source)
+- **OpenAPI spec source**: [ioc-cfn-svc public-api-v1.1.yaml](https://github.com/outshift-open/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.1.yaml)
+- **Local spec**: `openapi/public-api-v1.1.yaml` (copied from source)
 - **Generated output**: `src/generated/`
 
 ### Prerequisites
@@ -383,7 +383,7 @@ make pull-openapi-generator
 make gen-openapi
 ```
 
-This regenerates `src/generated/` from `openapi/public-api-v1.0.yaml` using Docker.
+This regenerates `src/generated/` from `openapi/public-api-v1.1.yaml` using Docker.
 
 **Note**: The spec follows Python naming conventions (snake_case for methods/fields, PascalCase for classes). See [ioc-cfn-svc public API docs](https://github.com/outshift-open/ioc-cfn-svc/tree/main/docs/public-api) for details.
 
@@ -394,7 +394,7 @@ To update to a newer version:
 1. Copy the latest spec from ioc-cfn-svc:
 
    ```bash
-   cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.0.yaml openapi/
+   cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.1.yaml openapi/
    ```
 
 2. Regenerate:
