@@ -1,3 +1,7 @@
+# Copyright 2026 Cisco Systems, Inc. and its affiliates
+#
+# SPDX-License-Identifier: Apache-2.0
+
 #!/bin/bash
 # Quick local test script (for development/debugging)
 # This doesn't deploy to K8s, just shows what the setup will do

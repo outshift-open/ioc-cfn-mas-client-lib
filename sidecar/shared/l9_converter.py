@@ -1,3 +1,7 @@
+# Copyright 2026 Cisco Systems, Inc. and its affiliates
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """L8 (A2A/MCP) to L9 converter.
 
 Converts L8 protocol messages (A2A, MCP) to L9 format for CFN validation.
