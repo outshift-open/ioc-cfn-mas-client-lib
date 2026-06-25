@@ -8,10 +8,13 @@ Python SDK client library for the Internet of Cognition (IoC) Cognition Fabric N
 
 ## Overview
 
-This repository contains:
+This library provides a Python client for interacting with the CFN (Cognition Fabric Node) service, enabling:
 
-- `src/ioc_cfn_mas_client/client.py`: a small, user\-facing `Client` wrapper\.
-- `src/generated/`: OpenAPI\-generated code \(implementation detail\)\. Avoid editing generated files directly\.
+- **Shared Memories API**: Create and query shared memories from trace data
+- **Memory Operations API**: Proxy memory operations to remote providers (Mem0, Graphiti)
+- **Semantic Alignment API**: Run multi-agent alignment sessions
+- **MCP Integration**: Retain and recall memories using Model Context Protocol
+- **A2A Instrumentation**: Automatic tracking of Google A2A protocol agents
 
 ## Installation
 
@@ -21,7 +24,7 @@ This repository contains:
 pip install ioc-cfn-mas-client-lib
 ```
 
-## Quick start
+## Quick Start
 
 Create a client using the CFN URL:
 
@@ -100,7 +103,7 @@ response = client.memory_operation(
 
 ### Semantic Alignment API
 
-Run multi\-agent alignment sessions:
+Run multi-agent alignment sessions:
 
 ```python
 # Start a alignment session
@@ -163,8 +166,6 @@ class MyA2AAgent(AgentExecutor):
         # All interactions automatically saved to CFN shared memory
         pass
 ```
-
-
 
 **Key Features:**
 
@@ -243,77 +244,6 @@ uv run python -m src.ioc_cfn_mas_client.mcp.mcp_client_sample --operation recall
 
 For complete examples and implementation details, see [examples/mcp/client_example.py](examples/mcp/client_example.py) and [src/ioc_cfn_mas_client/mcp/](src/ioc_cfn_mas_client/mcp/).
 
-### A2A Sidecar Proxy Pattern (Production - ZTA Approach with Istio)
-
-For production deployments, use the **Envoy-based sidecar** following the **ZTA (Zero Trust Architecture)** pattern with **Istio service mesh**. This provides **truly transparent** interception with zero agent configuration.
-
-**Prerequisites:** Istio must be installed in your Kubernetes cluster.
-
-```
-┌──────────────────────────────────────┐
-│        Kubernetes Pod                │
-│                                      │
-│  Agent (UNCHANGED) → Istio/iptables  │
-│         ↓                            │
-│      Envoy Proxy                     │
-│         ↓                            │
-│   ext_authz (A2A Parser)             │
-│         ↓                            │
-│   Logs/CFN API                       │
-└──────────────────────────────────────┘
-```
-
-**Quick Start:**
-
-```bash
-# 1. Build ext-authz image (Istio approach)
-docker build -t ext-authz-only:latest -f sidecar/istio/Dockerfile .
-
-# 2. Apply EnvoyFilter to Kubernetes (requires Istio)
-kubectl apply -f sidecar/istio/envoy-filter.yaml
-
-# 3. Deploy your agent with ext-authz sidecar container
-# See examples/sidecar/k8s/ for complete manifests
-
-# 4. That's it! Agent is completely agnostic - no changes needed!
-```
-
-**Key Features:**
-
-- **✅ Truly agnostic** - zero code changes, zero configuration changes
-- **✅ Istio-based** - automatic sidecar injection and iptables setup
-- **✅ Production-ready** - uses Istio service mesh
-- **✅ Language agnostic** - works with any HTTP client (Python, Go, Node.js, Java, Rust, etc.)
-- **✅ High performance** - Envoy proxy (50K+ req/s)
-- **✅ Protocol-aware** - parses A2A messages (JSON-RPC 2.0)
-
-**Architecture:**
-
-- **Istio**: Automatic sidecar injection and traffic interception
-- **Envoy Proxy**: C++ high-performance proxy for traffic interception
-- **ext_authz Service**: Python gRPC service for A2A message parsing
-
-**Documentation:**
-
-- [Sidecar README](sidecar/README.md) - Complete implementation guide
-- [Working Demo](examples/sidecar/) - End-to-end example with Istio
-- [ZTA Implementation Summary](docs/ZTA_IMPLEMENTATION_SUMMARY.md) - Architecture details
-- [Transparent Interception Guide](docs/TRANSPARENT_INTERCEPTION.md) - How iptables works
-
-**Comparison with Monkey-Patching:**
-
-| Feature | Envoy Sidecar (ZTA) | Monkey-Patching |
-|---------|---------------------|-----------------|
-| **Agent Code** | ✅ Unchanged | ⚠️ One instrumentation call |
-| **Agent Config** | ✅ Unchanged | ✅ Unchanged |
-| **Languages** | Any (Python, Go, Node.js, Java, etc.) | Python only |
-| **Performance** | 50K+ req/s | Minimal overhead |
-| **Production** | ✅ Recommended | Development only |
-| **Platform** | Kubernetes | Any |
-| **Isolation** | Strong (separate process) | Weak (same process) |
-
-**Recommendation:** Use **Envoy sidecar for production** (truly agnostic, language-independent), **monkey-patching for development/testing** (quick setup, Python-only).
-
 ### Advanced Usage
 
 For power users who need direct access to the generated OpenAPI clients:
@@ -328,94 +258,26 @@ semantic_alignment_api = client.semantic_alignment_api
 response = shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post_with_http_info(...)
 ```
 
-For a complete example, see `examples/example.py`\.
+For a complete example, see `examples/example.py`.
 
 ## Configuration
 
 The `Client` constructor accepts the following parameters:
 
-- `cfn_url` \(required\): CFN API endpoint URL \(e\.g\., `http://localhost:9002`\)
-- `timeout` \(optional\): Request timeout in seconds
-- `configuration` \(optional\): Pre\-configured Configuration object \(for advanced users\)
-- `api_client` \(optional\): Pre\-configured ApiClient object \(for advanced users\)
+- `cfn_url` (required): CFN API endpoint URL (e.g., `http://localhost:9002`)
+- `timeout` (optional): Request timeout in seconds
+- `configuration` (optional): Pre-configured Configuration object (for advanced users)
+- `api_client` (optional): Pre-configured ApiClient object (for advanced users)
 
-### Environment variables
+### Environment Variables
 
 Optional environment variable:
 
-- `CFN_URL`: CFN API endpoint URL \(defaults to `http://localhost:9002` if not set\)
+- `CFN_URL`: CFN API endpoint URL (defaults to `http://localhost:9002` if not set)
 
-## Development (macOS)
+## Contributing
 
-Using `uv`:
-
-```bash
-uv venv
-source .venv/bin/activate
-uv pip install -e ".[dev]"
-
-# Run tests
-uv run pytest
-
-# Run examples
-uv run python examples/example.py
-```
-
-## OpenAPI SDK generation
-
-- **OpenAPI spec source**: [ioc-cfn-svc public-api-v1.1.yaml](https://github.com/outshift-open/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.1.yaml)
-- **Local spec**: `openapi/public-api-v1.1.yaml` (copied from source)
-- **Generated output**: `src/generated/`
-
-### Prerequisites
-
-**Docker** (required):
-
-```bash
-docker pull openapitools/openapi-generator-cli
-```
-
-Or use the make target:
-
-```bash
-make pull-openapi-generator
-```
-
-### Generate
-
-```bash
-make gen-openapi
-```
-
-This regenerates `src/generated/` from `openapi/public-api-v1.1.yaml` using Docker.
-
-**Important**: After regenerating, add copyright/license headers to the generated files:
-
-```bash
-make add-headers-generated
-```
-
-This adds Apache 2.0 license headers to all generated Python files to maintain OSPO compliance.
-
-**Note**: The spec follows Python naming conventions (snake_case for methods/fields, PascalCase for classes). See [ioc-cfn-svc public API docs](https://github.com/outshift-open/ioc-cfn-svc/tree/main/docs/public-api) for details.
-
-### Updating the spec
-
-To update to a newer version:
-
-1. Copy the latest spec from ioc-cfn-svc:
-
-   ```bash
-   cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.1.yaml openapi/
-   ```
-
-2. Regenerate:
-
-   ```bash
-   make gen-openapi
-   ```
-
-3. Update `client.py` if the API surface changed\.
+For development setup, OpenAPI code generation, and contribution guidelines, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
 ## License
 
