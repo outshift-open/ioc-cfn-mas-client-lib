@@ -385,6 +385,14 @@ make gen-openapi
 
 This regenerates `src/generated/` from `openapi/public-api-v1.1.yaml` using Docker.
 
+**Important**: After regenerating, add copyright/license headers to the generated files:
+
+```bash
+make add-headers-generated
+```
+
+This adds Apache 2.0 license headers to all generated Python files to maintain OSPO compliance.
+
 **Note**: The spec follows Python naming conventions (snake_case for methods/fields, PascalCase for classes). See [ioc-cfn-svc public API docs](https://github.com/outshift-open/ioc-cfn-svc/tree/main/docs/public-api) for details.
 
 ### Updating the spec
@@ -407,4 +415,12 @@ To update to a newer version:
 
 ## License
 
-Distributed under the Apache License 2.0. See [LICENSE.md](LICENSE.md) for more information.
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE.md](LICENSE.md) file for full details.
+
+Copyright (c) 2024-2026 Cisco Systems, Inc. and its affiliates. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

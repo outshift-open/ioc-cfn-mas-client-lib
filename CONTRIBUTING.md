@@ -27,6 +27,19 @@ test case.
 **If you discover a security bug, please do not report it through GitHub.
 Instead, please see security procedures in [SECURITY.md](/SECURITY.md).**
 
+### Issue Guidelines
+
+- Use the GitHub issue search — check if the issue has already been reported
+- Check if the issue has been fixed — try to reproduce it using the latest `main` branch
+- Isolate the problem — ideally create a reduced test case
+- Include as much information as possible:
+  - Python version
+  - Library version
+  - Operating system
+  - Steps to reproduce
+  - Expected behavior
+  - Actual behavior
+
 ## Sending Pull Requests
 
 Before sending a new pull request, take a look at existing pull requests and
@@ -36,6 +49,26 @@ if the change was already implemented but not yet released.
 We expect new pull requests to include tests for any affected behavior, and, as
 we follow semantic versioning, we may reserve breaking changes until the next
 major version release.
+
+### Pull Request Process
+
+1. **Fork the repository** and create your branch from `main`
+2. **Make your changes** and ensure the code follows the project's coding standards
+3. **Add tests** for any new functionality or bug fixes
+4. **Ensure all tests pass** by running `uv run pytest`
+5. **Update documentation** if you've changed APIs or added features
+6. **Write a clear commit message** describing your changes
+7. **Submit a pull request** to the `main` branch
+8. **Respond to feedback** from maintainers and address any requested changes
+
+### Pull Request Guidelines
+
+- Pull requests should be focused on a single change
+- Include tests that cover the new functionality or bug fix
+- Follow the existing code style and conventions
+- Update documentation as needed
+- Keep pull requests small and focused for easier review
+- Reference any related issues in your PR description
 
 ## Other Ways to Contribute
 
