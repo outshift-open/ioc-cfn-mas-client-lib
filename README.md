@@ -6,7 +6,7 @@
 
 Python SDK client library for the Internet of Cognition (IoC) Cognition Fabric Node.
 
-> **Version 1.2.0** supports **CFN Public API v1.2**. Library versions track the CFN API version (major.minor).
+> **Version 0.2.1** supports **CFN Public API v0.2.1**. Library versions track the CFN API version.
 
 ## Overview
 

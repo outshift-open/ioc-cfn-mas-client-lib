@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ioc-cfn-mas-client-lib"
-version = "1.2.0"
+version = "0.2.1"
 description = "Python SDK client library for IoC Cognition Fabric Node"
 readme = "README.md"
 requires-python = ">=3.10"
