@@ -45,7 +45,7 @@ class Client:
         ...             }
         ...         },
         ...         "payload": {
-        ...             "type": "application/json",
+        ...             "type": "json-schema",
         ...             "data": {"operation": "poll_open", "task": {...}}
         ...         }
         ...     }
