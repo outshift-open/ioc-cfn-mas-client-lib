@@ -3,215 +3,234 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # examples/example.py
-"""Example usage of the IoC CFN MAS Client Library.
+"""Example usage of L9 protocol message forwarding.
 
 This script demonstrates how to:
 1. Initialize the client
-2. Create/update shared memories from trace data
-3. Query shared memories using natural language intent
-4. Proxy memory operations to remote providers
-5. Start and advance semantic alignment sessions
+2. Forward L9 protocol messages to cognition engines
+3. Handle different message kinds (intent, contingency, exchange, commit, knowledge)
 """
 
 import os
+from typing import Any, Dict
 
 from ioc_cfn_mas_client.client import Client
 
 
+def create_l9_message(
+    kind: str,
+    workspace_id: str,
+    mas_id: str,
+    payload_data: Dict[str, Any],
+    subkind: str = "",
+    actors: list = None,
+) -> Dict[str, Any]:
+    """Helper to create a properly formatted L9 message.
+
+    Args:
+        kind: Message kind (intent, contingency, exchange, commit, knowledge)
+        workspace_id: Workspace UUID
+        mas_id: Multi-agent system UUID
+        payload_data: Message payload data
+        subkind: Optional message subkind
+        actors: Optional list of actor dictionaries with 'id' field
+
+    Returns:
+        L9 protocol message dictionary conforming to SSTP spec
+    """
+    message = {
+        "header": {
+            "protocol": "sstp",
+            "version": "1.0",
+            "subprotocol": "ioc",
+            "kind": kind,
+            "participants": {
+                "actors": actors if actors else [],
+                "groups": {
+                    "workspace_id": workspace_id,
+                    "mas_id": mas_id,
+                }
+            }
+        },
+        "payload": {
+            "type": "application/json",
+            "data": payload_data
+        }
+    }
+
+    if subkind:
+        message["header"]["subkind"] = subkind
+
+    return message
+
+
 def main() -> None:
-    """Run example operations against the MAS API."""
+    """Run L9 message forwarding examples."""
 
     # Initialize the client
     client = Client(
         cfn_url=os.getenv("CFN_URL", "http://localhost:9002"),
     )
 
-    # Configuration
-    workspace_id = "test_workspace"
-    mas_id = "test_system"
-    agent_id = "test_agent"
+    # Configuration - using UUIDs as required by the API
+    workspace_id = "550e8400-e29b-41d4-a716-446655440000"
+    mas_id = "660e8400-e29b-41d4-a716-446655440001"
 
     print("=" * 70)
-    print("IoC CFN MAS Client Library - Example Usage")
+    print("IoC CFN MAS Client Library - L9 Message Examples")
     print("=" * 70)
 
     # ========================================================================
-    # Example 1: Create Shared Memories from Trace Data
+    # Example 1: Intent Message
     # ========================================================================
-    print("\n[1] Creating shared memories from trace data...")
+    print("\n[1] Forwarding intent message...")
 
-    trace_data = [
-        {
-            "TraceId": "trace-001",
-            "SpanId": "span-001",
-            "ParentSpanId": "",
-            "SpanName": "user_login",
-            "ServiceName": "auth-service",
-            "SpanAttributes": {"user_id": "user123", "action": "login"},
-            "Duration": 150
+    intent_message = create_l9_message(
+        kind="intent",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "intent": "Analyze the authentication flow for security vulnerabilities",
+            "context": {
+                "service": "auth-service",
+                "priority": "high"
+            }
         },
-        {
-            "TraceId": "trace-001",
-            "SpanId": "span-002",
-            "ParentSpanId": "span-001",
-            "SpanName": "validate_credentials",
-            "ServiceName": "auth-service",
-            "SpanAttributes": {"user_id": "user123"},
-            "Duration": 50
-        }
-    ]
+        actors=[{"id": "security-agent"}, {"id": "analyzer-agent"}]
+    )
 
     try:
-        create_response = client.create_shared_memories(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            data=trace_data,
-            format="observe-sdk-otel",
-            agent_id=agent_id,
-        )
-        print(f"✓ Successfully created shared memories")
-        print(f"  Status: {create_response.status}")
-        print(f"  Response ID: {create_response.response_id}")
-        print(f"  Message: {create_response.message}")
+        response = client.forward_l9_message(message=intent_message)
+        print(f"✓ Intent message forwarded successfully")
+        print(f"  Response: {response}")
     except Exception as e:
-        print(f"✗ Error creating shared memories: {e}")
+        print(f"✗ Error forwarding intent message: {e}")
 
     # ========================================================================
-    # Example 2: Query Shared Memories with Natural Language
+    # Example 2: Exchange Message
     # ========================================================================
-    print("\n[2] Querying shared memories...")
+    print("\n[2] Forwarding exchange message...")
 
-    intent = "Find information about user login events and authentication"
-
-    try:
-        query_response = client.query_shared_memories(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            intent=intent,
-            agent_id=agent_id,
-            additional_context=[
-                {"context": "Looking for authentication patterns"},
-                {"time_range": "last 24 hours"}
-            ],
-        )
-        print(f"✓ Query completed for: '{intent}'")
-        print(f"  Response ID: {query_response.response_id}")
-        print(f"  Message: {query_response.message}")
-    except Exception as e:
-        print(f"✗ Error querying memories: {e}")
-
-    # ========================================================================
-    # Example 3: Memory Operations (Proxy to Remote Provider)
-    # ========================================================================
-    print("\n[3] Memory operations via proxy...")
-
-    # Example 3a: GET memories from remote provider
-    print("\n  [3a] Getting memories from remote provider...")
-    try:
-        get_response = client.memory_operation(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            agent_id=agent_id,
-            http_method="GET",
-            http_url="v1/memories/?user_id=test-user",
-        )
-        print(f"  ✓ GET request successful")
-        print(f"    HTTP Status: {get_response.http_status}")
-        print(f"    Response Body: {get_response.http_response_body}")
-    except Exception as e:
-        print(f"  ✗ Error with GET request: {e}")
-
-    # Example 3b: POST memories to remote provider
-    print("\n  [3b] Posting memories to remote provider...")
-    try:
-        post_response = client.memory_operation(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            agent_id=agent_id,
-            http_method="POST",
-            http_url="/v1/memories/",
-            http_body={
-                "messages": [
-                    {"role": "user", "content": "I prefer dark mode in all my apps"}
-                ],
-                "user_id": "test-user"
+    exchange_message = create_l9_message(
+        kind="exchange",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        subkind="proposal",
+        payload_data={
+            "proposal": {
+                "action": "deploy",
+                "strategy": "blue-green",
+                "estimated_duration": "30m"
             },
-        )
-        print(f"  ✓ POST request successful")
-        print(f"    HTTP Status: {post_response.http_status}")
-        print(f"    Response Body: {post_response.http_response_body}")
-    except Exception as e:
-        print(f"  ✗ Error with POST request: {e}")
+            "sender": "planner-agent",
+            "recipients": ["executor-agent"]
+        },
+        actors=["planner-agent", "executor-agent"]
+    )
 
-    # ========================================================================
-    # Example 4: Semantic Alignment
-    # ========================================================================
-    print("\n[4] Semantic alignment...")
-
-    session_id = "demo-session-001"
-
-    # Example 4a: Start alignment
-    print("\n  [4a] Starting alignment session...")
     try:
-        start_response = client.start_alignment(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            session_id=session_id,
-            agents=[
-                {"id": "planner", "name": "Planning Agent"},
-                {"id": "executor", "name": "Execution Agent"},
-            ],
-            content_text="Plan a deployment strategy for the new microservice",
-            n_steps=5,
-        )
-        print(f"  ✓ Alignment started")
-        print(f"    Status: {start_response.status}")
-        print(f"    Message: {start_response.message}")
-        if start_response.result:
-            print(f"    Result: {start_response.result}")
+        response = client.forward_l9_message(message=exchange_message)
+        print(f"✓ Exchange message forwarded successfully")
+        print(f"  Response: {response}")
     except Exception as e:
-        print(f"  ✗ Error starting alignment: {e}")
+        print(f"✗ Error forwarding exchange message: {e}")
 
-    # Example 4b: Advance alignment
-    print("\n  [4b] Advancing alignment with agent replies...")
+    # ========================================================================
+    # Example 3: Commit Message
+    # ========================================================================
+    print("\n[3] Forwarding commit message...")
+
+    commit_message = create_l9_message(
+        kind="commit",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "decision": "accepted",
+            "commitment": {
+                "action": "deploy",
+                "strategy": "blue-green",
+                "deadline": "2026-07-15T18:00:00Z"
+            },
+            "participants": ["planner-agent", "executor-agent"]
+        }
+    )
+
     try:
-        advance_response = client.advance_alignment(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            session_id=session_id,
-            agent_replies=[
-                {
-                    "agent_id": "planner",
-                    "action": "counter_offer",
-                    "offer": {"strategy": "blue-green deployment"}
-                },
-                {
-                    "agent_id": "executor",
-                    "action": "accept"
-                },
-            ],
-        )
-        print(f"  ✓ Alignment advanced")
-        print(f"    Status: {advance_response.status}")
-        print(f"    Message: {advance_response.message}")
-        if advance_response.result:
-            print(f"    Result: {advance_response.result}")
+        response = client.forward_l9_message(message=commit_message)
+        print(f"✓ Commit message forwarded successfully")
+        print(f"  Response: {response}")
     except Exception as e:
-        print(f"  ✗ Error advancing alignment: {e}")
+        print(f"✗ Error forwarding commit message: {e}")
 
     # ========================================================================
-    # Example 5: Advanced Usage - Direct API Access
+    # Example 4: Knowledge Message
     # ========================================================================
-    print("\n[5] Advanced: Direct API access (for power users)...")
-    print("  Note: You can access the underlying OpenAPI clients via:")
-    print("  - client.shared_memories_api      (SharedMemoriesApi)")
-    print("  - client.memory_operations_api    (MemoryOperationsApi)")
-    print("  - client.semantic_alignment_api (SemanticAlignmentApi)")
-    print("  - client.api_client               (ApiClient)")
-    print("  - client.configuration            (Configuration)")
+    print("\n[4] Forwarding knowledge message...")
+
+    knowledge_message = create_l9_message(
+        kind="knowledge",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "type": "learned_pattern",
+            "content": {
+                "pattern": "authentication_flow_optimization",
+                "description": "Learned optimal cache TTL for auth tokens",
+                "parameters": {
+                    "ttl": "3600s",
+                    "confidence": 0.95
+                }
+            },
+            "source": "learning-agent"
+        }
+    )
+
+    try:
+        response = client.forward_l9_message(message=knowledge_message)
+        print(f"✓ Knowledge message forwarded successfully")
+        print(f"  Response: {response}")
+    except Exception as e:
+        print(f"✗ Error forwarding knowledge message: {e}")
+
+    # ========================================================================
+    # Example 5: Contingency Message
+    # ========================================================================
+    print("\n[5] Forwarding contingency message...")
+
+    contingency_message = create_l9_message(
+        kind="contingency",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "trigger": "deployment_failure",
+            "condition": "health_check_failed",
+            "action": {
+                "type": "rollback",
+                "target": "previous_version",
+                "automated": True
+            },
+            "severity": "critical"
+        },
+        actors=["monitor-agent", "executor-agent"]
+    )
+
+    try:
+        response = client.forward_l9_message(message=contingency_message)
+        print(f"✓ Contingency message forwarded successfully")
+        print(f"  Response: {response}")
+    except Exception as e:
+        print(f"✗ Error forwarding contingency message: {e}")
+
+    # ========================================================================
+    # Example 6: Advanced - Direct API Access
+    # ========================================================================
+    print("\n[6] Advanced: Direct L9 API access...")
+    print("  Note: For power users, you can access the underlying API via:")
+    print("  - client.l9_messages_api  (L9MessagesApi)")
+    print("  This gives you full control over the L9 protocol message structure.")
 
     print("\n" + "=" * 70)
-    print("Example completed!")
+    print("L9 Examples completed!")
     print("=" * 70)
 
 

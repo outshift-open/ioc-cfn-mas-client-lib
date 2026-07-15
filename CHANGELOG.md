@@ -42,7 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared Memories API support
 - Memory Operations API support (proxy to remote providers)
 - Semantic Alignment API support
-- MCP (Model Context Protocol) integration
 - OpenAPI-generated API clients
 - Comprehensive examples and documentation
 - Support for Python 3.10, 3.11, and 3.12
@@ -51,7 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README with quick start guide
 - API documentation
 - Examples for all major features
-- MCP integration guide
 
 [Unreleased]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.3.0...HEAD
 [0.3.0]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.2.2...v0.3.0

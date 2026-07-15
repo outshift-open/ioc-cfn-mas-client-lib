@@ -42,8 +42,8 @@ uv run pytest --cov
 # Basic client example
 uv run python examples/example.py
 
-# MCP client example
-uv run python examples/mcp/client_example.py
+# L9 protocol message example
+uv run python examples/l9_example.py
 ```
 
 ## OpenAPI SDK Generation
@@ -83,13 +83,7 @@ make gen-openapi
 
 This regenerates `src/generated/` from `openapi/public-api-v1.2.yaml` using Docker.
 
-**Important**: After regenerating, add copyright/license headers to the generated files:
-
-```bash
-make add-headers-generated
-```
-
-This adds Apache 2.0 license headers to all generated Python files to maintain OSPO compliance.
+Copyright/license headers are automatically added to generated files as part of the `make gen-openapi` process.
 
 ### Updating the OpenAPI Spec
 
@@ -105,7 +99,6 @@ To update to a newer version of the CFN service API:
 
    ```bash
    make gen-openapi
-   make add-headers-generated
    ```
 
 3. **Update `client.py`** if the API surface changed:
@@ -166,8 +159,7 @@ uv run pytest --cov=ioc_cfn_mas_client --cov-report=html
 
 ```
 tests/
-├── test_client.py          # Client wrapper tests
-└── test_mcp.py            # MCP integration tests
+└── test_client.py          # Client wrapper tests
 ```
 
 ## Building and Publishing
@@ -225,12 +217,13 @@ Note: Generated code in `src/generated/` is excluded from linting and type check
 ioc-cfn-mas-client-lib/
 ├── src/
 │   ├── ioc_cfn_mas_client/
-│   │   ├── client.py           # Main user-facing Client wrapper
-│   │   └── mcp/               # MCP protocol integration
+│   │   └── client.py           # Main user-facing Client wrapper
 │   └── generated/              # Auto-generated OpenAPI code (DO NOT EDIT)
 ├── openapi/
 │   └── public-api-v1.2.yaml   # OpenAPI spec (copied from ioc-cfn-svc)
-├── examples/                   # Usage examples
+├── examples/
+│   ├── example.py              # Basic usage example
+│   └── l9_example.py          # L9 protocol message example
 ├── tests/                      # Test suite
 ├── docs/                       # Documentation
 ├── pyproject.toml             # Package configuration
