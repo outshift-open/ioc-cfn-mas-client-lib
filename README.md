@@ -89,8 +89,8 @@ L9 messages follow the **SSTP specification** and consist of two main components
 - **`subprotocol`**: Subprotocol identifier - one of:
   - `"TFP"` - Team Formation via Polling
   - `"CIP"` - Contingency Interaction Protocol
-  - `"SIEP"` - Semantic Interaction Exchange Protocol
-  - `"SAB"` - Semantic Alignment Broadcast
+  - `"SIEP"` - Semantic Interoperability and Epistemic Protocol
+  - `"SAB"` - Semantic Alignment via Bargaining
   - Or any custom subprotocol identifier
 - **`kind`**: Message type - one of:
   - `intent` - Agent intentions and goals
