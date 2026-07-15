@@ -164,7 +164,6 @@ def main() -> None:
         kind="commit",
         workspace_id=workspace_id,
         mas_id=mas_id,
-        subkind="action_approved",
         payload_data={
             "operation": "commit_remediation_plan",
             "decision": "approved",
