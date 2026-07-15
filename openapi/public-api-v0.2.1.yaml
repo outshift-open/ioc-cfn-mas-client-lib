@@ -13,9 +13,6 @@ info:
     **Changes in v0.2.1:**
     - Added `POST /api/l9/messages` endpoint for L9 protocol message routing
     - `POST /shared-memories` now returns 202 Accepted (async processing)
-
-    **Changes in v1.1.0:**
-    - `POST /shared-memories` now returns 202 Accepted (async processing)
   contact: {}
 
 servers:
