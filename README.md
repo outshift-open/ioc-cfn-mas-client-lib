@@ -10,8 +10,6 @@ Python SDK client library for the Internet of Cognition (IoC) Cognition Fabric N
 
 **Current Version: 0.3.0** supports **CFN Public API v0.2.1**
 
-This client library is compatible with CFN Service v0.2.x deployments.
-
 ## Overview
 
 This library provides a Python client for forwarding **L9 protocol messages** to the CFN (Cognition Fabric Node) service, which routes them to appropriate Cognition Engines based on the message header.
