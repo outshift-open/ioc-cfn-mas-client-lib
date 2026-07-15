@@ -24,6 +24,7 @@ def create_l9_message(
     payload_data: Dict[str, Any],
     subkind: str = "",
     actors: list = None,
+    payload_type: str = "application/json",
 ) -> Dict[str, Any]:
     """Helper to create a properly formatted L9 message.
 
@@ -33,11 +34,16 @@ def create_l9_message(
         mas_id: Multi-agent system UUID
         payload_data: Message payload data
         subkind: Optional message subkind
-        actors: Optional list of actor dictionaries with 'id' field
+        actors: Optional list of actor dictionaries with 'id' and 'role' fields
+        payload_type: Payload MIME type (default: application/json)
 
     Returns:
         L9 protocol message dictionary conforming to SSTP spec
     """
+    # Default actors if none provided
+    if actors is None:
+        actors = [{"id": "system-agent", "role": "sender"}]
+
     message = {
         "header": {
             "protocol": "sstp",
@@ -45,7 +51,7 @@ def create_l9_message(
             "subprotocol": "ioc",
             "kind": kind,
             "participants": {
-                "actors": actors if actors else [],
+                "actors": actors,
                 "groups": {
                     "workspace_id": workspace_id,
                     "mas_id": mas_id,
@@ -53,7 +59,7 @@ def create_l9_message(
             }
         },
         "payload": {
-            "type": "application/json",
+            "type": payload_type,
             "data": payload_data
         }
     }
@@ -90,13 +96,18 @@ def main() -> None:
         workspace_id=workspace_id,
         mas_id=mas_id,
         payload_data={
-            "intent": "Analyze the authentication flow for security vulnerabilities",
-            "context": {
+            "operation": "analyze_security",
+            "target": "authentication_flow",
+            "parameters": {
                 "service": "auth-service",
-                "priority": "high"
+                "priority": "high",
+                "scope": ["oauth2", "jwt", "session_management"]
             }
         },
-        actors=[{"id": "security-agent"}, {"id": "analyzer-agent"}]
+        actors=[
+            {"id": "security-analyzer-agent", "role": "sender"},
+            {"id": "auth-service-agent", "role": "receiver"}
+        ]
     )
 
     try:
@@ -115,17 +126,26 @@ def main() -> None:
         kind="exchange",
         workspace_id=workspace_id,
         mas_id=mas_id,
-        subkind="proposal",
         payload_data={
-            "proposal": {
-                "action": "deploy",
-                "strategy": "blue-green",
-                "estimated_duration": "30m"
+            "operation": "share_analysis_results",
+            "results": {
+                "vulnerabilities_found": 3,
+                "severity": "medium",
+                "recommendations": [
+                    "Implement rate limiting on login endpoint",
+                    "Add CSRF token validation",
+                    "Enable session timeout"
+                ]
             },
-            "sender": "planner-agent",
-            "recipients": ["executor-agent"]
+            "metadata": {
+                "analysis_id": "sec-2026-001",
+                "timestamp": "2026-07-15T10:30:00Z"
+            }
         },
-        actors=[{"id": "planner-agent"}, {"id": "executor-agent"}]
+        actors=[
+            {"id": "security-analyzer-agent", "role": "sender"},
+            {"id": "remediation-agent", "role": "receiver"}
+        ]
     )
 
     try:
@@ -144,15 +164,28 @@ def main() -> None:
         kind="commit",
         workspace_id=workspace_id,
         mas_id=mas_id,
+        subkind="action_approved",
         payload_data={
-            "decision": "accepted",
+            "operation": "commit_remediation_plan",
+            "decision": "approved",
             "commitment": {
-                "action": "deploy",
-                "strategy": "blue-green",
-                "deadline": "2026-07-15T18:00:00Z"
+                "plan_id": "rem-2026-001",
+                "actions": [
+                    "Deploy rate limiter to auth service",
+                    "Enable CSRF protection",
+                    "Configure 30-minute session timeout"
+                ],
+                "schedule": {
+                    "start": "2026-07-15T14:00:00Z",
+                    "estimated_completion": "2026-07-15T16:00:00Z"
+                }
             },
-            "participants": ["planner-agent", "executor-agent"]
-        }
+            "approvers": ["security-analyzer-agent", "ops-lead-agent"]
+        },
+        actors=[
+            {"id": "remediation-agent", "role": "sender"},
+            {"id": "deployment-agent", "role": "receiver"}
+        ]
     )
 
     try:
