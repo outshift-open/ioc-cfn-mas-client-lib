@@ -42,13 +42,6 @@ uv run pytest --cov
 # Basic client example
 uv run python examples/example.py
 
-# A2A instrumentation example
-# Terminal 1 - Start Agent B server
-uv run python examples/instrumentation/a2a/multi_agent_example.py --server
-
-# Terminal 2 - Run Agent A client
-uv run python examples/instrumentation/a2a/multi_agent_example.py --client
-
 # MCP client example
 uv run python examples/mcp/client_example.py
 ```
@@ -59,8 +52,8 @@ The client library code in `src/generated/` is auto-generated from the CFN servi
 
 ### Architecture
 
-- **OpenAPI spec source**: [ioc-cfn-svc public-api-v1.1.yaml](https://github.com/outshift-open/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.1.yaml)
-- **Local spec**: `openapi/public-api-v1.1.yaml` (copied from source)
+- **OpenAPI spec source**: [ioc-cfn-svc public-api-v1.2.yaml](https://github.com/outshift-open/ioc-cfn-svc/blob/main/docs/public-api/public-api-v1.2.yaml)
+- **Local spec**: `openapi/public-api-v1.2.yaml` (copied from source)
 - **Generated output**: `src/generated/`
 - **User-facing wrapper**: `src/ioc_cfn_mas_client/client.py`
 
@@ -88,7 +81,7 @@ To regenerate the client code from the OpenAPI spec:
 make gen-openapi
 ```
 
-This regenerates `src/generated/` from `openapi/public-api-v1.1.yaml` using Docker.
+This regenerates `src/generated/` from `openapi/public-api-v1.2.yaml` using Docker.
 
 **Important**: After regenerating, add copyright/license headers to the generated files:
 
@@ -105,7 +98,7 @@ To update to a newer version of the CFN service API:
 1. **Copy the latest spec** from ioc-cfn-svc:
 
    ```bash
-   cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.1.yaml openapi/
+   cp /path/to/ioc-cfn-svc/docs/public-api/public-api-v1.2.yaml openapi/
    ```
 
 2. **Regenerate the client**:
@@ -174,7 +167,6 @@ uv run pytest --cov=ioc_cfn_mas_client --cov-report=html
 ```
 tests/
 ├── test_client.py          # Client wrapper tests
-├── test_instrumentation.py # A2A instrumentation tests
 └── test_mcp.py            # MCP integration tests
 ```
 
@@ -234,14 +226,12 @@ ioc-cfn-mas-client-lib/
 ├── src/
 │   ├── ioc_cfn_mas_client/
 │   │   ├── client.py           # Main user-facing Client wrapper
-│   │   ├── instrumentation/    # A2A instrumentation
 │   │   └── mcp/               # MCP protocol integration
 │   └── generated/              # Auto-generated OpenAPI code (DO NOT EDIT)
 ├── openapi/
-│   └── public-api-v1.1.yaml   # OpenAPI spec (copied from ioc-cfn-svc)
+│   └── public-api-v1.2.yaml   # OpenAPI spec (copied from ioc-cfn-svc)
 ├── examples/                   # Usage examples
 ├── tests/                      # Test suite
-├── sidecar/                    # Production sidecar deployment code
 ├── docs/                       # Documentation
 ├── pyproject.toml             # Package configuration
 └── Makefile                   # Development tasks

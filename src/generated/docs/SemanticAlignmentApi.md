@@ -9,7 +9,7 @@ Method | HTTP request | Description
 
 
 # **decide_semantic_alignment**
-> AlignmentResponse decide_semantic_alignment(workspace_id, mas_id, decide_request)
+> NegotiationResponse decide_semantic_alignment(workspace_id, mas_id, decide_request)
 
 Advance semantic alignment session
 
@@ -21,7 +21,7 @@ Advances an existing semantic alignment session with agent replies.
 ```python
 import generated
 from generated.models.decide_request import DecideRequest
-from generated.models.alignment_response import AlignmentResponse
+from generated.models.negotiation_response import NegotiationResponse
 from generated.rest import ApiException
 from pprint import pprint
 
@@ -38,7 +38,7 @@ with generated.ApiClient(configuration) as api_client:
     api_instance = generated.SemanticAlignmentApi(api_client)
     workspace_id = 'workspace_id_example' # str | Workspace ID
     mas_id = 'mas_id_example' # str | Multi-Agentic System ID
-    decide_request = generated.DecideRequest() # DecideRequest | Semantic alignment decide request
+    decide_request = generated.DecideRequest() # DecideRequest | Semantic negotiation decide request
 
     try:
         # Advance semantic alignment session
@@ -58,11 +58,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**| Workspace ID | 
  **mas_id** | **str**| Multi-Agentic System ID | 
- **decide_request** | [**DecideRequest**](DecideRequest.md)| Semantic alignment decide request | 
+ **decide_request** | [**DecideRequest**](DecideRequest.md)| Semantic negotiation decide request | 
 
 ### Return type
 
-[**AlignmentResponse**](AlignmentResponse.md)
+[**NegotiationResponse**](NegotiationResponse.md)
 
 ### Authorization
 
@@ -77,7 +77,7 @@ No authorization required
 
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | Alignment step executed successfully |  -  |
+**200** | Negotiation step executed successfully |  -  |
 **400** | Invalid request |  -  |
 **404** | Session not found |  -  |
 **500** | Internal server error |  -  |
@@ -85,7 +85,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **start_semantic_alignment**
-> AlignmentResponse start_semantic_alignment(workspace_id, mas_id, start_request)
+> NegotiationResponse start_semantic_alignment(workspace_id, mas_id, start_request)
 
 Start semantic alignment session
 
@@ -96,7 +96,7 @@ Initiates a new semantic alignment session with multiple agents.
 
 ```python
 import generated
-from generated.models.alignment_response import AlignmentResponse
+from generated.models.negotiation_response import NegotiationResponse
 from generated.models.start_request import StartRequest
 from generated.rest import ApiException
 from pprint import pprint
@@ -114,7 +114,7 @@ with generated.ApiClient(configuration) as api_client:
     api_instance = generated.SemanticAlignmentApi(api_client)
     workspace_id = 'workspace_id_example' # str | Workspace ID
     mas_id = 'mas_id_example' # str | Multi-Agentic System ID
-    start_request = generated.StartRequest() # StartRequest | Semantic alignment start request
+    start_request = generated.StartRequest() # StartRequest | Semantic negotiation start request
 
     try:
         # Start semantic alignment session
@@ -134,11 +134,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **workspace_id** | **str**| Workspace ID | 
  **mas_id** | **str**| Multi-Agentic System ID | 
- **start_request** | [**StartRequest**](StartRequest.md)| Semantic alignment start request | 
+ **start_request** | [**StartRequest**](StartRequest.md)| Semantic negotiation start request | 
 
 ### Return type
 
-[**AlignmentResponse**](AlignmentResponse.md)
+[**NegotiationResponse**](NegotiationResponse.md)
 
 ### Authorization
 
@@ -153,7 +153,7 @@ No authorization required
 
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**200** | Alignment session started successfully |  -  |
+**200** | Negotiation session started successfully |  -  |
 **400** | Invalid request |  -  |
 **500** | Internal server error |  -  |
 

@@ -6,15 +6,15 @@
 
 Python SDK client library for the Internet of Cognition (IoC) Cognition Fabric Node.
 
+## Compatibility
+
+**Current Version: 0.3.0** supports **CFN Public API v0.2.1**
+
 ## Overview
 
-This library provides a Python client for interacting with the CFN (Cognition Fabric Node) service, enabling:
+This library provides a Python client for forwarding **L9 protocol messages** to the CFN (Cognition Fabric Node) service, which routes them to appropriate Cognition Engines based on the message header.
 
-- **Shared Memories API**: Create and query shared memories from trace data
-- **Memory Operations API**: Proxy memory operations to remote providers (Mem0, Graphiti)
-- **Semantic Alignment API**: Run multi-agent alignment sessions
-- **MCP Integration**: Retain and recall memories using Model Context Protocol
-- **A2A Instrumentation**: Automatic tracking of Google A2A protocol agents
+The **L9 protocol (SSTP - Semantic State Transfer Protocol)** enables standardized communication between Multi-Agent Systems and Cognition Engines in the IoC ecosystem.
 
 ## Installation
 
@@ -26,258 +26,116 @@ pip install ioc-cfn-mas-client-lib
 
 ## Quick Start
 
-Create a client using the CFN URL:
-
-```python
-from ioc_cfn_mas_client.client import Client
-
-client = Client(cfn_url="http://localhost:9002")
-```
-
-### Shared Memories API
-
-#### Create or update shared memories from trace data
-
-```python
-# Create memories from trace data (e.g., OpenTelemetry traces)
-trace_data = [
-    {
-        "TraceId": "trace-001",
-        "SpanId": "span-001",
-        "SpanName": "user_login",
-        "ServiceName": "auth-service",
-        "SpanAttributes": {"user_id": "user123"},
-        "Duration": 150
-    }
-]
-
-response = client.create_shared_memories(
-    workspace_id="your_workspace_id",
-    mas_id="your_mas_id",
-    data=trace_data,
-    format="observe-sdk-otel",  # or "openclaw"
-    agent_id="your_agent_id",  # Optional
-)
-```
-
-#### Query shared memories with natural language
-
-```python
-# Query memories using natural language intent
-results = client.query_shared_memories(
-    workspace_id="your_workspace_id",
-    mas_id="your_mas_id",
-    intent="Find information about user login events",
-    agent_id="your_agent_id",
-    additional_context=[{"context": "prior conversation"}],  # Optional
-)
-```
-
-### Memory Operations API (Proxy to Remote Providers)
-
-Forward memory operations to remote providers like Mem0 or Graphiti:
-
-```python
-# GET memories from remote provider
-response = client.memory_operation(
-    workspace_id="your_workspace_id",
-    mas_id="your_mas_id",
-    agent_id="your_agent_id",
-    http_method="GET",
-    http_url="v1/memories/?user_id=test-user",
-)
-
-# POST memories to remote provider
-response = client.memory_operation(
-    workspace_id="your_workspace_id",
-    mas_id="your_mas_id",
-    agent_id="your_agent_id",
-    http_method="POST",
-    http_url="/v1/memories/",
-    http_body={
-        "messages": [{"role": "user", "content": "I prefer dark mode"}],
-        "user_id": "test-user"
-    },
-)
-```
-
-### Semantic Alignment API
-
-Run multi-agent alignment sessions:
-
-```python
-# Start a alignment session
-response = client.start_alignment(
-    workspace_id="your_workspace_id",
-    mas_id="your_mas_id",
-    session_id="session-123",
-    agents=[
-        {"id": "agent1", "name": "Planner Agent"},
-        {"id": "agent2", "name": "Executor Agent"}
-    ],
-    content_text="Plan a deployment strategy",
-    n_steps=10,  # Optional, defaults to 20
-)
-
-# Advance alignment with agent replies
-response = client.advance_alignment(
-    workspace_id="your_workspace_id",
-    mas_id="your_mas_id",
-    session_id="session-123",
-    agent_replies=[
-        {
-            "agent_id": "agent1",
-            "action": "counter_offer",
-            "offer": {"strategy": "blue-green deployment"}
-        },
-        {
-            "agent_id": "agent2",
-            "action": "accept"
-        }
-    ],
-)
-```
-
-### Google A2A Protocol Integration
-
-Use `A2AInstrumentor` to automatically track all A2A agents without decorators (monkey patching approach):
-
-```python
-from ioc_cfn_mas_client import Client, A2AInstrumentor
-from a2a.server.agent_execution import AgentExecutor
-
-client = Client(cfn_url="http://localhost:9002")
-
-# One-time setup - instruments ALL AgentExecutor classes automatically
-instrumentor = A2AInstrumentor(
-    client=client,
-    workspace_id="my-workspace",
-    mas_id="my-mas",
-    publish_input=True,   # Publish incoming A2A messages
-    publish_output=True,  # Publish task results
-)
-instrumentor.instrument()
-
-# Now ALL agents are automatically tracked - no decorators needed!
-class MyA2AAgent(AgentExecutor):
-    async def execute(self, context, event_queue):
-        """Execute agent - automatically published to CFN."""
-        # Your A2A agent logic here
-        # All interactions automatically saved to CFN shared memory
-        pass
-```
-
-**Key Features:**
-
-- **Zero code changes** - works with any A2A agent
-- Automatic publishing of A2A messages to CFN shared memory
-- Uses monkey patching (similar to OpenTelemetry auto-instrumentation)
-- Preserves A2A protocol structure (messages, tasks, artifacts)
-- Can be enabled/disabled globally with `uninstrument()`
-
-For detailed documentation, see [docs/A2A_INTEGRATION.md](docs/A2A_INTEGRATION.md).
-
-**Example:**
-
-```bash
-# Terminal 1 - Start Agent B server
-uv run python examples/instrumentation/a2a/multi_agent_example.py --server
-
-# Terminal 2 - Run Agent A client
-uv run python examples/instrumentation/a2a/multi_agent_example.py --client
-```
-
-See [examples/instrumentation/a2a/multi_agent_example.py](examples/instrumentation/a2a/multi_agent_example.py) for the complete code, and [examples/instrumentation/README.md](examples/instrumentation/README.md) for more details.
-
-### MCP Client Integration
-
-Use the MCP (Model Context Protocol) client methods integrated into the main Client class:
+### Forwarding L9 Messages
 
 ```python
 from ioc_cfn_mas_client import Client
 
-# Initialize client with MCP server URL
-client = Client(cfn_url="http://localhost:9001")
+# Initialize the CFN client
+client = Client(cfn_url="http://localhost:9002")
 
-# Retain shared memories using MCP-style interface
-result = await client.retain(
-    workspace_id="my-workspace",
-    mas_id="my-mas",
-    payload={
-        "metadata": {"format": "openclaw"},
-        "data": [{"example": "conversation data"}]
-    },
-    agent_id="my-agent"
+# Construct and forward an L9 message
+response = client.forward_l9_message(
+    message={
+        "header": {
+            "protocol": "sstp",           # Always "sstp" for L9
+            "version": "1.0",              # Protocol version
+            "subprotocol": "ioc",          # Subprotocol identifier
+            "kind": "knowledge",           # Message kind: intent, contingency, exchange, commit, knowledge
+            "subkind": "query",            # Optional message subtype
+            "participants": {
+                "actors": [                # Sending agents/actors
+                    {
+                        "id": "agent-123",
+                        "role": "requester"
+                    }
+                ],
+                "groups": {                # Routing information
+                    "workspace_id": "550e8400-e29b-41d4-a716-446655440000",  # Target workspace UUID
+                    "mas_id": "660e8400-e29b-41d4-a716-446655440001"         # Target MAS UUID
+                }
+            }
+        },
+        "payload": {
+            "type": "application/json",    # Payload MIME type
+            "data": {                      # Custom payload data
+                "query": "What are the latest system metrics?",
+                "context": {
+                    "source": "monitoring-agent",
+                    "timestamp": "2026-07-15T10:30:00Z"
+                }
+            }
+        }
+    }
 )
-print(f"Retain result: {result['status']}")
 
-# Recall shared memories using natural language intent
-result = await client.recall(
-    workspace_id="my-workspace",
-    mas_id="my-mas",
-    intent="Find information about user preferences",
-    search_strategy="semantic_graph_traversal",
-    agent_id="my-agent"
-)
-print(f"Recall result: {result['message']}")
+print(f"Message forwarded successfully: {response}")
 ```
 
-**Key Features:**
+### L9 Message Structure
 
-- **Integrated MCP Methods** - `retain()` and `recall()` methods built into the main Client class
-- **Mock Responses** - Returns structured mock data for testing without live MCP server
-- **OpenClaw Format** - Supports conversation data for retain operations
-- **Natural Language Queries** - Use intent-based queries for recall operations
-- **Semantic Search** - Built-in semantic graph traversal for memory retrieval
+L9 messages follow the **SSTP specification** and consist of two main components:
 
-**Examples:**
+#### Header (Required)
+- **`protocol`**: Always `"sstp"` for L9 messages
+- **`version`**: Protocol version (e.g., `"1.0"`)
+- **`subprotocol`**: Subprotocol identifier (e.g., `"ioc"`)
+- **`kind`**: Message type - one of:
+  - `intent` - Agent intentions and goals
+  - `contingency` - Conditional actions and fallbacks
+  - `exchange` - Data exchange between agents
+  - `commit` - State commitments and confirmations
+  - `knowledge` - Knowledge queries and updates
+- **`subkind`** (optional): Additional message classification
+- **`participants`**: Routing and actor information
+  - **`actors`**: Array of participating agents/actors with `id` and `role`
+  - **`groups`**: Routing groups with **`workspace_id`** and **`mas_id`** (both UUIDs)
 
-```bash
-# Run the MCP client example demonstrating retain/recall methods
-uv run python examples/mcp/client_example.py
+#### Payload (Required)
+- **`type`**: Payload MIME type (e.g., `"application/json"`, `"text/plain"`)
+- **`data`**: Custom payload data (object or any JSON-serializable data)
 
-# For direct MCP protocol testing (advanced users):
-uv run python -m src.ioc_cfn_mas_client.mcp.mcp_client_sample --operation list_tools
-uv run python -m src.ioc_cfn_mas_client.mcp.mcp_client_sample --operation retain
-uv run python -m src.ioc_cfn_mas_client.mcp.mcp_client_sample --operation recall
-```
+### Routing Logic
 
-For complete examples and implementation details, see [examples/mcp/client_example.py](examples/mcp/client_example.py) and [src/ioc_cfn_mas_client/mcp/](src/ioc_cfn_mas_client/mcp/).
+CFN routes L9 messages to Cognition Engines based on:
+1. **Workspace ID** - Identifies the workspace boundary
+2. **MAS ID** - Identifies the specific Multi-Agent System
+3. **Message kind** - Determines the type of processing required
 
-### Advanced Usage
-
-For power users who need direct access to the generated OpenAPI clients:
-
-```python
-# Access the underlying API clients
-shared_memories_api = client.shared_memories_api
-memory_operations_api = client.memory_operations_api
-semantic_alignment_api = client.semantic_alignment_api
-
-# Use generated methods directly
-response = shared_memories_api.api_workspaces_workspace_id_multi_agentic_systems_mas_id_shared_memories_post_with_http_info(...)
-```
-
-For a complete example, see `examples/example.py`.
+The appropriate Cognition Engine is selected and the message is forwarded for processing.
 
 ## Configuration
 
-The `Client` constructor accepts the following parameters:
+The `Client` constructor accepts:
 
-- `cfn_url` (required): CFN API endpoint URL (e.g., `http://localhost:9002`)
-- `timeout` (optional): Request timeout in seconds
-- `configuration` (optional): Pre-configured Configuration object (for advanced users)
-- `api_client` (optional): Pre-configured ApiClient object (for advanced users)
+- **`cfn_url`** (required): CFN API endpoint URL (e.g., `"http://localhost:9002"`)
+- **`timeout`** (optional): Request timeout in seconds
+- **`configuration`** (optional): Pre-configured `Configuration` object (advanced)
+- **`api_client`** (optional): Pre-configured `ApiClient` object (advanced)
 
 ### Environment Variables
 
 Optional environment variable:
 
-- `CFN_URL`: CFN API endpoint URL (defaults to `http://localhost:9002` if not set)
+- **`CFN_URL`**: CFN API endpoint URL (defaults to `http://localhost:9002`)
+
+## Development
+
+For development setup, OpenAPI code generation, and contribution guidelines, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
+## API Documentation
+
+This SDK is auto-generated from the [CFN Public API OpenAPI specification](https://github.com/outshift-open/ioc-cfn-svc/tree/main/docs/public-api). For detailed API documentation, see the upstream repository.
 
 ## Contributing
 
-For development setup, OpenAPI code generation, and contribution guidelines, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests: `uv run pytest`
+5. Submit a pull request
+
+For more details, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
 ## License
 

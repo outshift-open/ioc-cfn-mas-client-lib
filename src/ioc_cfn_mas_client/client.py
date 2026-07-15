@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any, Dict, List, Optional
 
+from generated.api.l9_messages_api import L9MessagesApi
 from generated.api.memory_operations_api import MemoryOperationsApi
 from generated.api.semantic_alignment_api import SemanticAlignmentApi
 from generated.api.shared_memories_api import SharedMemoriesApi
@@ -69,6 +70,7 @@ class Client:
         self._shared_memories_api = SharedMemoriesApi(api_client=self._api_client)
         self._memory_operations_api = MemoryOperationsApi(api_client=self._api_client)
         self._semantic_alignment_api = SemanticAlignmentApi(api_client=self._api_client)
+        self._l9_messages_api = L9MessagesApi(api_client=self._api_client)
 
     # ============================================================================
     # Shared Memories Operations
@@ -386,6 +388,46 @@ class Client:
         )
 
     # ============================================================================
+    # L9 Protocol Messages
+    # ============================================================================
+
+    def forward_l9_message(
+        self,
+        message: Dict[str, Any],
+    ) -> Any:
+        """Forward L9 protocol message to cognition engines.
+
+        Receives L9 (SSTP) protocol messages and routes them to the appropriate
+        cognition engine based on message kind, subkind, workspace, and MAS.
+
+        Args:
+            message: L9 protocol message conforming to SSTP specification.
+                Must include header with participants.groups for routing.
+
+        Returns:
+            Response from the cognition engine
+
+        Example:
+            >>> response = client.forward_l9_message(
+            ...     message={
+            ...         "header": {
+            ...             "kind": "intent",
+            ...             "participants": {
+            ...                 "groups": {"workspace": "ws1", "mas": "sys1"}
+            ...             }
+            ...         },
+            ...         "payload": {...}
+            ...     }
+            ... )
+        """
+        from generated.models.forward_l9_message_request import ForwardL9MessageRequest
+
+        request = ForwardL9MessageRequest.from_dict(message)
+        return self._l9_messages_api.forward_l9_message(
+            forward_l9_message_request=request,
+        )
+
+    # ============================================================================
     # Advanced Access (for power users)
     # ============================================================================
 
@@ -413,6 +455,11 @@ class Client:
     def semantic_alignment_api(self) -> SemanticAlignmentApi:
         """Direct access to the generated SemanticAlignmentApi for advanced usage."""
         return self._semantic_alignment_api
+
+    @property
+    def l9_messages_api(self) -> L9MessagesApi:
+        """Direct access to the generated L9MessagesApi for advanced usage."""
+        return self._l9_messages_api
 
     def request(
         self,
