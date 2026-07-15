@@ -14,7 +14,7 @@ This client library is compatible with CFN Service v0.2.x deployments.
 
 ## Overview
 
-This library provides a Python client for forwarding **L9 protocol messages** to the CFN (Cognition Fabric Node) service, which routes them to appropriate Cognition Engines based on workspace, MAS (Multi-Agent System), and message metadata.
+This library provides a Python client for forwarding **L9 protocol messages** to the CFN (Cognition Fabric Node) service, which routes them to appropriate Cognition Engines based on the message header.
 
 The **L9 protocol (SSTP - Semantic State Transfer Protocol)** enables standardized communication between Multi-Agent Systems and Cognition Engines in the IoC ecosystem.
 
