@@ -42,13 +42,6 @@ uv run pytest --cov
 # Basic client example
 uv run python examples/example.py
 
-# A2A instrumentation example
-# Terminal 1 - Start Agent B server
-uv run python examples/instrumentation/a2a/multi_agent_example.py --server
-
-# Terminal 2 - Run Agent A client
-uv run python examples/instrumentation/a2a/multi_agent_example.py --client
-
 # MCP client example
 uv run python examples/mcp/client_example.py
 ```
@@ -174,7 +167,6 @@ uv run pytest --cov=ioc_cfn_mas_client --cov-report=html
 ```
 tests/
 ├── test_client.py          # Client wrapper tests
-├── test_instrumentation.py # A2A instrumentation tests
 └── test_mcp.py            # MCP integration tests
 ```
 
@@ -234,14 +226,12 @@ ioc-cfn-mas-client-lib/
 ├── src/
 │   ├── ioc_cfn_mas_client/
 │   │   ├── client.py           # Main user-facing Client wrapper
-│   │   ├── instrumentation/    # A2A instrumentation
 │   │   └── mcp/               # MCP protocol integration
 │   └── generated/              # Auto-generated OpenAPI code (DO NOT EDIT)
 ├── openapi/
 │   └── public-api-v1.2.yaml   # OpenAPI spec (copied from ioc-cfn-svc)
 ├── examples/                   # Usage examples
 ├── tests/                      # Test suite
-├── sidecar/                    # Production sidecar deployment code
 ├── docs/                       # Documentation
 ├── pyproject.toml             # Package configuration
 └── Makefile                   # Development tasks
