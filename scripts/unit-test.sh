@@ -10,7 +10,16 @@ set -e
 cd "$(dirname "$0")/.."
 
 echo "Running L9 client unit tests..."
-pytest tests/ -v --cov=ioc_cfn_mas_client --cov-report=term-missing
+
+# Use python -m pytest if available (CI), otherwise use uv run (local dev)
+if command -v python &> /dev/null; then
+    python -m pytest tests/ -v --cov=ioc_cfn_mas_client --cov-report=term-missing
+elif command -v uv &> /dev/null; then
+    uv run python -m pytest tests/ -v --cov=ioc_cfn_mas_client --cov-report=term-missing
+else
+    echo "Error: Neither python nor uv found in PATH"
+    exit 1
+fi
 
 echo ""
 echo "✓ All L9 client tests passed!"

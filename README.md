@@ -41,13 +41,16 @@ response = client.forward_l9_message(
             "protocol": "sstp",           # Always "sstp" for L9
             "version": "1.0",              # Protocol version
             "subprotocol": "ioc",          # Subprotocol identifier
-            "kind": "knowledge",           # Message kind: intent, contingency, exchange, commit, knowledge
-            "subkind": "query",            # Optional message subtype
+            "kind": "exchange",            # Message kind: intent, contingency, exchange, commit, knowledge
             "participants": {
-                "actors": [                # Sending agents/actors
+                "actors": [                # Participating agents/actors
                     {
-                        "id": "agent-123",
-                        "role": "requester"
+                        "id": "monitoring-agent",
+                        "role": "sender"
+                    },
+                    {
+                        "id": "metrics-processor",
+                        "role": "receiver"
                     }
                 ],
                 "groups": {                # Routing information
@@ -59,8 +62,12 @@ response = client.forward_l9_message(
         "payload": {
             "type": "application/json",    # Payload MIME type
             "data": {                      # Custom payload data
-                "query": "What are the latest system metrics?",
-                "context": {
+                "operation": "query_metrics",
+                "parameters": {
+                    "metric_types": ["cpu", "memory", "disk"],
+                    "time_range": "last_hour"
+                },
+                "metadata": {
                     "source": "monitoring-agent",
                     "timestamp": "2026-07-15T10:30:00Z"
                 }
