@@ -25,6 +25,7 @@ gen-openapi:
 		--package-name $(GEN_PKG) \
 		--additional-properties=projectName=$(GEN_PKG),packageVersion=1.0.0,generateSourceCodeOnly=true
 	@echo "✓ SDK generated successfully in $(GEN_OUT)/$(GEN_PKG)"
+	@$(MAKE) add-headers
 
 .PHONY: pull-openapi-generator
 pull-openapi-generator:
@@ -34,25 +35,15 @@ pull-openapi-generator:
 
 .PHONY: add-headers
 add-headers:
-	@echo "Adding copyright/license headers to all Python files"
+	@echo "Adding copyright/license headers to all Python and shell files"
 	@docker run --rm --volume "$${PWD}:/data" fsfe/reuse annotate \
 		--copyright-prefix string \
 		--copyright "Cisco Systems, Inc. and its affiliates" \
 		-l "Apache-2.0" \
 		--skip-existing \
-		**/*.py
+		**/*.py **/*.sh
 	@echo "✓ Headers added successfully"
 
-.PHONY: add-headers-generated
-add-headers-generated:
-	@echo "Adding copyright/license headers to generated Python files"
-	@docker run --rm --volume "$${PWD}:/data" fsfe/reuse annotate \
-		--copyright-prefix string \
-		--copyright "Cisco Systems, Inc. and its affiliates" \
-		-l "Apache-2.0" \
-		--skip-existing \
-		src/generated/**/*.py
-	@echo "✓ Headers added to generated files"
 
 .PHONY: clean
 clean:

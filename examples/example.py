@@ -3,215 +3,328 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # examples/example.py
-"""Example usage of the IoC CFN MAS Client Library.
+"""Example usage of L9 protocol message forwarding.
 
 This script demonstrates how to:
 1. Initialize the client
-2. Create/update shared memories from trace data
-3. Query shared memories using natural language intent
-4. Proxy memory operations to remote providers
-5. Start and advance semantic alignment sessions
+2. Forward L9 protocol messages to cognition engines using real subprotocols
+3. Handle different message kinds and subprotocols (TFP, CIP, SIEP)
 """
 
 import os
+from typing import Any, Dict
 
 from ioc_cfn_mas_client.client import Client
 
 
+def create_l9_message(
+    kind: str,
+    subprotocol: str,
+    workspace_id: str,
+    mas_id: str,
+    payload_data: Dict[str, Any],
+    subkind: str = "",
+    actors: list = None,
+    payload_type: str = "application/json",
+) -> Dict[str, Any]:
+    """Helper to create a properly formatted L9 message.
+
+    Args:
+        kind: Message kind (intent, contingency, exchange, commit, knowledge)
+        subprotocol: Subprotocol identifier (TFP, CIP, SIEP, etc.)
+        workspace_id: Workspace UUID
+        mas_id: Multi-agent system UUID
+        payload_data: Message payload data
+        subkind: Optional message subkind
+        actors: Optional list of actor dictionaries with 'id' and 'role' fields
+        payload_type: Payload MIME type (default: application/json)
+
+    Returns:
+        L9 protocol message dictionary conforming to SSTP spec
+    """
+    # Default actors if none provided
+    if actors is None:
+        actors = [{"id": "system-agent", "role": "sender"}]
+
+    message = {
+        "header": {
+            "protocol": "sstp",
+            "version": "1.0",
+            "subprotocol": subprotocol,
+            "kind": kind,
+            "participants": {
+                "actors": actors,
+                "groups": {
+                    "workspace_id": workspace_id,
+                    "mas_id": mas_id,
+                }
+            }
+        },
+        "payload": {
+            "type": payload_type,
+            "data": payload_data
+        }
+    }
+
+    if subkind:
+        message["header"]["subkind"] = subkind
+
+    return message
+
+
 def main() -> None:
-    """Run example operations against the MAS API."""
+    """Run L9 message forwarding examples."""
 
     # Initialize the client
     client = Client(
         cfn_url=os.getenv("CFN_URL", "http://localhost:9002"),
     )
 
-    # Configuration
-    workspace_id = "test_workspace"
-    mas_id = "test_system"
-    agent_id = "test_agent"
+    # Configuration - using UUIDs as required by the API
+    workspace_id = "550e8400-e29b-41d4-a716-446655440000"
+    mas_id = "660e8400-e29b-41d4-a716-446655440001"
 
     print("=" * 70)
-    print("IoC CFN MAS Client Library - Example Usage")
+    print("IoC CFN MAS Client Library - L9 Message Examples")
     print("=" * 70)
 
     # ========================================================================
-    # Example 1: Create Shared Memories from Trace Data
+    # Example 1: TFP (Team Formation via Polling) - Intent Message
     # ========================================================================
-    print("\n[1] Creating shared memories from trace data...")
+    print("\n[1] Forwarding TFP intent message (poll_open)...")
 
-    trace_data = [
-        {
-            "TraceId": "trace-001",
-            "SpanId": "span-001",
-            "ParentSpanId": "",
-            "SpanName": "user_login",
-            "ServiceName": "auth-service",
-            "SpanAttributes": {"user_id": "user123", "action": "login"},
-            "Duration": 150
-        },
-        {
-            "TraceId": "trace-001",
-            "SpanId": "span-002",
-            "ParentSpanId": "span-001",
-            "SpanName": "validate_credentials",
-            "ServiceName": "auth-service",
-            "SpanAttributes": {"user_id": "user123"},
-            "Duration": 50
-        }
-    ]
-
-    try:
-        create_response = client.create_shared_memories(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            data=trace_data,
-            format="observe-sdk-otel",
-            agent_id=agent_id,
-        )
-        print(f"✓ Successfully created shared memories")
-        print(f"  Status: {create_response.status}")
-        print(f"  Response ID: {create_response.response_id}")
-        print(f"  Message: {create_response.message}")
-    except Exception as e:
-        print(f"✗ Error creating shared memories: {e}")
-
-    # ========================================================================
-    # Example 2: Query Shared Memories with Natural Language
-    # ========================================================================
-    print("\n[2] Querying shared memories...")
-
-    intent = "Find information about user login events and authentication"
-
-    try:
-        query_response = client.query_shared_memories(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            intent=intent,
-            agent_id=agent_id,
-            additional_context=[
-                {"context": "Looking for authentication patterns"},
-                {"time_range": "last 24 hours"}
-            ],
-        )
-        print(f"✓ Query completed for: '{intent}'")
-        print(f"  Response ID: {query_response.response_id}")
-        print(f"  Message: {query_response.message}")
-    except Exception as e:
-        print(f"✗ Error querying memories: {e}")
-
-    # ========================================================================
-    # Example 3: Memory Operations (Proxy to Remote Provider)
-    # ========================================================================
-    print("\n[3] Memory operations via proxy...")
-
-    # Example 3a: GET memories from remote provider
-    print("\n  [3a] Getting memories from remote provider...")
-    try:
-        get_response = client.memory_operation(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            agent_id=agent_id,
-            http_method="GET",
-            http_url="v1/memories/?user_id=test-user",
-        )
-        print(f"  ✓ GET request successful")
-        print(f"    HTTP Status: {get_response.http_status}")
-        print(f"    Response Body: {get_response.http_response_body}")
-    except Exception as e:
-        print(f"  ✗ Error with GET request: {e}")
-
-    # Example 3b: POST memories to remote provider
-    print("\n  [3b] Posting memories to remote provider...")
-    try:
-        post_response = client.memory_operation(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            agent_id=agent_id,
-            http_method="POST",
-            http_url="/v1/memories/",
-            http_body={
-                "messages": [
-                    {"role": "user", "content": "I prefer dark mode in all my apps"}
-                ],
-                "user_id": "test-user"
+    tfp_intent = create_l9_message(
+        kind="intent",
+        subprotocol="TFP",
+        subkind="team-formation",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "operation": "poll_open",
+            "poll_id": "urn:ioc:tfp:poll:example-001",
+            "task": {
+                "task_id": "incident-2026-001",
+                "description": "Investigate authentication service outage",
+                "objective": "Identify root cause within 1 hour"
             },
-        )
-        print(f"  ✓ POST request successful")
-        print(f"    HTTP Status: {post_response.http_status}")
-        print(f"    Response Body: {post_response.http_response_body}")
-    except Exception as e:
-        print(f"  ✗ Error with POST request: {e}")
-
-    # ========================================================================
-    # Example 4: Semantic Alignment
-    # ========================================================================
-    print("\n[4] Semantic alignment...")
-
-    session_id = "demo-session-001"
-
-    # Example 4a: Start alignment
-    print("\n  [4a] Starting alignment session...")
-    try:
-        start_response = client.start_alignment(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            session_id=session_id,
-            agents=[
-                {"id": "planner", "name": "Planning Agent"},
-                {"id": "executor", "name": "Execution Agent"},
-            ],
-            content_text="Plan a deployment strategy for the new microservice",
-            n_steps=5,
-        )
-        print(f"  ✓ Alignment started")
-        print(f"    Status: {start_response.status}")
-        print(f"    Message: {start_response.message}")
-        if start_response.result:
-            print(f"    Result: {start_response.result}")
-    except Exception as e:
-        print(f"  ✗ Error starting alignment: {e}")
-
-    # Example 4b: Advance alignment
-    print("\n  [4b] Advancing alignment with agent replies...")
-    try:
-        advance_response = client.advance_alignment(
-            workspace_id=workspace_id,
-            mas_id=mas_id,
-            session_id=session_id,
-            agent_replies=[
+            "required_skills": [
                 {
-                    "agent_id": "planner",
-                    "action": "counter_offer",
-                    "offer": {"strategy": "blue-green deployment"}
+                    "skill": "skill:debugging",
+                    "min_proficiency": 0.7,
+                    "weight": 2.0,
+                    "mandatory": True
                 },
                 {
-                    "agent_id": "executor",
-                    "action": "accept"
-                },
+                    "skill": "skill:auth_systems",
+                    "min_proficiency": 0.6,
+                    "weight": 1.5,
+                    "mandatory": True
+                }
             ],
-        )
-        print(f"  ✓ Alignment advanced")
-        print(f"    Status: {advance_response.status}")
-        print(f"    Message: {advance_response.message}")
-        if advance_response.result:
-            print(f"    Result: {advance_response.result}")
+            "reasoning_summary": "Need debugging and auth systems expertise"
+        },
+        actors=[
+            {"id": "team-coordinator", "role": "sender"}
+        ],
+        payload_type="json-schema"
+    )
+
+    try:
+        response = client.forward_l9_message(message=tfp_intent)
+        print(f"✓ TFP intent message forwarded successfully")
+        print(f"  Response: {response}")
     except Exception as e:
-        print(f"  ✗ Error advancing alignment: {e}")
+        print(f"✗ Error forwarding TFP intent message: {e}")
 
     # ========================================================================
-    # Example 5: Advanced Usage - Direct API Access
+    # Example 2: TFP - Exchange Message (bid)
     # ========================================================================
-    print("\n[5] Advanced: Direct API access (for power users)...")
-    print("  Note: You can access the underlying OpenAPI clients via:")
-    print("  - client.shared_memories_api      (SharedMemoriesApi)")
-    print("  - client.memory_operations_api    (MemoryOperationsApi)")
-    print("  - client.semantic_alignment_api (SemanticAlignmentApi)")
-    print("  - client.api_client               (ApiClient)")
-    print("  - client.configuration            (Configuration)")
+    print("\n[2] Forwarding TFP exchange message (bid)...")
+
+    tfp_exchange = create_l9_message(
+        kind="exchange",
+        subprotocol="TFP",
+        subkind="team-formation",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "operation": "bid",
+            "poll_id": "urn:ioc:tfp:poll:example-001",
+            "offer": {
+                "skills": [
+                    {
+                        "skill": "skill:debugging",
+                        "proficiency": 0.85
+                    },
+                    {
+                        "skill": "skill:auth_systems",
+                        "proficiency": 0.75
+                    }
+                ],
+                "fit_score": 0.8
+            },
+            "reasoning_summary": "Strong match for debugging and auth systems"
+        },
+        actors=[
+            {"id": "senior-engineer-agent", "role": "sender"},
+            {"id": "team-coordinator", "role": "receiver"}
+        ],
+        payload_type="json-schema"
+    )
+
+    try:
+        response = client.forward_l9_message(message=tfp_exchange)
+        print(f"✓ TFP exchange message forwarded successfully")
+        print(f"  Response: {response}")
+    except Exception as e:
+        print(f"✗ Error forwarding TFP exchange message: {e}")
+
+    # ========================================================================
+    # Example 3: CIP (Contingency Interaction Protocol) - Contingency Message
+    # ========================================================================
+    print("\n[3] Forwarding CIP contingency message...")
+
+    cip_contingency = create_l9_message(
+        kind="contingency",
+        subprotocol="CIP",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "utterance": {
+                "text": "repair_required:reason=ambiguous_scope:target=msg-auth-analysis",
+                "evidence": [],
+                "addresses_evidence": [],
+                "ring_round": 0
+            },
+            "grounding": {
+                "contingency_verified": False,
+                "contingency_score": 0.0,
+                "repair_reason": "ambiguous_scope",
+                "challenges": [
+                    "concept:authentication_scope",
+                    "urn:concept:auth:oauth2_vs_jwt"
+                ]
+            },
+            "belief": {
+                "prior": 0.5,
+                "posterior": 0.5,
+                "revision_cause": None
+            }
+        },
+        actors=[
+            {"id": "grounding-agent", "role": "sender"},
+            {"id": "senior-engineer-agent", "role": "receiver"}
+        ],
+        payload_type="cip"
+    )
+
+    try:
+        response = client.forward_l9_message(message=cip_contingency)
+        print(f"✓ CIP contingency message forwarded successfully")
+        print(f"  Response: {response}")
+    except Exception as e:
+        print(f"✗ Error forwarding CIP contingency message: {e}")
+
+    # ========================================================================
+    # Example 4: SIEP (Semantic Interaction Exchange Protocol) - Exchange Message
+    # ========================================================================
+    print("\n[4] Forwarding SIEP exchange message...")
+
+    siep_exchange = create_l9_message(
+        kind="exchange",
+        subprotocol="SIEP",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "utterance": {
+                "text": "The root cause is a race condition in the token refresh logic",
+                "evidence": ["log:auth-service:line-442", "trace:span-id-7721"],
+                "addresses_evidence": [],
+                "ring_round": 1
+            },
+            "grounding": {
+                "contingency_verified": None,
+                "contingency_score": None,
+                "repair_reason": None,
+                "challenges": []
+            },
+            "belief": {
+                "prior": 0.5,
+                "posterior": 0.82,
+                "revision_cause": "evidence_accumulation"
+            }
+        },
+        actors=[
+            {"id": "senior-engineer-agent", "role": "sender"},
+            {"id": "team-coordinator", "role": "receiver"}
+        ],
+        payload_type="siep"
+    )
+
+    try:
+        response = client.forward_l9_message(message=siep_exchange)
+        print(f"✓ SIEP exchange message forwarded successfully")
+        print(f"  Response: {response}")
+    except Exception as e:
+        print(f"✗ Error forwarding SIEP exchange message: {e}")
+
+    # ========================================================================
+    # Example 5: TFP - Commit Message (converged)
+    # ========================================================================
+    print("\n[5] Forwarding TFP commit message...")
+
+    tfp_commit = create_l9_message(
+        kind="commit",
+        subprotocol="TFP",
+        subkind="converged",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "operation": "select",
+            "poll_id": "urn:ioc:tfp:poll:example-001",
+            "selection": {
+                "members": ["senior-engineer-agent", "auth-specialist-agent"],
+                "roles": [
+                    {
+                        "agent_id": "senior-engineer-agent",
+                        "role": "lead",
+                        "responsible_for": ["skill:debugging", "skill:auth_systems"]
+                    },
+                    {
+                        "agent_id": "auth-specialist-agent",
+                        "role": "contributor",
+                        "responsible_for": ["skill:auth_systems"]
+                    }
+                ],
+                "coverage": 1.0,
+                "unmet_skills": [],
+                "aggregate_fit": 0.85
+            },
+            "reasoning_summary": "Team formed with full coverage of required skills"
+        },
+        actors=[
+            {"id": "team-coordinator", "role": "sender"}
+        ],
+        payload_type="json-schema"
+    )
+
+    try:
+        response = client.forward_l9_message(message=tfp_commit)
+        print(f"✓ TFP commit message forwarded successfully")
+        print(f"  Response: {response}")
+    except Exception as e:
+        print(f"✗ Error forwarding TFP commit message: {e}")
+
+    # ========================================================================
+    # Example 6: Advanced - Direct API Access
+    # ========================================================================
+    print("\n[6] Advanced: Direct L9 API access...")
+    print("  Note: For power users, you can access the underlying API via:")
+    print("  - client.l9_messages_api  (L9MessagesApi)")
+    print("  This gives you full control over the L9 protocol message structure.")
 
     print("\n" + "=" * 70)
-    print("Example completed!")
+    print("L9 Examples completed!")
     print("=" * 70)
 
 
