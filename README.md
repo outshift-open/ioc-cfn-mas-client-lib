@@ -40,7 +40,7 @@ response = client.forward_l9_message(
         "header": {
             "protocol": "sstp",           # Always "sstp" for L9
             "version": "1.0",              # Protocol version
-            "subprotocol": "ioc",          # Subprotocol identifier
+            "subprotocol": "TFP",          # Subprotocol: TFP, CIP, SIEP, SAB, etc.
             "kind": "exchange",            # Message kind: intent, contingency, exchange, commit, knowledge
             "participants": {
                 "actors": [                # Participating agents/actors
@@ -86,7 +86,12 @@ L9 messages follow the **SSTP specification** and consist of two main components
 #### Header (Required)
 - **`protocol`**: Always `"sstp"` for L9 messages
 - **`version`**: Protocol version (e.g., `"1.0"`)
-- **`subprotocol`**: Subprotocol identifier (e.g., `"ioc"`)
+- **`subprotocol`**: Subprotocol identifier - one of:
+  - `"TFP"` - Team Formation via Polling
+  - `"CIP"` - Contingency Interaction Protocol
+  - `"SIEP"` - Semantic Interaction Exchange Protocol
+  - `"SAB"` - Semantic Alignment Broadcast
+  - Or any custom subprotocol identifier
 - **`kind`**: Message type - one of:
   - `intent` - Agent intentions and goals
   - `contingency` - Conditional actions and fallbacks

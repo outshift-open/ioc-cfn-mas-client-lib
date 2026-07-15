@@ -34,10 +34,10 @@ class Client:
         ...         "header": {
         ...             "protocol": "sstp",
         ...             "version": "1.0",
-        ...             "subprotocol": "ioc",
+        ...             "subprotocol": "TFP",
         ...             "kind": "intent",
         ...             "participants": {
-        ...                 "actors": [{"id": "agent-1"}],
+        ...                 "actors": [{"id": "agent-1", "role": "sender"}],
         ...                 "groups": {
         ...                     "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
         ...                     "mas_id": "660e8400-e29b-41d4-a716-446655440001"
@@ -46,7 +46,7 @@ class Client:
         ...         },
         ...         "payload": {
         ...             "type": "application/json",
-        ...             "data": {"query": "Analyze system metrics"}
+        ...             "data": {"operation": "poll_open", "task": {...}}
         ...         }
         ...     }
         ... )
@@ -113,10 +113,13 @@ class Client:
             ...         "header": {
             ...             "protocol": "sstp",
             ...             "version": "1.0",
-            ...             "subprotocol": "ioc",
-            ...             "kind": "intent",
+            ...             "subprotocol": "TFP",
+            ...             "kind": "exchange",
             ...             "participants": {
-            ...                 "actors": [{"id": "agent-1"}],
+            ...                 "actors": [
+            ...                     {"id": "agent-1", "role": "sender"},
+            ...                     {"id": "agent-2", "role": "receiver"}
+            ...                 ],
             ...                 "groups": {
             ...                     "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
             ...                     "mas_id": "660e8400-e29b-41d4-a716-446655440001"
@@ -124,10 +127,10 @@ class Client:
             ...             }
             ...         },
             ...         "payload": {
-            ...             "type": "application/json",
+            ...             "type": "json-schema",
             ...             "data": {
-            ...                 "query": "Analyze system metrics",
-            ...                 "context": {"service": "auth-service"}
+            ...                 "operation": "bid",
+            ...                 "offer": {"skills": [...], "fit_score": 0.8}
             ...             }
             ...         }
             ...     }
