@@ -7,8 +7,8 @@
 
 This script demonstrates how to:
 1. Initialize the client
-2. Forward L9 protocol messages to cognition engines
-3. Handle different message kinds (intent, contingency, exchange, commit, knowledge)
+2. Forward L9 protocol messages to cognition engines using real subprotocols
+3. Handle different message kinds and subprotocols (TFP, CIP, SIEP)
 """
 
 import os
@@ -19,6 +19,7 @@ from ioc_cfn_mas_client.client import Client
 
 def create_l9_message(
     kind: str,
+    subprotocol: str,
     workspace_id: str,
     mas_id: str,
     payload_data: Dict[str, Any],
@@ -30,6 +31,7 @@ def create_l9_message(
 
     Args:
         kind: Message kind (intent, contingency, exchange, commit, knowledge)
+        subprotocol: Subprotocol identifier (TFP, CIP, SIEP, etc.)
         workspace_id: Workspace UUID
         mas_id: Multi-agent system UUID
         payload_data: Message payload data
@@ -48,7 +50,7 @@ def create_l9_message(
         "header": {
             "protocol": "sstp",
             "version": "1.0",
-            "subprotocol": "ioc",
+            "subprotocol": subprotocol,
             "kind": kind,
             "participants": {
                 "actors": actors,
@@ -87,171 +89,231 @@ def main() -> None:
     print("=" * 70)
 
     # ========================================================================
-    # Example 1: Intent Message
+    # Example 1: TFP (Team Formation via Polling) - Intent Message
     # ========================================================================
-    print("\n[1] Forwarding intent message...")
+    print("\n[1] Forwarding TFP intent message (poll_open)...")
 
-    intent_message = create_l9_message(
+    tfp_intent = create_l9_message(
         kind="intent",
+        subprotocol="TFP",
+        subkind="team-formation",
         workspace_id=workspace_id,
         mas_id=mas_id,
         payload_data={
-            "operation": "analyze_security",
-            "target": "authentication_flow",
-            "parameters": {
-                "service": "auth-service",
-                "priority": "high",
-                "scope": ["oauth2", "jwt", "session_management"]
-            }
+            "operation": "poll_open",
+            "poll_id": "urn:ioc:tfp:poll:example-001",
+            "task": {
+                "task_id": "incident-2026-001",
+                "description": "Investigate authentication service outage",
+                "objective": "Identify root cause within 1 hour"
+            },
+            "required_skills": [
+                {
+                    "skill": "skill:debugging",
+                    "min_proficiency": 0.7,
+                    "weight": 2.0,
+                    "mandatory": True
+                },
+                {
+                    "skill": "skill:auth_systems",
+                    "min_proficiency": 0.6,
+                    "weight": 1.5,
+                    "mandatory": True
+                }
+            ],
+            "reasoning_summary": "Need debugging and auth systems expertise"
         },
         actors=[
-            {"id": "security-analyzer-agent", "role": "sender"},
-            {"id": "auth-service-agent", "role": "receiver"}
-        ]
+            {"id": "team-coordinator", "role": "sender"}
+        ],
+        payload_type="json-schema"
     )
 
     try:
-        response = client.forward_l9_message(message=intent_message)
-        print(f"✓ Intent message forwarded successfully")
+        response = client.forward_l9_message(message=tfp_intent)
+        print(f"✓ TFP intent message forwarded successfully")
         print(f"  Response: {response}")
     except Exception as e:
-        print(f"✗ Error forwarding intent message: {e}")
+        print(f"✗ Error forwarding TFP intent message: {e}")
 
     # ========================================================================
-    # Example 2: Exchange Message
+    # Example 2: TFP - Exchange Message (bid)
     # ========================================================================
-    print("\n[2] Forwarding exchange message...")
+    print("\n[2] Forwarding TFP exchange message (bid)...")
 
-    exchange_message = create_l9_message(
+    tfp_exchange = create_l9_message(
         kind="exchange",
+        subprotocol="TFP",
+        subkind="team-formation",
         workspace_id=workspace_id,
         mas_id=mas_id,
         payload_data={
-            "operation": "share_analysis_results",
-            "results": {
-                "vulnerabilities_found": 3,
-                "severity": "medium",
-                "recommendations": [
-                    "Implement rate limiting on login endpoint",
-                    "Add CSRF token validation",
-                    "Enable session timeout"
+            "operation": "bid",
+            "poll_id": "urn:ioc:tfp:poll:example-001",
+            "offer": {
+                "skills": [
+                    {
+                        "skill": "skill:debugging",
+                        "proficiency": 0.85
+                    },
+                    {
+                        "skill": "skill:auth_systems",
+                        "proficiency": 0.75
+                    }
+                ],
+                "fit_score": 0.8
+            },
+            "reasoning_summary": "Strong match for debugging and auth systems"
+        },
+        actors=[
+            {"id": "senior-engineer-agent", "role": "sender"},
+            {"id": "team-coordinator", "role": "receiver"}
+        ],
+        payload_type="json-schema"
+    )
+
+    try:
+        response = client.forward_l9_message(message=tfp_exchange)
+        print(f"✓ TFP exchange message forwarded successfully")
+        print(f"  Response: {response}")
+    except Exception as e:
+        print(f"✗ Error forwarding TFP exchange message: {e}")
+
+    # ========================================================================
+    # Example 3: CIP (Contingency Interaction Protocol) - Contingency Message
+    # ========================================================================
+    print("\n[3] Forwarding CIP contingency message...")
+
+    cip_contingency = create_l9_message(
+        kind="contingency",
+        subprotocol="CIP",
+        workspace_id=workspace_id,
+        mas_id=mas_id,
+        payload_data={
+            "utterance": {
+                "text": "repair_required:reason=ambiguous_scope:target=msg-auth-analysis",
+                "evidence": [],
+                "addresses_evidence": [],
+                "ring_round": 0
+            },
+            "grounding": {
+                "contingency_verified": False,
+                "contingency_score": 0.0,
+                "repair_reason": "ambiguous_scope",
+                "challenges": [
+                    "concept:authentication_scope",
+                    "urn:concept:auth:oauth2_vs_jwt"
                 ]
             },
-            "metadata": {
-                "analysis_id": "sec-2026-001",
-                "timestamp": "2026-07-15T10:30:00Z"
+            "belief": {
+                "prior": 0.5,
+                "posterior": 0.5,
+                "revision_cause": None
             }
         },
         actors=[
-            {"id": "security-analyzer-agent", "role": "sender"},
-            {"id": "remediation-agent", "role": "receiver"}
-        ]
+            {"id": "grounding-agent", "role": "sender"},
+            {"id": "senior-engineer-agent", "role": "receiver"}
+        ],
+        payload_type="cip"
     )
 
     try:
-        response = client.forward_l9_message(message=exchange_message)
-        print(f"✓ Exchange message forwarded successfully")
+        response = client.forward_l9_message(message=cip_contingency)
+        print(f"✓ CIP contingency message forwarded successfully")
         print(f"  Response: {response}")
     except Exception as e:
-        print(f"✗ Error forwarding exchange message: {e}")
+        print(f"✗ Error forwarding CIP contingency message: {e}")
 
     # ========================================================================
-    # Example 3: Commit Message
+    # Example 4: SIEP (Semantic Interaction Exchange Protocol) - Exchange Message
     # ========================================================================
-    print("\n[3] Forwarding commit message...")
+    print("\n[4] Forwarding SIEP exchange message...")
 
-    commit_message = create_l9_message(
-        kind="commit",
+    siep_exchange = create_l9_message(
+        kind="exchange",
+        subprotocol="SIEP",
         workspace_id=workspace_id,
         mas_id=mas_id,
         payload_data={
-            "operation": "commit_remediation_plan",
-            "decision": "approved",
-            "commitment": {
-                "plan_id": "rem-2026-001",
-                "actions": [
-                    "Deploy rate limiter to auth service",
-                    "Enable CSRF protection",
-                    "Configure 30-minute session timeout"
-                ],
-                "schedule": {
-                    "start": "2026-07-15T14:00:00Z",
-                    "estimated_completion": "2026-07-15T16:00:00Z"
-                }
+            "utterance": {
+                "text": "The root cause is a race condition in the token refresh logic",
+                "evidence": ["log:auth-service:line-442", "trace:span-id-7721"],
+                "addresses_evidence": [],
+                "ring_round": 1
             },
-            "approvers": ["security-analyzer-agent", "ops-lead-agent"]
+            "grounding": {
+                "contingency_verified": None,
+                "contingency_score": None,
+                "repair_reason": None,
+                "challenges": []
+            },
+            "belief": {
+                "prior": 0.5,
+                "posterior": 0.82,
+                "revision_cause": "evidence_accumulation"
+            }
         },
         actors=[
-            {"id": "remediation-agent", "role": "sender"},
-            {"id": "deployment-agent", "role": "receiver"}
-        ]
+            {"id": "senior-engineer-agent", "role": "sender"},
+            {"id": "team-coordinator", "role": "receiver"}
+        ],
+        payload_type="siep"
     )
 
     try:
-        response = client.forward_l9_message(message=commit_message)
-        print(f"✓ Commit message forwarded successfully")
+        response = client.forward_l9_message(message=siep_exchange)
+        print(f"✓ SIEP exchange message forwarded successfully")
         print(f"  Response: {response}")
     except Exception as e:
-        print(f"✗ Error forwarding commit message: {e}")
+        print(f"✗ Error forwarding SIEP exchange message: {e}")
 
     # ========================================================================
-    # Example 4: Knowledge Message
+    # Example 5: TFP - Commit Message (converged)
     # ========================================================================
-    print("\n[4] Forwarding knowledge message...")
+    print("\n[5] Forwarding TFP commit message...")
 
-    knowledge_message = create_l9_message(
-        kind="knowledge",
+    tfp_commit = create_l9_message(
+        kind="commit",
+        subprotocol="TFP",
+        subkind="converged",
         workspace_id=workspace_id,
         mas_id=mas_id,
         payload_data={
-            "type": "learned_pattern",
-            "content": {
-                "pattern": "authentication_flow_optimization",
-                "description": "Learned optimal cache TTL for auth tokens",
-                "parameters": {
-                    "ttl": "3600s",
-                    "confidence": 0.95
-                }
+            "operation": "select",
+            "poll_id": "urn:ioc:tfp:poll:example-001",
+            "selection": {
+                "members": ["senior-engineer-agent", "auth-specialist-agent"],
+                "roles": [
+                    {
+                        "agent_id": "senior-engineer-agent",
+                        "role": "lead",
+                        "responsible_for": ["skill:debugging", "skill:auth_systems"]
+                    },
+                    {
+                        "agent_id": "auth-specialist-agent",
+                        "role": "contributor",
+                        "responsible_for": ["skill:auth_systems"]
+                    }
+                ],
+                "coverage": 1.0,
+                "unmet_skills": [],
+                "aggregate_fit": 0.85
             },
-            "source": "learning-agent"
-        }
-    )
-
-    try:
-        response = client.forward_l9_message(message=knowledge_message)
-        print(f"✓ Knowledge message forwarded successfully")
-        print(f"  Response: {response}")
-    except Exception as e:
-        print(f"✗ Error forwarding knowledge message: {e}")
-
-    # ========================================================================
-    # Example 5: Contingency Message
-    # ========================================================================
-    print("\n[5] Forwarding contingency message...")
-
-    contingency_message = create_l9_message(
-        kind="contingency",
-        workspace_id=workspace_id,
-        mas_id=mas_id,
-        payload_data={
-            "trigger": "deployment_failure",
-            "condition": "health_check_failed",
-            "action": {
-                "type": "rollback",
-                "target": "previous_version",
-                "automated": True
-            },
-            "severity": "critical"
+            "reasoning_summary": "Team formed with full coverage of required skills"
         },
-        actors=[{"id": "monitor-agent"}, {"id": "executor-agent"}]
+        actors=[
+            {"id": "team-coordinator", "role": "sender"}
+        ],
+        payload_type="json-schema"
     )
 
     try:
-        response = client.forward_l9_message(message=contingency_message)
-        print(f"✓ Contingency message forwarded successfully")
+        response = client.forward_l9_message(message=tfp_commit)
+        print(f"✓ TFP commit message forwarded successfully")
         print(f"  Response: {response}")
     except Exception as e:
-        print(f"✗ Error forwarding contingency message: {e}")
+        print(f"✗ Error forwarding TFP commit message: {e}")
 
     # ========================================================================
     # Example 6: Advanced - Direct API Access
