@@ -10,10 +10,11 @@ Python SDK client library for the Internet of Cognition (IoC) Cognition Fabric N
 
 | Client Library Version | CFN Public API Version | Status |
 |------------------------|------------------------|--------|
-| **0.2.1** (current)    | **v0.2.1**            | ✅ Latest |
+| **0.3.0** (current)    | **v0.2.1**            | ✅ Latest |
+| 0.2.2                  | v0.2.0                | Deprecated |
 | 0.1.0                  | v0.1.x                | Deprecated |
 
-**Note:** Client library versions track the CFN Public API version. Install the client library version that matches your CFN service deployment.
+**Note:** Client library version is independent but documents which CFN API version it supports.
 
 ## Overview
 
