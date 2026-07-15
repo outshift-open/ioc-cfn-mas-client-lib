@@ -6,7 +6,7 @@
 PYTHON := $(shell command -v python3 2> /dev/null || echo python)
 
 # OpenAPI spec from ioc-cfn-svc public API
-OPENAPI_SPEC ?= openapi/public-api-v1.2.yaml
+OPENAPI_SPEC ?= openapi/public-api-v0.2.1.yaml
 
 GEN_PKG ?= generated
 GEN_OUT ?= src
