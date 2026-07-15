@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-15
+
 ### Added
-- L9 protocol message routing support (v1.2 API)
+- L9 protocol message routing support (CFN API v1.2)
+- `forward_l9_message()` method for L9 protocol messages
 - PyPI publishing infrastructure
 - Automated release workflow via GitHub Actions
 - Build and test Makefile targets
@@ -19,7 +22,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A2A sidecar proxy examples and deployment code
 - a2a-sdk dependency (was causing version conflicts)
 
-## [0.1.0] - TBD
+### Changed
+- **Version scheme**: Now tracks CFN API major version (1.x.x = API v1.x)
+- Library version `1.2.0` supports CFN Public API v1.2
+
+## [0.2.2] - 2026-07-10
+
+### Changed
+- Updated PyPI package description
+- Documentation improvements
+
+## [0.1.0] - 2026-06-24
 
 ### Added
 - Initial alpha release to PyPI
@@ -38,5 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Examples for all major features
 - MCP integration guide
 
-[Unreleased]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.2.2...v1.2.0
+[0.2.2]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.1.0...v0.2.2
 [0.1.0]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/releases/tag/v0.1.0
