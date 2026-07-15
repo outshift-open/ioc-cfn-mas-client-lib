@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-15
+
+### Changed
+- Added Apache 2.0 license headers to all Python and shell files for OSPO compliance
+- Automated license header addition in build process (integrated into `make gen-openapi`)
+- Fixed L9 message examples to use correct field names and structure
+
+### Removed
+- MCP (Model Context Protocol) integration code and documentation
+- Deprecated A2A instrumentation references
+- Separate `make add-headers-generated` target (now automated)
+
 ## [0.3.0] - 2026-07-15
 
 ### Added
@@ -51,7 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API documentation
 - Examples for all major features
 
-[Unreleased]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/compare/v0.1.0...v0.2.2
 [0.1.0]: https://github.com/outshift-open/ioc-cfn-mas-client-lib/releases/tag/v0.1.0
