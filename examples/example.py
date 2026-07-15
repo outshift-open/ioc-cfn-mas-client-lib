@@ -125,7 +125,7 @@ def main() -> None:
             "sender": "planner-agent",
             "recipients": ["executor-agent"]
         },
-        actors=["planner-agent", "executor-agent"]
+        actors=[{"id": "planner-agent"}, {"id": "executor-agent"}]
     )
 
     try:
@@ -211,7 +211,7 @@ def main() -> None:
             },
             "severity": "critical"
         },
-        actors=["monitor-agent", "executor-agent"]
+        actors=[{"id": "monitor-agent"}, {"id": "executor-agent"}]
     )
 
     try:

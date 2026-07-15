@@ -32,12 +32,22 @@ class Client:
         >>> response = client.forward_l9_message(
         ...     message={
         ...         "header": {
+        ...             "protocol": "sstp",
+        ...             "version": "1.0",
+        ...             "subprotocol": "ioc",
         ...             "kind": "intent",
         ...             "participants": {
-        ...                 "groups": {"workspace": "ws1", "mas": "sys1"}
+        ...                 "actors": [{"id": "agent-1"}],
+        ...                 "groups": {
+        ...                     "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
+        ...                     "mas_id": "660e8400-e29b-41d4-a716-446655440001"
+        ...                 }
         ...             }
         ...         },
-        ...         "payload": {...}
+        ...         "payload": {
+        ...             "type": "application/json",
+        ...             "data": {"query": "Analyze system metrics"}
+        ...         }
         ...     }
         ... )
     """
@@ -101,16 +111,24 @@ class Client:
             >>> response = client.forward_l9_message(
             ...     message={
             ...         "header": {
+            ...             "protocol": "sstp",
+            ...             "version": "1.0",
+            ...             "subprotocol": "ioc",
             ...             "kind": "intent",
-            ...             "subkind": "query",
             ...             "participants": {
             ...                 "actors": [{"id": "agent-1"}],
-            ...                 "groups": {"workspace": "ws1", "mas": "sys1"}
+            ...                 "groups": {
+            ...                     "workspace_id": "550e8400-e29b-41d4-a716-446655440000",
+            ...                     "mas_id": "660e8400-e29b-41d4-a716-446655440001"
+            ...                 }
             ...             }
             ...         },
             ...         "payload": {
-            ...             "intent": "Analyze system metrics",
-            ...             "context": {"service": "auth-service"}
+            ...             "type": "application/json",
+            ...             "data": {
+            ...                 "query": "Analyze system metrics",
+            ...                 "context": {"service": "auth-service"}
+            ...             }
             ...         }
             ...     }
             ... )
