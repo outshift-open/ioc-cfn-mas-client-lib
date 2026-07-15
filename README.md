@@ -93,28 +93,28 @@ L9 messages follow the **SSTP specification** and consist of two main components
   - `"SAB"` - Semantic Alignment via Bargaining
   - Or any custom subprotocol identifier
 - **`kind`**: Message type - one of:
-  - `intent` - Agent intentions and goals
-  - `contingency` - Conditional actions and fallbacks
-  - `exchange` - Data exchange between agents
-  - `commit` - State commitments and confirmations
-  - `knowledge` - Knowledge queries and updates
-- **`subkind`** (optional): Additional message classification
+  - `intent` - Opens an episode; declares concept and participating group
+  - `contingency` - Signals a grounding problem that requires repair
+  - `exchange` - Substantive contribution (assertion, counter, data transfer)
+  - `commit` - Closes an episode or contingency branch
+  - `knowledge` - Single-message episode for knowledge base updates
+- **`subkind`** (optional): Qualifies the `kind` field - common values:
+  - For `commit`: `converged` (agreement reached), `rejected` (no agreement), `resolved` (repair complete), `ready` (done signal)
+  - For `exchange`: `ready` (final contribution + done)
+  - For subprotocols: Each subprotocol may define its own (e.g., TFP uses `team-formation`)
+  - Can be `null` or omitted for most messages
 - **`participants`**: Routing and actor information
   - **`actors`**: Array of participating agents/actors with `id` and `role`
   - **`groups`**: Routing groups with **`workspace_id`** and **`mas_id`** (both UUIDs)
 
 #### Payload (Required)
-- **`type`**: Payload MIME type (e.g., `"application/json"`, `"text/plain"`)
-- **`data`**: Custom payload data (object or any JSON-serializable data)
-
-### Routing Logic
-
-CFN routes L9 messages to Cognition Engines based on:
-1. **Workspace ID** - Identifies the workspace boundary
-2. **MAS ID** - Identifies the specific Multi-Agent System
-3. **Message kind** - Determines the type of processing required
-
-The appropriate Cognition Engine is selected and the message is forwarded for processing.
+- **`type`**: Payload MIME type - depends on subprotocol:
+  - `"application/json"` - Generic JSON data
+  - `"json-schema"` - Structured data conforming to a schema (TFP, SAB)
+  - `"cip"` - CIP-specific payload (utterance, grounding, belief)
+  - `"siep"` - SIEP-specific payload (epistemic negotiation)
+  - `"text/plain"` - Plain text messages
+- **`data`**: Payload content - structure depends on subprotocol and `type`
 
 ## Configuration
 
