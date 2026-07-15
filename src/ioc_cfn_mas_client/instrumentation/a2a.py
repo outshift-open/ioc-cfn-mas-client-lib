@@ -87,7 +87,7 @@ class A2AInstrumentor:
         # Check if A2A SDK is available
         if importlib.util.find_spec("a2a") is None:
             raise ImportError(
-                "A2A SDK not found. Please install: pip install a2a-sdk"
+                "A2A SDK not found. Please install: pip install 'ioc-cfn-mas-client-lib[a2a]'"
             )
 
         # Patch AgentExecutor using __init_subclass__ to handle ABC pattern
